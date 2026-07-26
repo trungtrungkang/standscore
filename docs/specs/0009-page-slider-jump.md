@@ -12,7 +12,7 @@
 
 ## Problem
 
-Long PDFs force many PageTurns to reach a distant page. ScorePDF offers a page scrubber and jump-to-page. StandScore only advances one step (or spread) at a time.
+Long PDFs force many PageTurns to reach a distant page. ScorePDF offers a page scrubber and jump-to-page. StageScore only advances one step (or spread) at a time.
 
 ## Outcome
 

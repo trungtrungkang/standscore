@@ -28,7 +28,7 @@ ScorePDF **Single page** is discrete (one page at a time), not continuous vertic
 - Next page animates **right → left** (incoming from the right)
 - Previous page animates **left → right**
 
-**Fit width** remains vertical continuous scroll; **fit height** remains horizontal continuous scroll. StandScore maps Single page to a dedicated `PageView` slider (`SinglePageSlider`), not pdfrx vertical `layoutPages`.
+**Fit width** remains vertical continuous scroll; **fit height** remains horizontal continuous scroll. StageScore maps Single page to a dedicated `PageView` slider (`SinglePageSlider`), not pdfrx vertical `layoutPages`.
 
 ## In scope
 

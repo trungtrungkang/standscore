@@ -13,7 +13,7 @@
 
 ## Problem
 
-On tall phones and music stands, musicians often want the **next** system visible while finishing the current page — without a full PageTurn yet. StandScore only has single, two-page, and continuous scroll layouts. ScorePDF’s half-page modes show part of the next page behind a movable separator.
+On tall phones and music stands, musicians often want the **next** system visible while finishing the current page — without a full PageTurn yet. StageScore only has single, two-page, and continuous scroll layouts. ScorePDF’s half-page modes show part of the next page behind a movable separator.
 
 ## Outcome
 

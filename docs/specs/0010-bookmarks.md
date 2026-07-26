@@ -12,7 +12,7 @@
 
 ## Problem
 
-Musicians need named landing spots in a long Score (rehearsal letters, repeats, solos). StandScore only has page scrub/jump by number — no saved places per Score.
+Musicians need named landing spots in a long Score (rehearsal letters, repeats, solos). StageScore only has page scrub/jump by number — no saved places per Score.
 
 ## Outcome
 
@@ -23,7 +23,7 @@ In PdfMode, the user can add a Bookmark on the current page with a custom title,
 - Add Bookmark at current page (default title editable, e.g. “Page N” or user text)
 - List Bookmarks for the open Score; tap → jump to page
 - Rename and delete
-- Persist per Score (JSON next to Score storage under `standscore/`)
+- Persist per Score (JSON next to Score storage under `stagescore/`)
 - Entry point from PdfMode (app bar or overflow — keep chrome light)
 
 ## Out of scope

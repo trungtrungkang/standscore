@@ -5,7 +5,7 @@
 - **Closed:** 2026-07-23
 - **Stack:** Flutter 3.44 + **pdfrx** (PDFium)
 - **App id:** `com.backingscore.scoreapp`
-- **Code:** `sheet-app/standscore/`
+- **Code:** `sheet-app/stagescore/`
 
 ## What was built
 
@@ -35,6 +35,6 @@
 
 ## Notes for implementer
 
-- Run: `cd sheet-app/standscore && flutter run`
+- Run: `cd sheet-app/stagescore && flutter run`
 - Draw mode must be ON to annotate (otherwise viewer eats gestures for pan/zoom)
 - Export-with-annotations not in this spike

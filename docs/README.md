@@ -1,6 +1,6 @@
-# StandScore documentation
+# StageScore documentation
 
-Product home for **StandScore** by **BackingScore** ([backingscore.com](https://backingscore.com)).  
+Product home for **StageScore** by **BackingScore** ([backingscore.com](https://backingscore.com)).  
 Bundle ID: `com.backingscore.scoreapp`.
 
 ## Orchestrator — current focus

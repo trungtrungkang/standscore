@@ -56,7 +56,7 @@ Testable checklist (G4):
 ## Technical constraints
 
 - Pure sort helper TDD’d on Score fields (`title`, `createdAt`, `lastOpenedAt`)
-- Prefs store under standscore root
+- Prefs store under stagescore root
 
 ## Test plan
 

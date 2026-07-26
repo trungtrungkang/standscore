@@ -13,7 +13,7 @@
 
 ## Problem
 
-On stage, musicians often want a stable magnification — pinch zoom can drift mid-performance. ScorePDF lets users **lock page scaling** at Fixed / Per Score / Per Page levels. StandScore has pinch/double-tap zoom but no lock or scoped scale preference.
+On stage, musicians often want a stable magnification — pinch zoom can drift mid-performance. ScorePDF lets users **lock page scaling** at Fixed / Per Score / Per Page levels. StageScore has pinch/double-tap zoom but no lock or scoped scale preference.
 
 ## Outcome
 

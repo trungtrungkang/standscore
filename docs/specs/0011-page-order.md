@@ -12,7 +12,7 @@
 
 ## Problem
 
-Performance PDFs often need repeats, skipped covers, or inserted blank rest pages without editing the original file. StandScore always shows PDF pages in file order. ScorePDF’s PageOrder lets musicians rearrange the performance sequence.
+Performance PDFs often need repeats, skipped covers, or inserted blank rest pages without editing the original file. StageScore always shows PDF pages in file order. ScorePDF’s PageOrder lets musicians rearrange the performance sequence.
 
 ## Outcome
 

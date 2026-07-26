@@ -13,7 +13,7 @@
 
 ## Problem
 
-Musicians practice and count off with a metronome while reading PDFs. ScorePDF offers tempo, time signature (accent), and independent volume from PdfMode. StandScore has no click track yet — and ADR 0008 allows a PDF-phase metronome without SmartMode / Transport.
+Musicians practice and count off with a metronome while reading PDFs. ScorePDF offers tempo, time signature (accent), and independent volume from PdfMode. StageScore has no click track yet — and ADR 0008 allows a PDF-phase metronome without SmartMode / Transport.
 
 ## Outcome
 

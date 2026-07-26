@@ -23,7 +23,7 @@ The user can create a **Setlist** (ordered group of Scores), open it into PdfMod
 
 - Create / rename / delete Setlists
 - Edit membership: add Scores from the library, remove entries, reorder
-- Persist Setlists on device (under `standscore/`)
+- Persist Setlists on device (under `stagescore/`)
 - Library surfaces Setlists (alongside Scores) and opens a Setlist into PdfMode
 - Continuous performance: PageTurn past the last page of Score *N* lands on page 1 of Score *N+1* (and previous from page 1 of *N* lands on the last page of *N−1*)
 - Each Score still uses its own PageOrder, Bookmarks, and annotations

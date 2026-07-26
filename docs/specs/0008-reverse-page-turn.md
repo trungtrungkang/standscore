@@ -12,7 +12,7 @@
 
 ## Problem
 
-Some scores (and RTL reading habits) want “next” to enter from the left. StandScore always uses LTR PageTurn (next from the right). ScorePDF offers a reverse direction toggle.
+Some scores (and RTL reading habits) want “next” to enter from the left. StageScore always uses LTR PageTurn (next from the right). ScorePDF offers a reverse direction toggle.
 
 ## Outcome
 

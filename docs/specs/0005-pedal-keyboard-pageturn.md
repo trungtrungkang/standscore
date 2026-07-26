@@ -11,7 +11,7 @@
 
 ## Problem
 
-On stage, musicians turn pages with Bluetooth foot pedals that emulate keyboard keys. StandScore only supports tap/swipe PageTurn today.
+On stage, musicians turn pages with Bluetooth foot pedals that emulate keyboard keys. StageScore only supports tap/swipe PageTurn today.
 
 ## Outcome
 

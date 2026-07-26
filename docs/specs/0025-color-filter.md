@@ -13,7 +13,7 @@
 
 ## Problem
 
-Bright white PDF pages strain eyes under stage lights or at night. ScorePDF offers **page color filters** (sepia, green, invert) so musicians can tint the Score view without editing the file. StandScore needs the same comfort controls in PdfMode.
+Bright white PDF pages strain eyes under stage lights or at night. ScorePDF offers **page color filters** (sepia, green, invert) so musicians can tint the Score view without editing the file. StageScore needs the same comfort controls in PdfMode.
 
 ## Outcome
 

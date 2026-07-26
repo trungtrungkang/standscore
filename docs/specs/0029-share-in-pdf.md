@@ -13,11 +13,11 @@
 
 ## Problem
 
-Musicians often receive sheet music as a PDF in Mail, Files, Drive, or Messages. ScorePDF appears in the system **Share** / **Open in** sheet so the file lands in the Library without a separate file-picker dance. StandScore today only imports via the in-app **+** picker.
+Musicians often receive sheet music as a PDF in Mail, Files, Drive, or Messages. ScorePDF appears in the system **Share** / **Open in** sheet so the file lands in the Library without a separate file-picker dance. StageScore today only imports via the in-app **+** picker.
 
 ## Outcome
 
-When the user shares one or more PDF files to StandScore from another app (or opens a PDF with StandScore), each PDF is imported as a new **Score** in the Library (same path as in-app import). The Library refreshes and the user can open the new Score(s).
+When the user shares one or more PDF files to StageScore from another app (or opens a PDF with StageScore), each PDF is imported as a new **Score** in the Library (same path as in-app import). The Library refreshes and the user can open the new Score(s).
 
 ## In scope
 
@@ -30,7 +30,7 @@ When the user shares one or more PDF files to StandScore from another app (or op
 
 ## Out of scope
 
-- Importing StandScore backup ZIP via share (use Restore)
+- Importing StageScore backup ZIP via share (use Restore)
 - Share-out of Library Scores (except existing annotated export / backup)
 - Auto-open PdfMode after share-in
 - Deduping by content hash (always create a new Score)
@@ -44,11 +44,11 @@ When the user shares one or more PDF files to StandScore from another app (or op
 
 Testable checklist (G4):
 
-- [x] Sharing a PDF to StandScore from another app creates a Library Score
+- [x] Sharing a PDF to StageScore from another app creates a Library Score
 - [x] Sharing multiple PDFs at once imports each (if platform allows)
 - [x] Title matches source filename (minus `.pdf`)
-- [x] Works when StandScore was not already running
-- [x] Works when StandScore was already in foreground / background
+- [x] Works when StageScore was not already running
+- [x] Works when StageScore was already in foreground / background
 - [x] Library list shows the new Score(s) without manual refresh hack
 - [x] Non-PDF share does not corrupt the Library
 
@@ -66,4 +66,4 @@ Testable checklist (G4):
 ## Test plan
 
 - Automated: shared path(s) → importPdf → Score appears in temp library
-- Manual: Share PDF from Files/Mail → StandScore; multi-share; app killed then share
+- Manual: Share PDF from Files/Mail → StageScore; multi-share; app killed then share

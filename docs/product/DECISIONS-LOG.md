@@ -8,10 +8,10 @@ Informal notes that are **not** ADRs. Use for weekly sequencing, naming ideas, a
 | 2026-07-22 | Research baseline: ScorePDF feature parity for PdfMode; SmartMode via MusicXML + Verovio; native Transport on iOS. Tech ADRs still `proposed`. |
 | 2026-07-22 | Future BackingTrack (play with band) → ADR 0007 multi-lane Transport + SyncMap; design note `TRANSPORT-ARCHITECTURE.md`. Horizons renumbered (backing before OMR). |
 | 2026-07-22 | **Early phase = ScorePDF parity first** (ADR 0008 accepted). Checklist `SCOREPDF-PARITY.md`. SmartMode/Transport/OMR deferred until P0–P2 accepted. |
-| 2026-07-22 | Provisional product name **StandScore** (lean lock). No obvious iOS/Android sheet-music collision found; nearby concepts: Planning Center “Music Stand”, digitalScore marketing. Confirm domain/trademark before store submit. |
+| 2026-07-22 | Provisional product name **StageScore** (lean lock). No obvious iOS/Android sheet-music collision found; nearby concepts: Planning Center “Music Stand”, digitalScore marketing. Confirm domain/trademark before store submit. |
 | 2026-07-22 | **Publisher:** BackingScore (backingscore.com). **Bundle ID:** `com.backingscore.scoreapp` (ADR 0009 accepted). |
-| 2026-07-22 | Draft logo mark: `docs/brand/standscore-logo.png` (music stand + score). Iterate before store lock. |
-| 2026-07-22 | Logo revised to **flat minimal** stand silhouette (no wordmark on icon). Replaced `docs/brand/standscore-logo.png`. |
+| 2026-07-22 | Draft logo mark: `docs/brand/stagescore-logo.png` (music stand + score). Iterate before store lock. |
+| 2026-07-22 | Logo revised to **flat minimal** stand silhouette (no wordmark on icon). Replaced `docs/brand/stagescore-logo.png`. |
 | 2026-07-22 | Logo simplified further: **score page only** (no music stand). |
 | 2026-07-22 | Logo color: warm **teal** on cream (avoid black). |
 | 2026-07-22 | Logo: yellowed paper background; tighter crop (less top/bottom padding). |
@@ -75,7 +75,7 @@ Informal notes that are **not** ADRs. Use for weekly sequencing, naming ideas, a
 | 2026-07-26 | Spec **0022** accepted (G3): live title OR Bookmark search; Label filter then search; Scores only. Building. |
 | 2026-07-26 | Spec **0022 G4 pass**. P2.6 done. Spec **0023** (library sort / P2.7) drafted `proposed`. |
 | 2026-07-26 | Spec **0023** accepted (G3): title A–Z; created/last-viewed newest-first; never-opened last; persist. Building. |
-| 2026-07-26 | Brand: applied `standscore-logo.png` to Library app bar, launcher icons (iOS/Android), and native splash (#0D8B86). Still draft before store lock. |
+| 2026-07-26 | Brand: applied `stagescore-logo.png` to Library app bar, launcher icons (iOS/Android), and native splash (#0D8B86). Still draft before store lock. |
 | 2026-07-26 | Spec **0023 G4 pass**. P2.7 done. Spec **0024** (replace PDF / P2.8) drafted `proposed`. |
 | 2026-07-26 | Spec **0024** accepted (G3): Library replace PDF; keep/reset annotations+bookmarks+jumplinks+page order; Labels/Setlists kept. Building. |
 | 2026-07-26 | Spec **0024 G4 pass**. P2.8 done. Spec **0025** (color filter / P2.9) drafted `proposed`. |
@@ -83,7 +83,7 @@ Informal notes that are **not** ADRs. Use for weekly sequencing, naming ideas, a
 | 2026-07-26 | Spec **0025 G4 pass**. P2.9 done. Spec **0026** (dark mode + theme color / P2.10) drafted `proposed`. |
 | 2026-07-26 | Spec **0026** accepted (G3): Light/Dark/System; brand teal + presets + custom; Library ⋯ Appearance; no match-gutter. Building. |
 | 2026-07-26 | Spec **0026 G4 pass**. P2.10 done. Spec **0027** (backup/restore ZIP / P2.11) drafted `proposed`. |
-| 2026-07-26 | Spec **0027** accepted (G3): full `standscore/` tree + prefs; full-replace restore; `standscore-backup.json` marker; Library ⋯. Building. |
+| 2026-07-26 | Spec **0027** accepted (G3): full `stagescore/` tree + prefs; full-replace restore; `stagescore-backup.json` marker; Library ⋯. Building. |
 | 2026-07-26 | Gap: Library has no Delete Score (Setlist delete exists). Spec **0028** (P0.9) drafted `proposed`; queue after 0027 G4. |
 | 2026-07-26 | Spec **0028** accepted (G3): Library Score ⋯ Delete; hard-delete PDF+overlays+Labels; strip from Setlists (keep empty); Library-only. Building. |
 | 2026-07-26 | Spec **0028 G4 pass**. P0.9 done. Spec **0027** still G4 pending. |

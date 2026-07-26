@@ -8,7 +8,7 @@
 - **Depends on Specs:** 0014 (done)
 - **Parity IDs:** P1.2
 - **G3:** accepted (2026-07-26)
-- **G3 notes:** Keep StandScore chrome always visible (no immersive hide). Show menu = open ⋯ overflow (or equivalent). Defaults: long-press + top → Show menu; bottom → Draw.
+- **G3 notes:** Keep StageScore chrome always visible (no immersive hide). Show menu = open ⋯ overflow (or equivalent). Defaults: long-press + top → Show menu; bottom → Draw.
 - **G4:** pass (2026-07-26)
 
 ## Problem
@@ -25,7 +25,7 @@ Musicians also need quick access to **non–page-turn** actions during a gig —
 | Where | Large halves of the viewer | Long-press anywhere; thin top & bottom edge strips |
 | Example | Tap right half → next page | Tap top edge → open the ⋯ menu |
 
-**Not in this Spec:** left/right edge actions, metronome, jump links, custom “open bookmarks” catalog, auto-hiding AppBar (ScorePDF immersive) — StandScore keeps chrome visible.
+**Not in this Spec:** left/right edge actions, metronome, jump links, custom “open bookmarks” catalog, auto-hiding AppBar (ScorePDF immersive) — StageScore keeps chrome visible.
 
 ## Outcome
 
@@ -37,7 +37,7 @@ The user can open **Page turn → Gestures** (or equivalent) and assign each of 
 | **Top edge** | Short tap in a thin band along the **top** of the viewer |
 | **Bottom edge** | Short tap in a thin band along the **bottom** of the viewer |
 
-| Action (UI label) | Behavior in StandScore |
+| Action (UI label) | Behavior in StageScore |
 |-------------------|------------------------|
 | **Show menu** | Open the PdfMode **⋯** overflow menu (chrome stays always visible). Do not PageTurn. |
 | ~~**Draw**~~ | **Removed in Spec 0034.** Landing in Draw mode from a stray tap was a surprise the player had to undo mid-piece; Draw is entered from the toolbar only. Saved `enterDraw` assignments read back as Off. |

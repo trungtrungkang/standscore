@@ -1,6 +1,6 @@
-# StandScore
+# StageScore
 
-Domain language for **StandScore**, a BackingScore product (https://backingscore.com).  
+Domain language for **StageScore**, a BackingScore product (https://backingscore.com).  
 Implementation details do not belong here — only terms and meanings.
 
 ## Language

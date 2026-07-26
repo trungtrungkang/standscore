@@ -13,7 +13,7 @@
 
 ## Problem
 
-ScorePDF lets musicians run the app chrome in **dark mode** and pick a **theme color** so Library / menus / toolbars match stage lighting and personal taste. StandScore currently ships a single light Material theme. Page tint (0025) already covers Score pages; this slice covers **app chrome**.
+ScorePDF lets musicians run the app chrome in **dark mode** and pick a **theme color** so Library / menus / toolbars match stage lighting and personal taste. StageScore currently ships a single light Material theme. Page tint (0025) already covers Score pages; this slice covers **app chrome**.
 
 ## Outcome
 

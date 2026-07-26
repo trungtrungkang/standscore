@@ -8,25 +8,25 @@
 - **Depends on Specs:** 0026 (done)
 - **Parity IDs:** P2.11
 - **G3:** accepted (2026-07-26)
-- **G3 notes:** ZIP = entire `standscore/` tree including app prefs. Restore = **full replace** (not merge). Marker `standscore-backup.json` (format version) required; reject without it. Entry = Library ⋯ Backup / Restore. No in-app backup history.
+- **G3 notes:** ZIP = entire `stagescore/` tree including app prefs. Restore = **full replace** (not merge). Marker `stagescore-backup.json` (format version) required; reject without it. Entry = Library ⋯ Backup / Restore. No in-app backup history.
 - **G4:** pass (2026-07-26)
 
 ## Problem
 
-Musicians need a portable copy of their Library when changing devices or before a risky experiment. ScorePDF backs up and restores via a **ZIP** shared out of the app. StandScore stores Scores, overlays, Labels, Setlists, and prefs under the local `standscore/` tree but has no export/import of that tree yet.
+Musicians need a portable copy of their Library when changing devices or before a risky experiment. ScorePDF backs up and restores via a **ZIP** shared out of the app. StageScore stores Scores, overlays, Labels, Setlists, and prefs under the local `stagescore/` tree but has no export/import of that tree yet.
 
 ## Outcome
 
-From the Library, the user can **Backup** (build a ZIP of Library data and share it) and **Restore** (pick a StandScore ZIP and replace local Library data). After restore, Scores / overlays / Labels / Setlists match the backup.
+From the Library, the user can **Backup** (build a ZIP of Library data and share it) and **Restore** (pick a StageScore ZIP and replace local Library data). After restore, Scores / overlays / Labels / Setlists match the backup.
 
 ## In scope
 
-- Backup: zip the `standscore/` library tree → share sheet (Files / AirDrop / Drive…)
+- Backup: zip the `stagescore/` library tree → share sheet (Files / AirDrop / Drive…)
 - Restore: pick a `.zip` → confirm overwrite → replace library data → reload Library UI
-- Include: PDFs, annotations, bookmarks, jump links, page orders, Labels, Setlists, library manifest, app prefs under `standscore/`
+- Include: PDFs, annotations, bookmarks, jump links, page orders, Labels, Setlists, library manifest, app prefs under `stagescore/`
 - Entry: Library AppBar ⋯ (Backup… / Restore…)
 - Clear confirm that restore **overwrites** current data
-- Reject / error clearly on non-StandScore or corrupt ZIPs
+- Reject / error clearly on non-StageScore or corrupt ZIPs
 
 ## Out of scope
 
@@ -62,7 +62,7 @@ Testable checklist (G4):
 - Prefer zip of on-disk tree; do not invent a parallel database
 - TDD: backup bytes round-trip through restore into a temp root
 - Atomic-ish restore: stage extract then swap; avoid half-wiped Library on failure
-- Marker file `standscore-backup.json` with format version
+- Marker file `stagescore-backup.json` with format version
 
 ## Test plan
 

@@ -12,7 +12,7 @@
 
 ## Problem
 
-On stage, Bluetooth pedals and fast taps often fire twice. Musicians skip an extra page. ScorePDF offers a short lockout after each PageTurn; StandScore accepts every action immediately.
+On stage, Bluetooth pedals and fast taps often fire twice. Musicians skip an extra page. ScorePDF offers a short lockout after each PageTurn; StageScore accepts every action immediately.
 
 ## Outcome
 
@@ -22,7 +22,7 @@ After a successful PageTurn in PdfMode, further PageTurn inputs are ignored for 
 
 - Page turn delay duration (ScorePDF-style presets or a small set of options, e.g. Off / 0.3s / 0.5s / 1.0s — exact labels OK to refine in UX notes)
 - Scope toggle: **all PageTurn inputs** vs **pedal/keyboard only** (tap/swipe still immediate when pedal-only)
-- Persist prefs with existing PageTurn prefs (or adjacent JSON under `standscore/`)
+- Persist prefs with existing PageTurn prefs (or adjacent JSON under `stagescore/`)
 - Apply lockout after next/prev from tap, swipe, pedal/keyboard, and single-page slider programmatic turns
 - Draw mode unchanged (keys already ignored)
 

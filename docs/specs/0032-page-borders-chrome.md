@@ -13,7 +13,7 @@
 
 ## Problem
 
-On tablets with notches / Dynamic Island / home indicators, Score pages can sit under system chrome or waste space with padding. ScorePDF lets musicians toggle **page borders** (thickness + color) and choose **Show status bar** / **Avoid notches and bars**. StandScore PdfMode has no controls for page frame or system-inset policy.
+On tablets with notches / Dynamic Island / home indicators, Score pages can sit under system chrome or waste space with padding. ScorePDF lets musicians toggle **page borders** (thickness + color) and choose **Show status bar** / **Avoid notches and bars**. StageScore PdfMode has no controls for page frame or system-inset policy.
 
 ## Outcome
 

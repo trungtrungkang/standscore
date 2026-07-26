@@ -13,7 +13,7 @@
 
 ## Problem
 
-On the stand, PdfMode still looks like a settings app: an `AppBar` (title, Draw, ⋯) is glued to the top and a `PageNavBar` (page label + scrubber) to the bottom of every Score, on every layout, at all times. They eat vertical space that the Score needs, and they put editing affordances in the musician’s eyeline during a piece. Spec 0015 deliberately cut immersive chrome (“StandScore keeps chrome visible”) because no reveal path existed yet — but 0015 also shipped **GestureMap**, whose `showChrome` action and “at least one input must be Show menu” rule now guarantee that reveal path. Roadmap B1 reopens the cut.
+On the stand, PdfMode still looks like a settings app: an `AppBar` (title, Draw, ⋯) is glued to the top and a `PageNavBar` (page label + scrubber) to the bottom of every Score, on every layout, at all times. They eat vertical space that the Score needs, and they put editing affordances in the musician’s eyeline during a piece. Spec 0015 deliberately cut immersive chrome (“StageScore keeps chrome visible”) because no reveal path existed yet — but 0015 also shipped **GestureMap**, whose `showChrome` action and “at least one input must be Show menu” rule now guarantee that reveal path. Roadmap B1 reopens the cut.
 
 ## Outcome
 

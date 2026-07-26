@@ -1,4 +1,4 @@
-# StandScore improvement roadmap (post–P2.15)
+# StageScore improvement roadmap (post–P2.15)
 
 **Status:** accepted (Orchestrator 2026-07-26)  
 **Date:** 2026-07-26  

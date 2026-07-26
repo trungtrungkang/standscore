@@ -1,6 +1,6 @@
 # Product Vision
 
-**Product name:** StandScore  
+**Product name:** StageScore  
 **Publisher:** BackingScore ([backingscore.com](https://backingscore.com))  
 **Bundle ID:** `com.backingscore.scoreapp` *(ADR 0009)*  
 **Status:** accepted (G0 — Human Orchestrator 2026-07-22)  
@@ -10,7 +10,7 @@
 
 ## One-liner
 
-**StandScore** (by **BackingScore**) is a multi-platform sheet music app that **first matches ScorePDF-class PDF performance UX**, then adds **Smart Score** (MusicXML), practice Transport, and **BackingTrack** play-along — orchestrated by a human, built primarily by AI against locked specs.
+**StageScore** (by **BackingScore**) is a multi-platform sheet music app that **first matches ScorePDF-class PDF performance UX**, then adds **Smart Score** (MusicXML), practice Transport, and **BackingTrack** play-along — orchestrated by a human, built primarily by AI against locked specs.
 
 ---
 
@@ -95,7 +95,7 @@ Parity IDs and tracking: [`SCOREPDF-PARITY.md`](./SCOREPDF-PARITY.md).
 
 ## Open product questions (need Human)
 
-1. ~~Product name / publisher / bundle ID?~~ → **StandScore** by **BackingScore**; `com.backingscore.scoreapp` (ADR 0009). Domain/trademark checks still advised before store submit.
+1. ~~Product name / publisher / bundle ID?~~ → **StageScore** by **BackingScore**; `com.backingscore.scoreapp` (ADR 0009). Domain/trademark checks still advised before store submit.
 2. ~~Ship order PDF-first vs Smart-first?~~ → **Decided: PDF / ScorePDF first (ADR 0008)**
 3. Must offline work with zero network always? (PDF phase: default yes)
 4. OMR: commercial API vs self-host? (post-parity)

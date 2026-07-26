@@ -13,7 +13,7 @@
 
 ## Problem
 
-With a growing Library, finding a Score by scrolling is slow. ScorePDF lets musicians **search by title** and also find Scores via **Bookmark** titles — StandScore needs the same discoverability without leaving the Library.
+With a growing Library, finding a Score by scrolling is slow. ScorePDF lets musicians **search by title** and also find Scores via **Bookmark** titles — StageScore needs the same discoverability without leaving the Library.
 
 ## Outcome
 
