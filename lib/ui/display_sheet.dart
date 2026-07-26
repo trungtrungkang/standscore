@@ -12,13 +12,18 @@ Future<void> showDisplaySheet({
   required BuildContext context,
   required DisplayPrefs prefs,
   required ValueChanged<DisplayPrefs> onChanged,
+  required String performanceModeHint,
 }) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
-      return _DisplaySheet(initial: prefs, onChanged: onChanged);
+      return _DisplaySheet(
+        initial: prefs,
+        onChanged: onChanged,
+        performanceModeHint: performanceModeHint,
+      );
     },
   );
 }
@@ -27,10 +32,14 @@ class _DisplaySheet extends StatefulWidget {
   const _DisplaySheet({
     required this.initial,
     required this.onChanged,
+    required this.performanceModeHint,
   });
 
   final DisplayPrefs initial;
   final ValueChanged<DisplayPrefs> onChanged;
+
+  /// Names the user's own reveal gestures (Spec 0034).
+  final String performanceModeHint;
 
   @override
   State<_DisplaySheet> createState() => _DisplaySheetState();
@@ -125,6 +134,15 @@ class _DisplaySheetState extends State<_DisplaySheet> {
           children: [
             Text('Display', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Performance mode'),
+              subtitle: Text(widget.performanceModeHint),
+              isThreeLine: true,
+              value: _prefs.performanceMode,
+              onChanged: (v) => _update(_prefs.copyWith(performanceMode: v)),
+            ),
+            const Divider(),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Page border'),

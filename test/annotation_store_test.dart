@@ -25,10 +25,13 @@ void main() {
   test('addStroke stores stroke; undo removes last', () {
     final store = AnnotationStore();
     store.addStroke(penStroke(id: '1', page: 1));
-    store.addStroke(penStroke(id: '2', page: 2, points: const [
-      Offset(0.3, 0.3),
-      Offset(0.4, 0.4),
-    ]));
+    store.addStroke(
+      penStroke(
+        id: '2',
+        page: 2,
+        points: const [Offset(0.3, 0.3), Offset(0.4, 0.4)],
+      ),
+    );
 
     expect(store.length, 2);
     expect(store.strokesForPage(1), hasLength(1));
@@ -64,16 +67,10 @@ void main() {
   test('eraseAlong removes hit strokes and is undoable', () {
     final store = AnnotationStore();
     store.addStroke(
-      penStroke(
-        id: 'keep',
-        points: const [Offset(0.8, 0.8), Offset(0.9, 0.9)],
-      ),
+      penStroke(id: 'keep', points: const [Offset(0.8, 0.8), Offset(0.9, 0.9)]),
     );
     store.addStroke(
-      penStroke(
-        id: 'hit',
-        points: const [Offset(0.1, 0.1), Offset(0.2, 0.2)],
-      ),
+      penStroke(id: 'hit', points: const [Offset(0.1, 0.1), Offset(0.2, 0.2)]),
     );
 
     final removed = store.eraseAlong(
@@ -112,8 +109,14 @@ void main() {
     );
     expect(pathHitsStroke(const [Offset(0.5, 0.5)], stroke), isTrue);
     expect(pathHitsStroke(const [Offset(0.5, 0.9)], stroke), isFalse);
-    expect(distanceToSegment(const Offset(0.5, 0.6), const Offset(0, 0.5),
-        const Offset(1, 0.5)), closeTo(0.1, 1e-9));
+    expect(
+      distanceToSegment(
+        const Offset(0.5, 0.6),
+        const Offset(0, 0.5),
+        const Offset(1, 0.5),
+      ),
+      closeTo(0.1, 1e-9),
+    );
   });
 
   group('stamps (0019)', () {
@@ -193,11 +196,13 @@ void main() {
 
     test('round-trips per Score', () async {
       final store = AnnotationStore();
-      store.addStroke(store.createStroke(
-        pageNumber: 1,
-        points: const [Offset(0.1, 0.2), Offset(0.3, 0.4)],
-        tool: DrawTool.marker,
-      ));
+      store.addStroke(
+        store.createStroke(
+          pageNumber: 1,
+          points: const [Offset(0.1, 0.2), Offset(0.3, 0.4)],
+          tool: DrawTool.marker,
+        ),
+      );
 
       final a = AnnotationPersistence(root: root, scoreId: 'score-a');
       final b = AnnotationPersistence(root: root, scoreId: 'score-b');
@@ -220,21 +225,27 @@ void main() {
 
     test('round-trips stamps with strokes', () async {
       final store = AnnotationStore();
-      store.addStroke(store.createStroke(
-        pageNumber: 1,
-        points: const [Offset(0.1, 0.1), Offset(0.2, 0.2)],
-        tool: DrawTool.pen,
-      ));
-      store.addStamp(store.createStamp(
-        pageNumber: 1,
-        kind: StampKind.text,
-        center: const Offset(0.3, 0.4),
-        text: 'DS',
-        color: const Color(0xFFE11D48),
-      ));
+      store.addStroke(
+        store.createStroke(
+          pageNumber: 1,
+          points: const [Offset(0.1, 0.1), Offset(0.2, 0.2)],
+          tool: DrawTool.pen,
+        ),
+      );
+      store.addStamp(
+        store.createStamp(
+          pageNumber: 1,
+          kind: StampKind.text,
+          center: const Offset(0.3, 0.4),
+          text: 'DS',
+          color: const Color(0xFFE11D48),
+        ),
+      );
 
-      final persistence =
-          AnnotationPersistence(root: root, scoreId: 'score-stamps');
+      final persistence = AnnotationPersistence(
+        root: root,
+        scoreId: 'score-stamps',
+      );
       await persistence.save(store);
 
       final loaded = AnnotationStore();
@@ -259,8 +270,10 @@ void main() {
 }
 ''');
       final loaded = AnnotationStore();
-      await AnnotationPersistence(root: root, scoreId: 'future')
-          .loadInto(loaded);
+      await AnnotationPersistence(
+        root: root,
+        scoreId: 'future',
+      ).loadInto(loaded);
       expect(loaded.stampCount, 1);
       expect(loaded.stamps.single.kind, StampKind.dynamicP);
     });

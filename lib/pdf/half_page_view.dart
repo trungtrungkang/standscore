@@ -8,6 +8,7 @@ import 'package:standscore/layout/half_page.dart';
 import 'package:standscore/layout/page_color_filter.dart';
 import 'package:standscore/layout/pdf_layout_mode.dart';
 import 'package:standscore/pageorder/page_order.dart';
+import 'package:standscore/pdf/pdf_surface.dart';
 import 'package:standscore/pdf/performance_page_slot.dart';
 import 'package:standscore/pdf/zoom_toggle.dart';
 
@@ -105,7 +106,8 @@ class HalfPageController extends ChangeNotifier {
 
   int get pageCount => _state?._pageCount ?? 0;
 
-  bool get isReady => _state?._document != null && (_state?._pageCount ?? 0) > 0;
+  bool get isReady =>
+      _state?._document != null && (_state?._pageCount ?? 0) > 0;
 
   Future<void> goToPage(int pageNumber, {required Duration duration}) {
     return _state?._goToPage(pageNumber) ?? Future<void>.value();
@@ -128,8 +130,10 @@ class _HalfPageViewState extends State<HalfPageView> {
     super.initState();
     widget.controller._attach(this);
     _pageCount = widget.pageOrder.length;
-    _pageIndex =
-        (widget.initialPage - 1).clamp(0, _pageCount > 0 ? _pageCount - 1 : 0);
+    _pageIndex = (widget.initialPage - 1).clamp(
+      0,
+      _pageCount > 0 ? _pageCount - 1 : 0,
+    );
     _open();
   }
 
@@ -194,8 +198,10 @@ class _HalfPageViewState extends State<HalfPageView> {
       _error = null;
       _document = null;
       _pageCount = widget.pageOrder.length;
-      _pageIndex = (widget.initialPage - 1)
-          .clamp(0, _pageCount > 0 ? _pageCount - 1 : 0);
+      _pageIndex = (widget.initialPage - 1).clamp(
+        0,
+        _pageCount > 0 ? _pageCount - 1 : 0,
+      );
     });
     previous?.dispose();
     try {
@@ -261,7 +267,8 @@ class _HalfPageViewState extends State<HalfPageView> {
           drawEnabled: false,
           onAnnotateChanged: () {},
           colorFilterMode: widget.colorFilterMode,
-          pageScale: widget.resolvePageScale?.call(entry.sourcePage) ??
+          pageScale:
+              widget.resolvePageScale?.call(entry.sourcePage) ??
               widget.pageScale,
           pageBorderEnabled: widget.pageBorderEnabled,
           pageBorderWidth: widget.pageBorderWidth,
@@ -309,8 +316,8 @@ class _HalfPageViewState extends State<HalfPageView> {
       onSelectedStampChanged: widget.onSelectedStampChanged,
       annotationsVisible: widget.annotationsVisible,
       colorFilterMode: widget.colorFilterMode,
-      pageScale: widget.resolvePageScale?.call(entry.sourcePage) ??
-          widget.pageScale,
+      pageScale:
+          widget.resolvePageScale?.call(entry.sourcePage) ?? widget.pageScale,
       pageBorderEnabled: widget.pageBorderEnabled,
       pageBorderWidth: widget.pageBorderWidth,
       pageBorderColor: widget.pageBorderColor,
@@ -324,8 +331,9 @@ class _HalfPageViewState extends State<HalfPageView> {
   Widget _separatorHandle({required bool verticalBar}) {
     final theme = Theme.of(context);
     final useBorder = widget.pageBorderEnabled;
-    final lineColor =
-        useBorder ? widget.pageBorderColor : theme.colorScheme.outline;
+    final lineColor = useBorder
+        ? widget.pageBorderColor
+        : theme.colorScheme.outline;
     final lineWidth = useBorder ? widget.pageBorderWidth : 1.0;
     return MouseRegion(
       cursor: verticalBar
@@ -359,7 +367,7 @@ class _HalfPageViewState extends State<HalfPageView> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final bg = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final bg = pdfSurfaceColor(context, filter: widget.colorFilterMode);
     final topBottom = widget.layoutMode == PdfLayoutMode.halfPageTopBottom;
     final ratio = clampHalfPageSeparatorRatio(widget.separatorRatio);
 

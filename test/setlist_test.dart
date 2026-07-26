@@ -26,17 +26,20 @@ void main() {
       expect(list.id, 'sl1');
     });
 
-    test('addScore ignores empty id and duplicate adjacent? allows same score twice', () {
-      final list = Setlist(
-        id: 'sl1',
-        title: 'Gig',
-        scoreIds: const ['a'],
-        createdAt: DateTime.utc(2026, 7, 26),
-      ).addScore('a');
-      // Same Score may appear twice (encore) — ScorePDF-style ordered refs.
-      expect(list.scoreIds, ['a', 'a']);
-      expect(list.addScore('').scoreIds, ['a', 'a']);
-    });
+    test(
+      'addScore ignores empty id and duplicate adjacent? allows same score twice',
+      () {
+        final list = Setlist(
+          id: 'sl1',
+          title: 'Gig',
+          scoreIds: const ['a'],
+          createdAt: DateTime.utc(2026, 7, 26),
+        ).addScore('a');
+        // Same Score may appear twice (encore) — ScorePDF-style ordered refs.
+        expect(list.scoreIds, ['a', 'a']);
+        expect(list.addScore('').scoreIds, ['a', 'a']);
+      },
+    );
 
     test('json round-trip', () {
       final list = Setlist(

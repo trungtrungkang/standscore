@@ -43,10 +43,14 @@ Rect moveJumpLinkNormRect(Rect norm, Offset pixelDelta, Size pageSize) {
   if (pageSize.width <= 0 || pageSize.height <= 0) return norm;
   final width = norm.width.clamp(0.0, 1.0);
   final height = norm.height.clamp(0.0, 1.0);
-  final left = (norm.left + pixelDelta.dx / pageSize.width)
-      .clamp(0.0, 1.0 - width);
-  final top = (norm.top + pixelDelta.dy / pageSize.height)
-      .clamp(0.0, 1.0 - height);
+  final left = (norm.left + pixelDelta.dx / pageSize.width).clamp(
+    0.0,
+    1.0 - width,
+  );
+  final top = (norm.top + pixelDelta.dy / pageSize.height).clamp(
+    0.0,
+    1.0 - height,
+  );
   return Rect.fromLTWH(left, top, width, height);
 }
 

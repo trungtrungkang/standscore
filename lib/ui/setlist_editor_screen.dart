@@ -75,12 +75,7 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit setlist'),
-        actions: [
-          TextButton(
-            onPressed: _done,
-            child: const Text('Done'),
-          ),
-        ],
+        actions: [TextButton(onPressed: _done, child: const Text('Done'))],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addScores,
@@ -102,9 +97,7 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
           ),
           Expanded(
             child: _setlist.scoreIds.isEmpty
-                ? const Center(
-                    child: Text('No scores yet — tap Add scores.'),
-                  )
+                ? const Center(child: Text('No scores yet — tap Add scores.'))
                 : ReorderableListView.builder(
                     padding: const EdgeInsets.only(bottom: 88),
                     itemCount: _setlist.scoreIds.length,

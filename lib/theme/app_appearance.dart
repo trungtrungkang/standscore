@@ -1,32 +1,25 @@
 import 'package:flutter/material.dart';
 
 /// App chrome appearance mode (Spec 0026 / P2.10).
-enum AppThemeMode {
-  system,
-  light,
-  dark,
-}
+enum AppThemeMode { system, light, dark }
 
 extension AppThemeModeX on AppThemeMode {
   String get label => switch (this) {
-        AppThemeMode.system => 'System',
-        AppThemeMode.light => 'Light',
-        AppThemeMode.dark => 'Dark',
-      };
+    AppThemeMode.system => 'System',
+    AppThemeMode.light => 'Light',
+    AppThemeMode.dark => 'Dark',
+  };
 
   ThemeMode get themeMode => switch (this) {
-        AppThemeMode.system => ThemeMode.system,
-        AppThemeMode.light => ThemeMode.light,
-        AppThemeMode.dark => ThemeMode.dark,
-      };
+    AppThemeMode.system => ThemeMode.system,
+    AppThemeMode.light => ThemeMode.light,
+    AppThemeMode.dark => ThemeMode.dark,
+  };
 }
 
 /// Persisted app chrome theme: mode + Material seed accent.
 class AppAppearance {
-  const AppAppearance({
-    required this.mode,
-    required this.seedColorValue,
-  });
+  const AppAppearance({required this.mode, required this.seedColorValue});
 
   /// Brand teal used for splash / launcher (`#0D8B86`).
   static const int brandTealValue = 0xFF0D8B86;
@@ -64,10 +57,7 @@ class AppAppearance {
     );
   }
 
-  AppAppearance copyWith({
-    AppThemeMode? mode,
-    int? seedColorValue,
-  }) {
+  AppAppearance copyWith({AppThemeMode? mode, int? seedColorValue}) {
     return AppAppearance(
       mode: mode ?? this.mode,
       seedColorValue: seedColorValue ?? this.seedColorValue,

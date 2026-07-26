@@ -13,10 +13,7 @@ void main() {
         resolveVerticalEdgeBand(localY: 10, viewerHeight: h),
         VerticalEdgeBand.top,
       );
-      expect(
-        resolveVerticalEdgeBand(localY: 500, viewerHeight: h),
-        isNull,
-      );
+      expect(resolveVerticalEdgeBand(localY: 500, viewerHeight: h), isNull);
       expect(
         resolveVerticalEdgeBand(localY: 990, viewerHeight: h),
         VerticalEdgeBand.bottom,
@@ -39,17 +36,54 @@ void main() {
       expect(validateGestureMap(const GestureMap()), isTrue);
     });
 
+    test('bottom edge defaults to Off (Spec 0034)', () {
+      const map = GestureMap();
+      expect(map.bottomEdge, GestureMapAction.disabled);
+      expect(map.longPress, GestureMapAction.showChrome);
+      expect(map.topEdge, GestureMapAction.showChrome);
+    });
+
+    test('a saved Draw assignment reads back as Off (Spec 0034)', () {
+      final map = GestureMap.fromJson(const {
+        'longPress': 'showChrome',
+        'topEdge': 'enterDraw',
+        'bottomEdge': 'enterDraw',
+      });
+      expect(map.topEdge, GestureMapAction.disabled);
+      expect(map.bottomEdge, GestureMapAction.disabled);
+      expect(map.longPress, GestureMapAction.showChrome);
+    });
+
     test('rejects map with no showChrome', () {
       expect(
         validateGestureMap(
           const GestureMap(
             longPress: GestureMapAction.disabled,
-            topEdge: GestureMapAction.enterDraw,
+            topEdge: GestureMapAction.disabled,
             bottomEdge: GestureMapAction.disabled,
           ),
         ),
         isFalse,
       );
+    });
+  });
+
+  group('gestureMapRevealHint', () {
+    test('names the default reveal inputs', () {
+      final hint = gestureMapRevealHint(const GestureMap());
+      expect(hint, contains('long-press or tap the top edge'));
+    });
+
+    test('names a single reveal input', () {
+      final hint = gestureMapRevealHint(
+        const GestureMap(
+          longPress: GestureMapAction.disabled,
+          topEdge: GestureMapAction.disabled,
+          bottomEdge: GestureMapAction.showChrome,
+        ),
+      );
+      expect(hint, contains('tap the bottom edge'));
+      expect(hint, isNot(contains('long-press')));
     });
   });
 
@@ -60,15 +94,15 @@ void main() {
     await store.save(
       const PageTurnPrefs(
         gestureMap: GestureMap(
-          longPress: GestureMapAction.showChrome,
-          topEdge: GestureMapAction.enterDraw,
-          bottomEdge: GestureMapAction.disabled,
+          longPress: GestureMapAction.disabled,
+          topEdge: GestureMapAction.showChrome,
+          bottomEdge: GestureMapAction.showChrome,
         ),
       ),
     );
     final loaded = await store.load();
-    expect(loaded.gestureMap.longPress, GestureMapAction.showChrome);
-    expect(loaded.gestureMap.topEdge, GestureMapAction.enterDraw);
-    expect(loaded.gestureMap.bottomEdge, GestureMapAction.disabled);
+    expect(loaded.gestureMap.longPress, GestureMapAction.disabled);
+    expect(loaded.gestureMap.topEdge, GestureMapAction.showChrome);
+    expect(loaded.gestureMap.bottomEdge, GestureMapAction.showChrome);
   });
 }

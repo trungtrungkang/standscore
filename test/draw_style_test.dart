@@ -18,10 +18,10 @@ void main() {
 
     test('collapses to endpoints when straight', () {
       const raw = [Offset(0.1, 0.1), Offset(0.2, 0.3), Offset(0.8, 0.9)];
-      expect(
-        pointsForStroke(raw: raw, straightLine: true),
-        const [Offset(0.1, 0.1), Offset(0.8, 0.9)],
-      );
+      expect(pointsForStroke(raw: raw, straightLine: true), const [
+        Offset(0.1, 0.1),
+        Offset(0.8, 0.9),
+      ]);
     });
   });
 

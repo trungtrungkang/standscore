@@ -7,7 +7,7 @@ import 'package:standscore/annotation/draw_style.dart';
 /// App-wide draw style under `standscore/draw_style_prefs.json`.
 class DrawStylePrefsStore {
   DrawStylePrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'draw_style_prefs.json'));
+    : _file = File(p.join(root.path, 'draw_style_prefs.json'));
 
   final File _file;
 

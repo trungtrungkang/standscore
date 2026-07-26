@@ -7,7 +7,7 @@ import 'package:standscore/layout/page_color_filter.dart';
 /// App-level page color filter under `standscore/page_color_filter_prefs.json`.
 class PageColorFilterPrefsStore {
   PageColorFilterPrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'page_color_filter_prefs.json'));
+    : _file = File(p.join(root.path, 'page_color_filter_prefs.json'));
 
   final File _file;
 

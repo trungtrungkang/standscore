@@ -1,12 +1,7 @@
 import 'dart:ui';
 
 /// Active draw tool in PdfMode Draw mode (Specs 0017 / 0018).
-enum DrawTool {
-  pen,
-  marker,
-  eraser,
-  eyedropper,
-}
+enum DrawTool { pen, marker, eraser, eyedropper }
 
 /// Defaults and eraser geometry.
 abstract final class DrawToolPresets {
@@ -20,16 +15,16 @@ abstract final class DrawToolPresets {
   static const double eraserRadius = 0.028;
 
   static Color colorFor(DrawTool tool) => switch (tool) {
-        DrawTool.pen || DrawTool.eyedropper => penColor,
-        DrawTool.marker => markerColor,
-        DrawTool.eraser => const Color(0x66FFFFFF),
-      };
+    DrawTool.pen || DrawTool.eyedropper => penColor,
+    DrawTool.marker => markerColor,
+    DrawTool.eraser => const Color(0x66FFFFFF),
+  };
 
   static double widthFor(DrawTool tool) => switch (tool) {
-        DrawTool.pen || DrawTool.eyedropper => penWidth,
-        DrawTool.marker => markerWidth,
-        DrawTool.eraser => eraserRadius * 2,
-      };
+    DrawTool.pen || DrawTool.eyedropper => penWidth,
+    DrawTool.marker => markerWidth,
+    DrawTool.eraser => eraserRadius * 2,
+  };
 
   static bool isInkTool(DrawTool tool) =>
       tool == DrawTool.pen || tool == DrawTool.marker;

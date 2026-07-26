@@ -29,11 +29,7 @@ class JumpLink {
 
   Color get color => Color(colorValue);
 
-  JumpLink copyWith({
-    int? destinationPage,
-    Rect? normRect,
-    int? colorValue,
-  }) {
+  JumpLink copyWith({int? destinationPage, Rect? normRect, int? colorValue}) {
     return JumpLink(
       id: id,
       originPage: originPage,
@@ -45,16 +41,16 @@ class JumpLink {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'originPage': originPage,
-        'destinationPage': destinationPage,
-        'nx': normRect.left,
-        'ny': normRect.top,
-        'nw': normRect.width,
-        'nh': normRect.height,
-        'color': colorValue,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'originPage': originPage,
+    'destinationPage': destinationPage,
+    'nx': normRect.left,
+    'ny': normRect.top,
+    'nw': normRect.width,
+    'nh': normRect.height,
+    'color': colorValue,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory JumpLink.fromJson(Map<String, dynamic> json) {
     return JumpLink(

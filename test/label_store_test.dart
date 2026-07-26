@@ -7,11 +7,11 @@ import 'package:standscore/label/label_store.dart';
 import 'package:standscore/library/score.dart';
 
 Score _score(String id) => Score(
-      id: id,
-      title: id,
-      relativePath: 'scores/$id.pdf',
-      createdAt: DateTime.utc(2026),
-    );
+  id: id,
+  title: id,
+  relativePath: 'scores/$id.pdf',
+  createdAt: DateTime.utc(2026),
+);
 
 void main() {
   group('filterScoresByLabels', () {

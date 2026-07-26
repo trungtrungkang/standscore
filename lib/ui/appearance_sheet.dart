@@ -11,19 +11,13 @@ Future<void> showAppearanceSheet({
     showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
-      return _AppearanceSheet(
-        initial: appearance,
-        onChanged: onChanged,
-      );
+      return _AppearanceSheet(initial: appearance, onChanged: onChanged);
     },
   );
 }
 
 class _AppearanceSheet extends StatefulWidget {
-  const _AppearanceSheet({
-    required this.initial,
-    required this.onChanged,
-  });
+  const _AppearanceSheet({required this.initial, required this.onChanged});
 
   final AppAppearance initial;
   final ValueChanged<AppAppearance> onChanged;
@@ -72,10 +66,7 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
             SegmentedButton<AppThemeMode>(
               segments: [
                 for (final mode in AppThemeMode.values)
-                  ButtonSegment(
-                    value: mode,
-                    label: Text(mode.label),
-                  ),
+                  ButtonSegment(value: mode, label: Text(mode.label)),
               ],
               selected: {_current.mode},
               onSelectionChanged: (selected) {
@@ -143,7 +134,8 @@ class _AccentSwatch extends StatelessWidget {
             ? Icon(
                 Icons.check,
                 size: 20,
-                color: ThemeData.estimateBrightnessForColor(color) ==
+                color:
+                    ThemeData.estimateBrightnessForColor(color) ==
                         Brightness.dark
                     ? Colors.white
                     : Colors.black,

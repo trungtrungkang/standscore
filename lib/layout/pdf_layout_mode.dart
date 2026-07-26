@@ -26,6 +26,17 @@ enum PdfLayoutMode {
   halfPageLeftRight,
 }
 
+extension PdfLayoutModeX on PdfLayoutMode {
+  String get label => switch (this) {
+    PdfLayoutMode.single => 'Single page',
+    PdfLayoutMode.twoPage => 'Two pages',
+    PdfLayoutMode.fitWidth => 'Fit width (scroll)',
+    PdfLayoutMode.fitHeight => 'Fit height (scroll)',
+    PdfLayoutMode.halfPageTopBottom => 'Half page (top/bottom)',
+    PdfLayoutMode.halfPageLeftRight => 'Half page (left/right)',
+  };
+}
+
 /// pdfrx continuous layouts. Discrete modes use dedicated widgets.
 PdfPageLayoutFunction layoutPagesFor(PdfLayoutMode mode) {
   assert(
@@ -33,14 +44,19 @@ PdfPageLayoutFunction layoutPagesFor(PdfLayoutMode mode) {
     'Single/half-page modes use dedicated viewers, not layoutPagesFor',
   );
   return switch (mode) {
-    PdfLayoutMode.single => (pages, params) =>
-        _layoutVertical(pages, params, gap: params.margin),
-    PdfLayoutMode.fitWidth => (pages, params) =>
-        _layoutVertical(pages, params, gap: params.margin),
+    PdfLayoutMode.single => (pages, params) => _layoutVertical(
+      pages,
+      params,
+      gap: params.margin,
+    ),
+    PdfLayoutMode.fitWidth => (pages, params) => _layoutVertical(
+      pages,
+      params,
+      gap: params.margin,
+    ),
     PdfLayoutMode.fitHeight => _layoutHorizontal,
     PdfLayoutMode.twoPage => _layoutTwoPage,
-    PdfLayoutMode.halfPageTopBottom ||
-    PdfLayoutMode.halfPageLeftRight =>
+    PdfLayoutMode.halfPageTopBottom || PdfLayoutMode.halfPageLeftRight =>
       (pages, params) => _layoutVertical(pages, params, gap: params.margin),
   };
 }
@@ -86,7 +102,9 @@ PdfPageLayout _layoutTwoPage(List<PdfPage> pages, PdfViewerParams params) {
     final right = i + 1 < pages.length ? pages[i + 1] : null;
     final rowHeight = max(left.height, right?.height ?? 0);
     final rowWidth =
-        left.width + (right?.width ?? 0) + params.margin * (right == null ? 2 : 3);
+        left.width +
+        (right?.width ?? 0) +
+        params.margin * (right == null ? 2 : 3);
 
     docWidth = max(docWidth, rowWidth);
 

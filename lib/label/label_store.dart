@@ -7,11 +7,9 @@ import 'package:uuid/uuid.dart';
 
 /// Global Label catalog + Score assignments under `standscore/labels.json`.
 class LabelStore {
-  LabelStore({
-    required Directory root,
-    Uuid? uuid,
-  })  : _file = File(p.join(root.path, 'labels.json')),
-        _uuid = uuid ?? const Uuid();
+  LabelStore({required Directory root, Uuid? uuid})
+    : _file = File(p.join(root.path, 'labels.json')),
+      _uuid = uuid ?? const Uuid();
 
   final File _file;
   final Uuid _uuid;
@@ -23,9 +21,9 @@ class LabelStore {
 
   /// scoreId → label ids.
   Map<String, Set<String>> get assignments => {
-        for (final e in _assignments.entries)
-          e.key: Set<String>.unmodifiable(e.value),
-      };
+    for (final e in _assignments.entries)
+      e.key: Set<String>.unmodifiable(e.value),
+  };
 
   Set<String> labelsForScore(String scoreId) =>
       Set<String>.unmodifiable(_assignments[scoreId] ?? const {});
@@ -38,9 +36,7 @@ class LabelStore {
     }
     final json = jsonDecode(await _file.readAsString()) as Map<String, dynamic>;
     final list = json['labels'] as List<dynamic>? ?? const [];
-    _labels = [
-      for (final e in list) Label.fromJson(e as Map<String, dynamic>),
-    ];
+    _labels = [for (final e in list) Label.fromJson(e as Map<String, dynamic>)];
     _assignments.clear();
     final raw = json['assignments'] as Map<String, dynamic>? ?? const {};
     for (final entry in raw.entries) {
@@ -90,7 +86,10 @@ class LabelStore {
 
   /// Hard-delete Label and remove from all Score assignments.
   Future<void> delete(String id) async {
-    _labels = [for (final l in _labels) if (l.id != id) l];
+    _labels = [
+      for (final l in _labels)
+        if (l.id != id) l,
+    ];
     for (final scoreId in _assignments.keys.toList()) {
       final next = {..._assignments[scoreId]!}..remove(id);
       if (next.isEmpty) {

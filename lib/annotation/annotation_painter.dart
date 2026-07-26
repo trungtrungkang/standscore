@@ -83,8 +83,9 @@ class AnnotationPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..isAntiAlias = true
-      ..blendMode =
-          tool == DrawTool.marker ? BlendMode.multiply : BlendMode.srcOver;
+      ..blendMode = tool == DrawTool.marker
+          ? BlendMode.multiply
+          : BlendMode.srcOver;
 
     final path = Path();
     path.moveTo(

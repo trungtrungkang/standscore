@@ -32,7 +32,8 @@ class Setlist {
     );
   }
 
-  Setlist rename(String title) => copyWith(title: title.trim().isEmpty ? this.title : title.trim());
+  Setlist rename(String title) =>
+      copyWith(title: title.trim().isEmpty ? this.title : title.trim());
 
   Setlist addScore(String scoreId) {
     if (scoreId.isEmpty) return this;
@@ -47,7 +48,10 @@ class Setlist {
 
   /// Removes every occurrence of [scoreId] (Spec 0028).
   Setlist removeScoreId(String scoreId) {
-    final next = [for (final id in scoreIds) if (id != scoreId) id];
+    final next = [
+      for (final id in scoreIds)
+        if (id != scoreId) id,
+    ];
     if (next.length == scoreIds.length) return this;
     return copyWith(scoreIds: List.unmodifiable(next));
   }
@@ -63,12 +67,12 @@ class Setlist {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'scoreIds': scoreIds,
-        'createdAt': createdAt.toIso8601String(),
-        'lastOpenedAt': lastOpenedAt?.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'scoreIds': scoreIds,
+    'createdAt': createdAt.toIso8601String(),
+    'lastOpenedAt': lastOpenedAt?.toIso8601String(),
+  };
 
   factory Setlist.fromJson(Map<String, dynamic> json) {
     final raw = json['scoreIds'] as List<dynamic>? ?? const [];

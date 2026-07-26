@@ -19,8 +19,10 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "9.0.1" apply false
-    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    // AGP 9 + file_picker 11 skips kotlin-android and never compiles FilePickerPlugin.
+    // Stay on 8.9 until file_picker ships a stable AGP-9 / built-in-Kotlin build.
+    id("com.android.application") version "8.11.1" apply false
+    id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 
 include(":app")

@@ -28,10 +28,9 @@ class LibraryBackup {
     // Marker lives on disk so restore leaves it in the library tree.
     final marker = File(p.join(libraryRoot.path, markerFileName));
     await marker.writeAsString(
-      const JsonEncoder.withIndent('  ').convert({
-        'format': formatId,
-        'version': formatVersion,
-      }),
+      const JsonEncoder.withIndent(
+        '  ',
+      ).convert({'format': formatId, 'version': formatVersion}),
     );
 
     final encoder = ZipFileEncoder()..create(zipFile.path);
@@ -56,7 +55,9 @@ class LibraryBackup {
     final parent = libraryRoot.parent;
     await parent.create(recursive: true);
     final stamp = DateTime.now().millisecondsSinceEpoch;
-    final staging = Directory(p.join(parent.path, '.standscore_restore_$stamp'));
+    final staging = Directory(
+      p.join(parent.path, '.standscore_restore_$stamp'),
+    );
     final aside = Directory(p.join(parent.path, '.standscore_aside_$stamp'));
 
     if (await staging.exists()) {
@@ -100,7 +101,8 @@ class LibraryBackup {
       );
     }
     try {
-      final json = jsonDecode(await marker.readAsString()) as Map<String, dynamic>;
+      final json =
+          jsonDecode(await marker.readAsString()) as Map<String, dynamic>;
       if (json['format'] != formatId) {
         throw const LibraryBackupException(
           'Not a StandScore backup (unknown format).',

@@ -308,7 +308,8 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
             onSelectedStampChanged: widget.onSelectedStampChanged,
             annotationsVisible: widget.annotationsVisible,
             colorFilterMode: widget.colorFilterMode,
-            pageScale: widget.resolvePageScale?.call(
+            pageScale:
+                widget.resolvePageScale?.call(
                   widget.pageOrder.entries[index].sourcePage,
                 ) ??
                 widget.pageScale,

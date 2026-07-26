@@ -11,7 +11,11 @@ void main() {
       LogicalKeyboardKey.arrowUp,
       LogicalKeyboardKey.space,
     ]) {
-      expect(resolvePedalKeyAction(key), PageTurnAction.previous, reason: '$key');
+      expect(
+        resolvePedalKeyAction(key),
+        PageTurnAction.previous,
+        reason: '$key',
+      );
     }
   });
 

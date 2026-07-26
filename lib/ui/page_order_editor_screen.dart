@@ -3,10 +3,7 @@ import 'package:standscore/pageorder/page_order.dart';
 
 /// Full-screen PageOrder editor (Spec 0011).
 class PageOrderEditorScreen extends StatefulWidget {
-  const PageOrderEditorScreen({
-    super.key,
-    required this.initial,
-  });
+  const PageOrderEditorScreen({super.key, required this.initial});
 
   final PageOrder initial;
 

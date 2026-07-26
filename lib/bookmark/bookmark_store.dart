@@ -7,12 +7,9 @@ import 'package:uuid/uuid.dart';
 
 /// Per-Score Bookmark persistence under `standscore/bookmarks/<scoreId>.json`.
 class BookmarkStore {
-  BookmarkStore({
-    required Directory root,
-    required this.scoreId,
-    Uuid? uuid,
-  })  : _file = File(p.join(root.path, 'bookmarks', '$scoreId.json')),
-        _uuid = uuid ?? const Uuid();
+  BookmarkStore({required Directory root, required this.scoreId, Uuid? uuid})
+    : _file = File(p.join(root.path, 'bookmarks', '$scoreId.json')),
+      _uuid = uuid ?? const Uuid();
 
   final String scoreId;
   final File _file;
@@ -33,10 +30,7 @@ class BookmarkStore {
     return bookmarks;
   }
 
-  Future<Bookmark> add({
-    required String title,
-    required int pageNumber,
-  }) async {
+  Future<Bookmark> add({required String title, required int pageNumber}) async {
     final trimmed = title.trim();
     final bookmark = Bookmark(
       id: _uuid.v4(),

@@ -7,8 +7,8 @@ enum JumpLinkEditAction { save, delete }
 class JumpLinkEditResult {
   const JumpLinkEditResult.save(this.link) : action = JumpLinkEditAction.save;
   const JumpLinkEditResult.delete()
-      : action = JumpLinkEditAction.delete,
-        link = null;
+    : action = JumpLinkEditAction.delete,
+      link = null;
 
   final JumpLinkEditAction action;
   final JumpLink? link;
@@ -104,8 +104,10 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
     _colorValue = existing?.colorValue ?? defaultJumpLinkColorValue;
     _sizeScale = existing == null
         ? 1.0
-        : (existing.normRect.width / defaultJumpLinkNormRect().width)
-            .clamp(0.6, 1.8);
+        : (existing.normRect.width / defaultJumpLinkNormRect().width).clamp(
+            0.6,
+            1.8,
+          );
   }
 
   void _save() {
@@ -238,8 +240,7 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
         if (existing != null) ...[
           const SizedBox(height: 8),
           TextButton(
-            onPressed: () =>
-                widget.onResult(const JumpLinkEditResult.delete()),
+            onPressed: () => widget.onResult(const JumpLinkEditResult.delete()),
             child: const Text('Delete'),
           ),
         ],

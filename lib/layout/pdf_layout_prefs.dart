@@ -19,18 +19,17 @@ class PdfLayoutPrefs {
   PdfLayoutPrefs copyWith({
     PdfLayoutMode? mode,
     double? halfPageSeparatorRatio,
-  }) =>
-      PdfLayoutPrefs(
-        mode: mode ?? this.mode,
-        halfPageSeparatorRatio: halfPageSeparatorRatio != null
-            ? clampHalfPageSeparatorRatio(halfPageSeparatorRatio)
-            : this.halfPageSeparatorRatio,
-      );
+  }) => PdfLayoutPrefs(
+    mode: mode ?? this.mode,
+    halfPageSeparatorRatio: halfPageSeparatorRatio != null
+        ? clampHalfPageSeparatorRatio(halfPageSeparatorRatio)
+        : this.halfPageSeparatorRatio,
+  );
 
   Map<String, dynamic> toJson() => {
-        'mode': mode.name,
-        'halfPageSeparatorRatio': halfPageSeparatorRatio,
-      };
+    'mode': mode.name,
+    'halfPageSeparatorRatio': halfPageSeparatorRatio,
+  };
 
   factory PdfLayoutPrefs.fromJson(Map<String, dynamic> json) {
     final ratio = (json['halfPageSeparatorRatio'] as num?)?.toDouble();
@@ -48,7 +47,7 @@ class PdfLayoutPrefs {
 
 class PdfLayoutPrefsStore {
   PdfLayoutPrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'layout_prefs.json'));
+    : _file = File(p.join(root.path, 'layout_prefs.json'));
 
   final File _file;
 

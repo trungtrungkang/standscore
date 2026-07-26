@@ -13,6 +13,7 @@ class PageTurnInteractionLayer extends StatefulWidget {
     required this.reverseHorizontal,
     required this.onAction,
     this.onGestureAction,
+    this.onScoreTap,
     this.pageTurnEnabled = true,
     this.doubleTapZoomEnabled = false,
     this.onDoubleTapZoom,
@@ -27,6 +28,10 @@ class PageTurnInteractionLayer extends StatefulWidget {
 
   /// Non–PageTurn gesture map actions (Spec 0015).
   final ValueChanged<GestureMapAction>? onGestureAction;
+
+  /// Tap on the Score itself — not an edge/long-press GestureMap action.
+  /// Used to dismiss revealed chrome in PerformanceMode (Spec 0034).
+  final VoidCallback? onScoreTap;
 
   /// When false, PageTurn tap/swipe are ignored; Show menu gestures still work.
   final bool pageTurnEnabled;
@@ -68,6 +73,7 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
 
     final link = _linkAt(pos, viewSize);
     if (link != null) {
+      widget.onScoreTap?.call();
       widget.onJumpLinkTap?.call(link);
       return;
     }
@@ -86,6 +92,7 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
       // Off → fall through to PageTurn.
     }
 
+    widget.onScoreTap?.call();
     if (!widget.pageTurnEnabled) return;
     if (widget.prefs.tapMode == PageTurnTapMode.disabled) return;
 
@@ -144,7 +151,9 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         final swipeOn =
-            widget.pageTurnEnabled && widget.prefs.anySwipeEnabled && !_multiTouch;
+            widget.pageTurnEnabled &&
+            widget.prefs.anySwipeEnabled &&
+            !_multiTouch;
         // When ≥2 pointers, ignore PageTurn chrome so pinch reaches the viewer.
         return Listener(
           behavior: HitTestBehavior.translucent,

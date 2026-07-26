@@ -8,12 +8,9 @@ import 'package:uuid/uuid.dart';
 
 /// Per-Score JumpLink persistence under `standscore/jumplinks/<scoreId>.json`.
 class JumpLinkStore {
-  JumpLinkStore({
-    required Directory root,
-    required this.scoreId,
-    Uuid? uuid,
-  })  : _file = File(p.join(root.path, 'jumplinks', '$scoreId.json')),
-        _uuid = uuid ?? const Uuid();
+  JumpLinkStore({required Directory root, required this.scoreId, Uuid? uuid})
+    : _file = File(p.join(root.path, 'jumplinks', '$scoreId.json')),
+      _uuid = uuid ?? const Uuid();
 
   final String scoreId;
   final File _file;
@@ -23,8 +20,9 @@ class JumpLinkStore {
     if (!await _file.exists()) return <JumpLink>[];
     final json = jsonDecode(await _file.readAsString()) as Map<String, dynamic>;
     final list = json['jumpLinks'] as List<dynamic>? ?? const [];
-    final links =
-        list.map((e) => JumpLink.fromJson(e as Map<String, dynamic>)).toList();
+    final links = list
+        .map((e) => JumpLink.fromJson(e as Map<String, dynamic>))
+        .toList();
     links.sort((a, b) {
       final byOrigin = a.originPage.compareTo(b.originPage);
       if (byOrigin != 0) return byOrigin;

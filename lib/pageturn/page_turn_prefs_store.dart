@@ -5,7 +5,8 @@ import 'package:path/path.dart' as p;
 import 'package:standscore/pageturn/page_turn_prefs.dart';
 
 class PageTurnPrefsStore {
-  PageTurnPrefsStore({required Directory root}) : _file = File(p.join(root.path, 'pageturn_prefs.json'));
+  PageTurnPrefsStore({required Directory root})
+    : _file = File(p.join(root.path, 'pageturn_prefs.json'));
 
   final File _file;
 

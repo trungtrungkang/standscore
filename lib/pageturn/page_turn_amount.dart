@@ -34,14 +34,14 @@ class PageTurnStep {
   });
 
   factory PageTurnStep.pages(int pageDelta) => PageTurnStep._(
-        kind: PageTurnStepKind.performancePages,
-        pageDelta: pageDelta < 1 ? 1 : pageDelta,
-      );
+    kind: PageTurnStepKind.performancePages,
+    pageDelta: pageDelta < 1 ? 1 : pageDelta,
+  );
 
   factory PageTurnStep.viewport(double fraction) => PageTurnStep._(
-        kind: PageTurnStepKind.viewportFraction,
-        viewportFraction: fraction,
-      );
+    kind: PageTurnStepKind.viewportFraction,
+    viewportFraction: fraction,
+  );
 
   final PageTurnStepKind kind;
   final int pageDelta;

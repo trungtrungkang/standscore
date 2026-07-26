@@ -1,9 +1,6 @@
 /// User-defined Library Label (Spec 0021 / P2.5).
 class Label {
-  const Label({
-    required this.id,
-    required this.name,
-  });
+  const Label({required this.id, required this.name});
 
   final String id;
   final String name;
@@ -13,10 +10,7 @@ class Label {
   Map<String, dynamic> toJson() => {'id': id, 'name': name};
 
   factory Label.fromJson(Map<String, dynamic> json) {
-    return Label(
-      id: json['id'] as String,
-      name: json['name'] as String,
-    );
+    return Label(id: json['id'] as String, name: json['name'] as String);
   }
 }
 

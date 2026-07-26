@@ -7,6 +7,7 @@ import 'package:standscore/annotation/stamp.dart';
 import 'package:standscore/layout/page_color_filter.dart';
 import 'package:standscore/pageorder/page_order.dart';
 import 'package:standscore/pdf/page_annotation_overlay.dart';
+import 'package:standscore/pdf/pdf_surface.dart';
 
 /// Renders one PageOrder slot: PDF page or blank (Spec 0011).
 class PerformancePageSlot extends StatelessWidget {
@@ -81,7 +82,8 @@ class PerformancePageSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = Theme.of(context).colorScheme.surfaceContainerHighest;
+    // The gutter sits outside the filtered subtree, so tint it here.
+    final bg = pdfSurfaceColor(context, filter: colorFilterMode);
     if (entry.isBlank) {
       return ColoredBox(
         color: bg,
@@ -91,13 +93,15 @@ class PerformancePageSlot extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                const ColoredBox(color: Colors.white),
+                ColoredBox(
+                  color: applyPageColorFilter(Colors.white, colorFilterMode),
+                ),
                 Center(
                   child: Text(
                     'Blank',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
                 ),
                 ?_pageBorderOverlay(),
@@ -133,7 +137,8 @@ class PerformancePageSlot extends StatelessWidget {
               aspectRatio: page.width / page.height,
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final pageRect = Offset.zero &
+                  final pageRect =
+                      Offset.zero &
                       Size(constraints.maxWidth, constraints.maxHeight);
                   return PageColorFiltered(
                     mode: colorFilterMode,
@@ -144,8 +149,7 @@ class PerformancePageSlot extends StatelessWidget {
                           document: document,
                           pageNumber: source,
                           alignment: Alignment.center,
-                          decoration:
-                              const BoxDecoration(color: Colors.white),
+                          decoration: const BoxDecoration(color: Colors.white),
                         ),
                         PageAnnotationOverlay(
                           pageRect: pageRect,

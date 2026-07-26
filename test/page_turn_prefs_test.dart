@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:standscore/pageturn/gesture_map.dart';
 import 'package:standscore/pageturn/page_turn_animation.dart';
 import 'package:standscore/pageturn/page_turn_delay.dart';
 import 'package:standscore/pageturn/page_turn_prefs.dart';
@@ -143,5 +144,19 @@ void main() {
     expect(loaded.animationPreset, PageTurnAnimationPreset.slow);
     expect(loaded.reverseDirection, isTrue);
     expect(File(p.join(dir.path, 'pageturn_prefs.json')).existsSync(), isTrue);
+  });
+
+  test('prefs saved with a Draw gesture load with it Off (Spec 0034)', () {
+    final prefs = PageTurnPrefs.fromJson(const {
+      'tapMode': 'leftRight',
+      'gestureMap': {
+        'longPress': 'showChrome',
+        'topEdge': 'showChrome',
+        'bottomEdge': 'enterDraw',
+      },
+    });
+    expect(prefs.gestureMap.bottomEdge, GestureMapAction.disabled);
+    expect(prefs.gestureMap.topEdge, GestureMapAction.showChrome);
+    expect(prefs.tapMode, PageTurnTapMode.leftRight);
   });
 }

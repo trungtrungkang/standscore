@@ -16,9 +16,12 @@ import 'package:standscore/library/library_backup.dart';
 import 'package:standscore/library/library_search.dart';
 import 'package:standscore/library/library_sort.dart';
 import 'package:standscore/library/library_sort_prefs_store.dart';
+import 'package:standscore/library/relative_day.dart';
 import 'package:standscore/library/score.dart';
 import 'package:standscore/library/score_library.dart';
+import 'package:standscore/library/score_thumbnails.dart';
 import 'package:standscore/library/shared_pdf_import.dart';
+import 'package:standscore/pdf/pdf_first_page.dart';
 import 'package:standscore/setlist/setlist.dart';
 import 'package:standscore/setlist/setlist_session.dart';
 import 'package:standscore/setlist/setlist_store.dart';
@@ -26,7 +29,9 @@ import 'package:standscore/theme/app_appearance.dart';
 import 'package:standscore/ui/appearance_sheet.dart';
 import 'package:standscore/ui/label_sheets.dart';
 import 'package:standscore/ui/pdf_mode_screen.dart';
+import 'package:standscore/ui/score_thumbnail_tile.dart';
 import 'package:standscore/ui/setlist_editor_screen.dart';
+import 'package:standscore/ui/title_prompt.dart';
 
 enum _LibraryTab { scores, setlists }
 
@@ -34,6 +39,7 @@ class LibraryScreen extends StatefulWidget {
   const LibraryScreen({
     super.key,
     this.library,
+    this.thumbnails,
     this.appearance = AppAppearance.defaults,
     this.onAppearanceChanged,
     this.onLibraryRestored,
@@ -41,6 +47,10 @@ class LibraryScreen extends StatefulWidget {
 
   /// Injected for tests; production creates a documents-based library.
   final ScoreLibrary? library;
+
+  /// Injected for tests; production caches thumbnails beside the app's other
+  /// derived data. Null means rows keep the generic PDF glyph (Spec 0040).
+  final ScoreThumbnails? thumbnails;
 
   final AppAppearance appearance;
   final ValueChanged<AppAppearance>? onAppearanceChanged;
@@ -66,6 +76,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   Map<String, List<String>> _bookmarkTitles = const {};
+
+  /// Label names per Score, rebuilt on reload rather than in `itemBuilder` —
+  /// that ran once per Label per row on every frame (Spec 0040).
+  Map<String, List<String>> _labelNames = const {};
+  ScoreThumbnails? _thumbnails;
   Directory? _libraryRoot;
   LibrarySortPrefsStore? _sortPrefsStore;
   LibrarySortMode _sortMode = LibrarySortMode.lastViewed;
@@ -96,10 +111,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Future<void> _bootstrap() async {
     try {
-      final root = Directory(
-        p.join((await getApplicationDocumentsDirectory()).path, 'standscore'),
-      );
-      final library = widget.library ?? ScoreLibrary(root: root);
+      final library = widget.library ?? await _openDocumentsLibrary();
       await library.ensureReady();
       final libraryRoot = library.manifestFile.parent;
       final store = SetlistStore(root: libraryRoot);
@@ -113,6 +125,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
         root: libraryRoot,
         scoreIds: scores.map((s) => s.id),
       );
+      _thumbnails =
+          widget.thumbnails ??
+          (widget.library == null ? await _openThumbnailCache() : null);
       if (!mounted) return;
       setState(() {
         _library = library;
@@ -124,8 +139,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
         _scores = scores;
         _setlists = setlists;
         _bookmarkTitles = bookmarkTitles;
+        _labelNames = _labelNamesFor(scores, labelStore);
         _loading = false;
       });
+      unawaited(_backfillPageCounts());
       await _startShareListening();
     } catch (e) {
       if (!mounted) return;
@@ -134,6 +151,52 @@ class _LibraryScreenState extends State<LibraryScreen> {
         _loading = false;
       });
     }
+  }
+
+  Future<ScoreLibrary> _openDocumentsLibrary() async {
+    final root = Directory(
+      p.join((await getApplicationDocumentsDirectory()).path, 'standscore'),
+    );
+    return ScoreLibrary(root: root, countPages: countPdfPages);
+  }
+
+  /// Thumbnails are derived data, so they live in the OS cache directory, not
+  /// the library root: nothing to strip out of a backup ZIP (0027), and the
+  /// system may reclaim them (Spec 0040).
+  Future<ScoreThumbnails?> _openThumbnailCache() async {
+    try {
+      final cache = await getApplicationCacheDirectory();
+      return ScoreThumbnails(
+        cacheDir: Directory(p.join(cache.path, 'score-thumbs')),
+        render: renderPdfFirstPagePng,
+      );
+    } catch (_) {
+      // No cache directory on this host: rows fall back to the PDF glyph.
+      return null;
+    }
+  }
+
+  Map<String, List<String>> _labelNamesFor(
+    List<Score> scores,
+    LabelStore? store,
+  ) {
+    if (store == null) return const {};
+    final names = {for (final label in store.labels) label.id: label.name};
+    return {
+      for (final score in scores)
+        score.id: [
+          for (final label in store.labels)
+            if (store.labelsForScore(score.id).contains(label.id))
+              names[label.id]!,
+        ],
+    };
+  }
+
+  /// Counts pages for Scores that predate Spec 0040, after the list is up.
+  Future<void> _backfillPageCounts() async {
+    final scores = await _library?.backfillPageCounts();
+    if (scores == null || !mounted) return;
+    setState(() => _scores = scores);
   }
 
   Future<void> _startShareListening() async {
@@ -168,9 +231,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
     if (!mounted) return;
     if (imported.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No PDF files to import')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No PDF files to import')));
       return;
     }
     setState(() => _tab = _LibraryTab.scores);
@@ -204,6 +267,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _scores = scores;
       _setlists = setlists;
       _bookmarkTitles = bookmarkTitles;
+      _labelNames = _labelNamesFor(scores, labels);
     });
   }
 
@@ -248,10 +312,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           .split('.')
           .first;
       final zip = File(p.join(exports.path, 'StandScore-backup-$stamp.zip'));
-      await const LibraryBackup().createBackup(
-        libraryRoot: root,
-        zipFile: zip,
-      );
+      await const LibraryBackup().createBackup(libraryRoot: root, zipFile: zip);
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       try {
         await SharePlus.instance.share(
@@ -274,9 +335,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     } catch (e) {
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(content: Text('Backup failed: $e')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text('Backup failed: $e')));
     }
   }
 
@@ -347,9 +406,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     } catch (e) {
       if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(content: Text('Restore failed: $e')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
     }
   }
 
@@ -374,6 +431,87 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   bool get _filterActive =>
       _filterMode == LabelFilterMode.untagged || _filterLabelIds.isNotEmpty;
+
+  /// Label names behind the current filter, in catalog order.
+  List<String> get _activeFilterNames {
+    final store = _labelStore;
+    if (store == null) return const [];
+    return [
+      for (final label in store.labels)
+        if (_filterLabelIds.contains(label.id)) label.name,
+    ];
+  }
+
+  /// What the filter is doing, in a sentence — the empty state used to say
+  /// "this filter" and leave the musician guessing (Spec 0040).
+  String _filterDescription() {
+    if (_filterMode == LabelFilterMode.untagged) return 'Untagged';
+    final names = _activeFilterNames;
+    if (names.isEmpty) return 'this filter';
+    final joiner = _filterMode == LabelFilterMode.all ? ' and ' : ' or ';
+    return names.join(joiner);
+  }
+
+  void _clearFilter() {
+    setState(() {
+      _filterLabelIds = {};
+      _filterMode = LabelFilterMode.any;
+    });
+  }
+
+  /// The active filter, spelled out under the search field and removable from
+  /// there; the filled funnel icon alone never said what was hidden.
+  Widget _buildFilterChips(BuildContext context) {
+    final theme = Theme.of(context);
+    final untagged = _filterMode == LabelFilterMode.untagged;
+    final store = _labelStore;
+    final chips = <({String? id, String name})>[
+      if (untagged)
+        (id: null, name: 'Untagged')
+      else
+        for (final label in store?.labels ?? const <Label>[])
+          if (_filterLabelIds.contains(label.id))
+            (id: label.id, name: label.name),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+      child: Row(
+        children: [
+          if (_filterMode == LabelFilterMode.all && chips.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text('All of', style: theme.textTheme.labelMedium),
+            ),
+          Expanded(
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                for (final chip in chips)
+                  InputChip(
+                    label: Text(chip.name),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    deleteButtonTooltipMessage: 'Remove ${chip.name} filter',
+                    onDeleted: () => _removeFilterChip(chip.id),
+                  ),
+              ],
+            ),
+          ),
+          TextButton(onPressed: _clearFilter, child: const Text('Clear')),
+        ],
+      ),
+    );
+  }
+
+  void _removeFilterChip(String? labelId) {
+    if (labelId == null) {
+      _clearFilter();
+      return;
+    }
+    setState(() => _filterLabelIds = {..._filterLabelIds}..remove(labelId));
+  }
 
   bool get _searchActive => _searchQuery.trim().isNotEmpty;
 
@@ -402,8 +540,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
       store: store,
       scoreId: score.id,
       scoreTitle: score.title,
-      onChanged: () => setState(() {}),
+      onChanged: () =>
+          setState(() => _labelNames = _labelNamesFor(_scores, _labelStore)),
     );
+    await _reload();
+  }
+
+  Future<void> _renameScore(Score score) async {
+    final library = _library;
+    if (library == null) return;
+    final title = await promptForTitle(
+      context: context,
+      title: 'Rename Score',
+      initial: score.title,
+    );
+    // Cancelled, or cleared: the file name it came in with is not an
+    // improvement on the title it already has (Spec 0040).
+    if (title == null || title.trim().isEmpty) return;
+    await library.renameScore(scoreId: score.id, title: title);
     await _reload();
   }
 
@@ -470,9 +624,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Replace failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Replace failed: $e')));
     }
   }
 
@@ -539,7 +693,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (library == null || store == null) return;
     if (setlist.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This setlist is empty. Add scores first.')),
+        const SnackBar(
+          content: Text('This setlist is empty. Add scores first.'),
+        ),
       );
       return;
     }
@@ -551,9 +707,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (!mounted) return;
     if (resolved.session == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No scores available in this setlist.'),
-        ),
+        const SnackBar(content: Text('No scores available in this setlist.')),
       );
       return;
     }
@@ -596,10 +750,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
     final result = await Navigator.of(context).push<Setlist>(
       MaterialPageRoute(
-        builder: (_) => SetlistEditorScreen(
-          initial: draft,
-          libraryScores: _scores,
-        ),
+        builder: (_) =>
+            SetlistEditorScreen(initial: draft, libraryScores: _scores),
       ),
     );
     if (result == null) return;
@@ -612,10 +764,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (store == null) return;
     final result = await Navigator.of(context).push<Setlist>(
       MaterialPageRoute(
-        builder: (_) => SetlistEditorScreen(
-          initial: setlist,
-          libraryScores: _scores,
-        ),
+        builder: (_) =>
+            SetlistEditorScreen(initial: setlist, libraryScores: _scores),
       ),
     );
     if (result == null) return;
@@ -677,6 +827,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await library.deleteScore(score.id);
     await _labelStore?.setScoreLabels(score.id, {});
     await setlists.removeScoreFromAll(score.id);
+    await _thumbnails?.evict(score.id);
     await _reload();
   }
 
@@ -749,12 +900,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               icon: const Icon(Icons.label_outline),
             ),
           ],
-          if (_tab == _LibraryTab.setlists)
-            IconButton(
-              tooltip: 'New setlist',
-              onPressed: _loading ? null : _createSetlist,
-              icon: const Icon(Icons.playlist_add),
-            ),
+          // No "New setlist" action here: the FAB below already is it.
           PopupMenuButton<String>(
             tooltip: 'More',
             onSelected: (value) {
@@ -774,18 +920,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
               }
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: 'appearance',
-                child: Text('Appearance…'),
-              ),
-              PopupMenuItem(
-                value: 'backup',
-                child: Text('Backup…'),
-              ),
-              PopupMenuItem(
-                value: 'restore',
-                child: Text('Restore…'),
-              ),
+              PopupMenuItem(value: 'appearance', child: Text('Appearance…')),
+              PopupMenuItem(value: 'backup', child: Text('Backup…')),
+              PopupMenuItem(value: 'restore', child: Text('Restore…')),
             ],
           ),
         ],
@@ -836,22 +973,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
               ),
             ),
+          if (!_loading && _tab == _LibraryTab.scores && _filterActive)
+            _buildFilterChips(context),
           Expanded(child: _buildBody(context)),
         ],
       ),
       floatingActionButton: _loading
           ? null
           : _tab == _LibraryTab.scores
-              ? FloatingActionButton.extended(
-                  onPressed: _importPdfs,
-                  icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('Add PDF'),
-                )
-              : FloatingActionButton.extended(
-                  onPressed: _createSetlist,
-                  icon: const Icon(Icons.playlist_add),
-                  label: const Text('New setlist'),
-                ),
+          ? FloatingActionButton.extended(
+              onPressed: _importPdfs,
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text('Add PDF'),
+            )
+          : FloatingActionButton.extended(
+              onPressed: _createSetlist,
+              icon: const Icon(Icons.playlist_add),
+              label: const Text('New setlist'),
+            ),
     );
   }
 
@@ -917,8 +1056,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             children: [
               Text(
                 _searchActive
-                    ? 'No scores match this search'
-                    : 'No scores match this filter',
+                    ? 'No scores match “${_searchQuery.trim()}”'
+                    : 'No scores match ${_filterDescription()}',
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
@@ -929,10 +1069,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
               if (_filterActive)
                 TextButton(
-                  onPressed: () => setState(() {
-                    _filterLabelIds = {};
-                    _filterMode = LabelFilterMode.any;
-                  }),
+                  onPressed: _clearFilter,
                   child: const Text('Clear filter'),
                 ),
             ],
@@ -941,36 +1078,42 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    final labelStore = _labelStore;
+    final library = _library;
     return ListView.separated(
       padding: const EdgeInsets.only(bottom: 88),
       itemCount: visible.length,
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final score = visible[index];
-        final labelNames = labelStore == null
-            ? const <String>[]
-            : [
-                for (final label in labelStore.labels)
-                  if (labelStore.labelsForScore(score.id).contains(label.id))
-                    label.name,
-              ];
+        final labelNames = _labelNames[score.id] ?? const <String>[];
         return ListTile(
-          leading: const Icon(Icons.picture_as_pdf_outlined),
+          leading: library == null
+              ? const Icon(Icons.picture_as_pdf_outlined)
+              : ScoreThumbnailTile(
+                  thumbnails: _thumbnails,
+                  scoreId: score.id,
+                  pdf: library.absoluteFile(score),
+                ),
           title: Text(score.title),
-          subtitle: Text(
-            [
-              if (score.lastOpenedAt == null)
-                'Added ${_formatDay(score.createdAt)}'
-              else
-                'Opened ${_formatDay(score.lastOpenedAt!)}',
-              if (labelNames.isNotEmpty) labelNames.join(' · '),
-            ].join(' · '),
+          isThreeLine: labelNames.isNotEmpty,
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_recencyLine(score)),
+              if (labelNames.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: _LabelChips(names: labelNames),
+                ),
+            ],
           ),
           onTap: () => _openScore(score),
           trailing: PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
+                case 'rename':
+                  _renameScore(score);
                 case 'labels':
                   _editScoreLabels(score);
                 case 'replace':
@@ -980,17 +1123,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
               }
             },
             itemBuilder: (context) => const [
+              PopupMenuItem(value: 'rename', child: Text('Rename…')),
               PopupMenuItem(value: 'labels', child: Text('Labels…')),
-              PopupMenuItem(
-                value: 'replace',
-                child: Text('Replace PDF…'),
-              ),
+              PopupMenuItem(value: 'replace', child: Text('Replace PDF…')),
               PopupMenuItem(value: 'delete', child: Text('Delete…')),
             ],
           ),
         );
       },
     );
+  }
+
+  /// "Opened today · 4 pages" — when it was last played, and how long it is.
+  String _recencyLine(Score score) {
+    final when = score.lastOpenedAt == null
+        ? 'Added ${relativeDay(score.createdAt)}'
+        : 'Opened ${relativeDay(score.lastOpenedAt!)}';
+    final pages = score.pageCount;
+    if (pages == null) return when;
+    return '$when · $pages ${pages == 1 ? 'page' : 'pages'}';
   }
 
   Widget _buildSetlistsBody(BuildContext context) {
@@ -1042,7 +1193,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             count == 0
                 ? 'Empty'
                 : '$count score${count == 1 ? '' : 's'}'
-                    '${setlist.lastOpenedAt == null ? '' : ' · Opened ${_formatDay(setlist.lastOpenedAt!)}'}',
+                      '${setlist.lastOpenedAt == null ? '' : ' · Opened ${relativeDay(setlist.lastOpenedAt!)}'}',
           ),
           onTap: () => _openSetlist(setlist),
           trailing: PopupMenuButton<String>(
@@ -1063,9 +1214,52 @@ class _LibraryScreenState extends State<LibraryScreen> {
       },
     );
   }
+}
 
-  String _formatDay(DateTime value) {
-    final local = value.toLocal();
-    return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
+/// Labels on a Score row, capped so a heavily tagged Score cannot grow the row
+/// without limit (Spec 0040).
+class _LabelChips extends StatelessWidget {
+  const _LabelChips({required this.names});
+
+  static const _max = 2;
+
+  final List<String> names;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = names.take(_max).toList();
+    final hidden = names.length - shown.length;
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        for (final name in shown) _Chip(name),
+        if (hidden > 0) _Chip('+$hidden'),
+      ],
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onSecondaryContainer,
+        ),
+      ),
+    );
   }
 }

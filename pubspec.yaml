@@ -19,7 +19,9 @@ dependencies:
   share_plus: ^12.0.2
   archive: ^4.0.9
   share_handler: ^0.0.25
-
+  flutter_soloud: ^4.0.13
+  audio_session: ^0.2.4
+  wakelock_plus: ^1.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -49,3 +51,5 @@ flutter:
   assets:
     - assets/sample_score.pdf
     - assets/brand/standscore-logo.png
+    - assets/icons/metronome.png
+    - assets/icons/draw.png

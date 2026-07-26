@@ -87,7 +87,8 @@ class SinglePageSliderController extends ChangeNotifier {
 
   int get pageCount => _state?._pageCount ?? 0;
 
-  bool get isReady => _state?._document != null && (_state?._pageCount ?? 0) > 0;
+  bool get isReady =>
+      _state?._document != null && (_state?._pageCount ?? 0) > 0;
 
   int get sourcePageCount => _state?._document?.pages.length ?? 0;
 
@@ -287,13 +288,15 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
           onSelectedStampChanged: widget.onSelectedStampChanged,
           annotationsVisible: widget.annotationsVisible,
           colorFilterMode: widget.colorFilterMode,
-          pageScale: widget.resolvePageScale?.call(entry.sourcePage) ??
+          pageScale:
+              widget.resolvePageScale?.call(entry.sourcePage) ??
               widget.pageScale,
           pageBorderEnabled: widget.pageBorderEnabled,
           pageBorderWidth: widget.pageBorderWidth,
           pageBorderColor: widget.pageBorderColor,
           transformationController: transform,
-          panEnabled: !widget.drawEnabled &&
+          panEnabled:
+              !widget.drawEnabled &&
               (zoomed ||
                   (widget.resolvePageScale?.call(entry.sourcePage) ??
                           widget.pageScale) >

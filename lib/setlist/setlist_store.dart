@@ -7,11 +7,9 @@ import 'package:uuid/uuid.dart';
 
 /// Setlist persistence at `standscore/setlists.json` (Spec 0012).
 class SetlistStore {
-  SetlistStore({
-    required Directory root,
-    Uuid? uuid,
-  })  : _file = File(p.join(root.path, 'setlists.json')),
-        _uuid = uuid ?? const Uuid();
+  SetlistStore({required Directory root, Uuid? uuid})
+    : _file = File(p.join(root.path, 'setlists.json')),
+      _uuid = uuid ?? const Uuid();
 
   final File _file;
   final Uuid _uuid;
@@ -73,9 +71,7 @@ class SetlistStore {
 
   Future<void> _write(List<Setlist> setlists) async {
     await _file.parent.create(recursive: true);
-    final payload = {
-      'setlists': setlists.map((s) => s.toJson()).toList(),
-    };
+    final payload = {'setlists': setlists.map((s) => s.toJson()).toList()};
     await _file.writeAsString(
       const JsonEncoder.withIndent('  ').convert(payload),
     );

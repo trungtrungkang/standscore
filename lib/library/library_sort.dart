@@ -1,18 +1,14 @@
 import 'package:standscore/library/score.dart';
 
 /// Library Scores sort key (Spec 0023 / P2.7).
-enum LibrarySortMode {
-  title,
-  created,
-  lastViewed,
-}
+enum LibrarySortMode { title, created, lastViewed }
 
 extension LibrarySortModeX on LibrarySortMode {
   String get label => switch (this) {
-        LibrarySortMode.title => 'Title',
-        LibrarySortMode.created => 'Created',
-        LibrarySortMode.lastViewed => 'Last viewed',
-      };
+    LibrarySortMode.title => 'Title',
+    LibrarySortMode.created => 'Created',
+    LibrarySortMode.lastViewed => 'Last viewed',
+  };
 }
 
 /// Sort Scores after filter/search (Spec 0023).
@@ -29,8 +25,7 @@ List<Score> sortScores(List<Score> scores, LibrarySortMode mode) {
 int _compare(Score a, Score b, LibrarySortMode mode) {
   switch (mode) {
     case LibrarySortMode.title:
-      final byTitle =
-          a.title.toLowerCase().compareTo(b.title.toLowerCase());
+      final byTitle = a.title.toLowerCase().compareTo(b.title.toLowerCase());
       if (byTitle != 0) return byTitle;
       return a.id.compareTo(b.id);
     case LibrarySortMode.created:

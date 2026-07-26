@@ -24,8 +24,9 @@ List<Score> filterScoresBySearch({
   return [
     for (final score in scores)
       if (textMatchesQuery(score.title, q) ||
-          (bookmarkTitlesByScoreId[score.id] ?? const [])
-              .any((title) => textMatchesQuery(title, q)))
+          (bookmarkTitlesByScoreId[score.id] ?? const []).any(
+            (title) => textMatchesQuery(title, q),
+          ))
         score,
   ];
 }

@@ -7,11 +7,11 @@ import 'package:standscore/library/library_search.dart';
 import 'package:standscore/library/score.dart';
 
 Score _score(String id, String title) => Score(
-      id: id,
-      title: title,
-      relativePath: 'scores/$id.pdf',
-      createdAt: DateTime.utc(2026),
-    );
+  id: id,
+  title: title,
+  relativePath: 'scores/$id.pdf',
+  createdAt: DateTime.utc(2026),
+);
 
 void main() {
   test('textMatchesQuery is case-insensitive substring', () {

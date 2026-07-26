@@ -110,8 +110,9 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content:
-                  Text('Drag the button to a clear spot. Long-press to edit.'),
+              content: Text(
+                'Drag the button to a clear spot. Long-press to edit.',
+              ),
               duration: Duration(seconds: 3),
             ),
           );
@@ -189,51 +190,45 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _items.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No jump links yet',
-                        style: Theme.of(context).textTheme.bodyLarge,
+              ? Center(
+                  child: Text(
+                    'No jump links yet',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _items.length,
+                  itemBuilder: (context, index) {
+                    final link = _items[index];
+                    return ListTile(
+                      leading: Icon(
+                        Icons.subdirectory_arrow_right,
+                        color: link.color,
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: _items.length,
-                      itemBuilder: (context, index) {
-                        final link = _items[index];
-                        return ListTile(
-                          leading: Icon(
-                            Icons.subdirectory_arrow_right,
-                            color: link.color,
-                          ),
-                          title: Text(
-                            'Page ${link.originPage} → ${link.destinationPage}',
-                          ),
-                          subtitle: const Text('Tap to go to link page'),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            widget.onJumpToPage(link.originPage);
-                          },
-                          trailing: PopupMenuButton<String>(
-                            onSelected: (value) {
-                              if (value == 'edit') {
-                                _openEdit(link);
-                              } else if (value == 'delete') {
-                                _delete(link);
-                              }
-                            },
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(
-                                value: 'edit',
-                                child: Text('Edit'),
-                              ),
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        );
+                      title: Text(
+                        'Page ${link.originPage} → ${link.destinationPage}',
+                      ),
+                      subtitle: const Text('Tap to go to link page'),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        widget.onJumpToPage(link.originPage);
                       },
-                    ),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            _openEdit(link);
+                          } else if (value == 'delete') {
+                            _delete(link);
+                          }
+                        },
+                        itemBuilder: (context) => const [
+                          PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        ],
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );

@@ -77,8 +77,9 @@ class _PageAnnotationOverlayState extends State<PageAnnotationOverlay> {
     final page = widget.page.pageNumber;
     final strokes = widget.store.strokesForPage(page);
     final stamps = widget.store.stampsForPage(page);
-    final inkTool =
-        widget.tool == DrawTool.marker ? DrawTool.marker : DrawTool.pen;
+    final inkTool = widget.tool == DrawTool.marker
+        ? DrawTool.marker
+        : DrawTool.pen;
 
     final preview = <String, Offset>{
       if (_draggingStampId != null && _dragCurrent != null)

@@ -34,15 +34,15 @@ class AnnotationStroke {
   final double width;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'pageNumber': pageNumber,
-        'tool': tool.name,
-        'color': color.toARGB32(),
-        'width': width,
-        'points': [
-          for (final pt in points) {'x': pt.dx, 'y': pt.dy},
-        ],
-      };
+    'id': id,
+    'pageNumber': pageNumber,
+    'tool': tool.name,
+    'color': color.toARGB32(),
+    'width': width,
+    'points': [
+      for (final pt in points) {'x': pt.dx, 'y': pt.dy},
+    ],
+  };
 
   factory AnnotationStroke.fromJson(Map<String, dynamic> json) {
     final toolName = json['tool'] as String? ?? DrawTool.pen.name;
@@ -56,7 +56,9 @@ class AnnotationStroke {
       id: json['id'] as String? ?? const Uuid().v4(),
       pageNumber: json['pageNumber'] as int,
       tool: inkTool,
-      color: Color(json['color'] as int? ?? DrawToolPresets.penColor.toARGB32()),
+      color: Color(
+        json['color'] as int? ?? DrawToolPresets.penColor.toARGB32(),
+      ),
       width: (json['width'] as num?)?.toDouble() ?? DrawToolPresets.penWidth,
       points: [
         for (final pt in rawPoints)
@@ -287,10 +289,10 @@ class AnnotationStore {
   }
 
   Map<String, dynamic> toJson(String scoreId) => {
-        'scoreId': scoreId,
-        'strokes': _strokes.map((s) => s.toJson()).toList(),
-        'stamps': _stamps.map((s) => s.toJson()).toList(),
-      };
+    'scoreId': scoreId,
+    'strokes': _strokes.map((s) => s.toJson()).toList(),
+    'stamps': _stamps.map((s) => s.toJson()).toList(),
+  };
 
   void loadJson(Map<String, dynamic> json) {
     clear();
@@ -309,10 +311,8 @@ class AnnotationStore {
 
 /// Per-Score annotation file under `standscore/annotations/<scoreId>.json`.
 class AnnotationPersistence {
-  AnnotationPersistence({
-    required Directory root,
-    required this.scoreId,
-  }) : _file = File(p.join(root.path, 'annotations', '$scoreId.json'));
+  AnnotationPersistence({required Directory root, required this.scoreId})
+    : _file = File(p.join(root.path, 'annotations', '$scoreId.json'));
 
   final String scoreId;
   final File _file;

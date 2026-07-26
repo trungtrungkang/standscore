@@ -5,6 +5,7 @@ class Score {
     required this.relativePath,
     required this.createdAt,
     this.lastOpenedAt,
+    this.pageCount,
   });
 
   final String id;
@@ -15,26 +16,32 @@ class Score {
   final DateTime createdAt;
   final DateTime? lastOpenedAt;
 
-  Score copyWith({
-    String? title,
-    DateTime? lastOpenedAt,
-  }) {
+  /// Pages in the source PDF, or null until it has been counted (Spec 0040).
+  ///
+  /// Nullable because Scores imported before 0040 have never been opened for
+  /// counting, and because the Library list must render before every PDF on
+  /// disk has been read.
+  final int? pageCount;
+
+  Score copyWith({String? title, DateTime? lastOpenedAt, int? pageCount}) {
     return Score(
       id: id,
       title: title ?? this.title,
       relativePath: relativePath,
       createdAt: createdAt,
       lastOpenedAt: lastOpenedAt ?? this.lastOpenedAt,
+      pageCount: pageCount ?? this.pageCount,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'relativePath': relativePath,
-        'createdAt': createdAt.toIso8601String(),
-        'lastOpenedAt': lastOpenedAt?.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'relativePath': relativePath,
+    'createdAt': createdAt.toIso8601String(),
+    'lastOpenedAt': lastOpenedAt?.toIso8601String(),
+    'pageCount': pageCount,
+  };
 
   factory Score.fromJson(Map<String, dynamic> json) {
     return Score(
@@ -45,6 +52,7 @@ class Score {
       lastOpenedAt: json['lastOpenedAt'] == null
           ? null
           : DateTime.parse(json['lastOpenedAt'] as String),
+      pageCount: json['pageCount'] as int?,
     );
   }
 }

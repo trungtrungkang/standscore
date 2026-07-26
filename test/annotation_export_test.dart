@@ -9,7 +9,10 @@ import 'package:standscore/annotation/stamp.dart';
 
 Future<Uint8List> _solidPng({int w = 8, int h = 8}) async {
   final recorder = PictureRecorder();
-  final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()));
+  final canvas = Canvas(
+    recorder,
+    Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+  );
   canvas.drawRect(
     Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
     Paint()..color = const Color(0xFFFFFFFF),

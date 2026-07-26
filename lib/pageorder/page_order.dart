@@ -52,10 +52,7 @@ class PageOrderEntry {
 
 /// User-defined performance page sequence for a Score.
 class PageOrder {
-  const PageOrder({
-    required this.entries,
-    required this.sourcePageCount,
-  });
+  const PageOrder({required this.entries, required this.sourcePageCount});
 
   final List<PageOrderEntry> entries;
 
@@ -77,16 +74,14 @@ class PageOrder {
     final n = sourcePageCount < 0 ? 0 : sourcePageCount;
     return PageOrder(
       sourcePageCount: n,
-      entries: [
-        for (var i = 1; i <= n; i++) PageOrderEntry.pdf(i),
-      ],
+      entries: [for (var i = 1; i <= n; i++) PageOrderEntry.pdf(i)],
     );
   }
 
   PageOrder copyWithEntries(List<PageOrderEntry> entries) => PageOrder(
-        entries: List.unmodifiable(entries),
-        sourcePageCount: sourcePageCount,
-      );
+    entries: List.unmodifiable(entries),
+    sourcePageCount: sourcePageCount,
+  );
 
   PageOrder move(int from, int to) {
     if (from < 0 || from >= entries.length) return this;
@@ -126,9 +121,9 @@ class PageOrder {
   PageOrder resetToOriginal() => PageOrder.identity(sourcePageCount);
 
   Map<String, dynamic> toJson() => {
-        'sourcePageCount': sourcePageCount,
-        'entries': entries.map((e) => e.toJson()).toList(),
-      };
+    'sourcePageCount': sourcePageCount,
+    'entries': entries.map((e) => e.toJson()).toList(),
+  };
 
   factory PageOrder.fromJson(Map<String, dynamic> json) {
     final sourcePageCount = json['sourcePageCount'] as int? ?? 0;

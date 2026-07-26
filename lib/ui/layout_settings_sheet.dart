@@ -24,11 +24,14 @@ Future<void> showLayoutSettingsSheet({
 
           final half = isHalfPageLayoutMode(current.mode);
 
+          // Cap, not a fixed height: six chips must not open a sheet the size
+          // of a screen (Spec 0035).
           final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
           return SafeArea(
-            child: SizedBox(
-              height: maxHeight,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
@@ -51,45 +54,46 @@ Future<void> showLayoutSettingsSheet({
                     ),
                   ),
                   const Divider(height: 1),
-                  Expanded(
+                  Flexible(
                     child: ListView(
+                      shrinkWrap: true,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                       children: [
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: PdfLayoutMode.values.map((mode) {
-                    return ChoiceChip(
-                      label: Text(_label(mode)),
-                      selected: current.mode == mode,
-                      onSelected: (_) =>
-                          update(current.copyWith(mode: mode)),
-                    );
-                  }).toList(),
-                ),
-                if (half) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    'Half-page separator',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'How much of the next page peeks into view (app-wide).',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  Slider(
-                    value: current.halfPageSeparatorRatio,
-                    min: halfPageSeparatorMin,
-                    max: halfPageSeparatorMax,
-                    divisions: 40,
-                    label:
-                        '${(current.halfPageSeparatorRatio * 100).round()}%',
-                    onChanged: (v) => update(
-                      current.copyWith(halfPageSeparatorRatio: v),
-                    ),
-                  ),
-                ],
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: PdfLayoutMode.values.map((mode) {
+                            return ChoiceChip(
+                              label: Text(mode.label),
+                              selected: current.mode == mode,
+                              onSelected: (_) =>
+                                  update(current.copyWith(mode: mode)),
+                            );
+                          }).toList(),
+                        ),
+                        if (half) ...[
+                          const SizedBox(height: 20),
+                          Text(
+                            'Half-page separator',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'How much of the next page peeks into view (app-wide).',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Slider(
+                            value: current.halfPageSeparatorRatio,
+                            min: halfPageSeparatorMin,
+                            max: halfPageSeparatorMax,
+                            divisions: 40,
+                            label:
+                                '${(current.halfPageSeparatorRatio * 100).round()}%',
+                            onChanged: (v) => update(
+                              current.copyWith(halfPageSeparatorRatio: v),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -101,15 +105,4 @@ Future<void> showLayoutSettingsSheet({
       );
     },
   );
-}
-
-String _label(PdfLayoutMode mode) {
-  return switch (mode) {
-    PdfLayoutMode.single => 'Single page',
-    PdfLayoutMode.twoPage => 'Two pages',
-    PdfLayoutMode.fitWidth => 'Fit width (scroll)',
-    PdfLayoutMode.fitHeight => 'Fit height (scroll)',
-    PdfLayoutMode.halfPageTopBottom => 'Half page (top/bottom)',
-    PdfLayoutMode.halfPageLeftRight => 'Half page (left/right)',
-  };
 }

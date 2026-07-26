@@ -20,10 +20,15 @@ import 'package:standscore/jumplink/jump_link_store.dart';
 import 'package:standscore/layout/half_page.dart';
 import 'package:standscore/layout/display_prefs.dart';
 import 'package:standscore/layout/display_prefs_store.dart';
+import 'package:standscore/metronome/metronome_engine.dart';
+import 'package:standscore/metronome/metronome_prefs.dart';
+import 'package:standscore/metronome/metronome_prefs_store.dart';
 import 'package:standscore/layout/page_color_filter.dart';
 import 'package:standscore/layout/page_color_filter_prefs_store.dart';
 import 'package:standscore/layout/page_scale.dart';
+import 'package:standscore/layout/stage_preset.dart';
 import 'package:standscore/layout/page_scale_prefs_store.dart';
+import 'package:standscore/layout/pdf_fit_zoom.dart';
 import 'package:standscore/layout/pdf_layout_mode.dart';
 import 'package:standscore/layout/pdf_layout_prefs.dart';
 import 'package:standscore/library/score.dart';
@@ -39,6 +44,7 @@ import 'package:standscore/pageturn/pedal_key_map.dart';
 import 'package:standscore/pdf/continuous_page_order_view.dart';
 import 'package:standscore/pdf/half_page_view.dart';
 import 'package:standscore/pdf/page_annotation_overlay.dart';
+import 'package:standscore/pdf/pdf_surface.dart';
 import 'package:standscore/pdf/single_page_slider.dart';
 import 'package:standscore/pdf/zoom_toggle.dart';
 import 'package:standscore/setlist/setlist_nav.dart';
@@ -50,11 +56,26 @@ import 'package:standscore/ui/jump_link_edit_sheet.dart';
 import 'package:standscore/ui/jump_link_overlay.dart';
 import 'package:standscore/ui/jump_links_sheet.dart';
 import 'package:standscore/ui/layout_settings_sheet.dart';
+import 'package:standscore/ui/draw_icon.dart';
+import 'package:standscore/ui/metronome_icon.dart';
+import 'package:standscore/ui/metronome_sheet.dart';
 import 'package:standscore/ui/page_nav_bar.dart';
+import 'package:standscore/ui/page_position_pill.dart';
 import 'package:standscore/ui/page_order_editor_screen.dart';
 import 'package:standscore/ui/page_scale_sheet.dart';
 import 'package:standscore/ui/page_turn_interaction_layer.dart';
 import 'package:standscore/ui/page_turn_settings_sheet.dart';
+import 'package:standscore/ui/performance_chrome.dart';
+import 'package:standscore/ui/score_menu.dart';
+import 'package:standscore/ui/score_menu_sheet.dart';
+import 'package:standscore/ui/undo_snack_bar.dart';
+
+/// Height of the PdfMode AppBar, above the status-bar inset.
+const double kPdfAppBarHeight = 64;
+
+/// How long to let pdfrx settle its own matrix after the viewport changes
+/// before re-fitting on top of it.
+const Duration kRefitDelay = Duration(milliseconds: 200);
 
 class PdfModeScreen extends StatefulWidget {
   const PdfModeScreen({
@@ -93,6 +114,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   PageColorFilterPrefsStore? _colorFilterStore;
   PageScalePrefsStore? _pageScaleStore;
   DisplayPrefsStore? _displayStore;
+  MetronomePrefsStore? _metronomeStore;
+  final MetronomeEngine _metronome = MetronomeEngine();
   BookmarkStore? _bookmarkStore;
   JumpLinkStore? _jumpLinkStore;
   PageOrderStore? _pageOrderStore;
@@ -117,13 +140,17 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   bool _prefsReady = false;
   int _scoreIndex = 0;
   List<int> _piecePageCounts = const [];
-  final GlobalKey<PopupMenuButtonState<String>> _overflowMenuKey =
-      GlobalKey<PopupMenuButtonState<String>>();
 
   /// Authoritative performance page for PageTurn (avoids stale controller reads).
   int _navPage = 1;
 
   bool get _inSetlist => widget.setlistSession != null;
+
+  /// PerformanceMode chrome (Spec 0034). Pinned while a menu, sheet or dialog
+  /// opened from the chrome is on screen.
+  late final PerformanceChrome _chrome = PerformanceChrome(
+    isPinned: () => mounted && ModalRoute.of(context)?.isCurrent == false,
+  );
 
   @override
   void initState() {
@@ -143,12 +170,22 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _halfPageController.addListener(_onControllerChanged);
     _orderScrollController.addListener(_onControllerChanged);
     HardwareKeyboard.instance.addHandler(_onHardwareKey);
+    _metronome.addListener(_onMetronomeChanged);
+    _chrome.addListener(_onChromeChanged);
     _loadPrefs();
+  }
+
+  void _onMetronomeChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    _chrome.removeListener(_onChromeChanged);
+    _chrome.dispose();
     HardwareKeyboard.instance.removeHandler(_onHardwareKey);
+    _metronome.removeListener(_onMetronomeChanged);
+    _metronome.dispose();
     _controller.removeListener(_onControllerChanged);
     _sliderController.removeListener(_onControllerChanged);
     _halfPageController.removeListener(_onControllerChanged);
@@ -159,6 +196,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _focusNode.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
+  }
+
+  void _onChromeChanged() {
+    if (mounted) setState(() {});
   }
 
   void _applySystemUi() {
@@ -190,7 +231,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       return _sliderController.isReady ? _sliderController.pageNumber : null;
     }
     if (_isHalfPage) {
-      return _halfPageController.isReady ? _halfPageController.pageNumber : null;
+      return _halfPageController.isReady
+          ? _halfPageController.pageNumber
+          : null;
     }
     if (_useCustomContinuous) {
       return _orderScrollController.isReady
@@ -251,12 +294,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final colorFilterStore = PageColorFilterPrefsStore(root: root);
     final pageScaleStore = PageScalePrefsStore(root: root);
     final displayStore = DisplayPrefsStore(root: root);
+    final metronomeStore = MetronomePrefsStore(root: root);
     final pageTurn = await pageTurnStore.load();
     final layout = await layoutStore.load();
     final drawStyle = await drawStyleStore.load();
     final colorFilter = await colorFilterStore.load();
     final pageScale = await pageScaleStore.load();
     final display = await displayStore.load();
+    final metronomePrefs = await metronomeStore.load();
 
     List<int> pieceCounts = const [];
     final session = widget.setlistSession;
@@ -275,21 +320,53 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _colorFilterStore = colorFilterStore;
     _pageScaleStore = pageScaleStore;
     _displayStore = displayStore;
+    _metronomeStore = metronomeStore;
     _pageTurnPrefs = pageTurn;
     _layoutPrefs = layout;
     _drawStyle = drawStyle;
     _colorFilterMode = colorFilter;
     _pageScalePrefs = pageScale;
     _displayPrefs = display;
+    // Scores open with the chrome hidden, except the very first one: it keeps
+    // the chrome up long enough to learn the reveal gesture (Spec 0034).
+    final introduceChrome =
+        display.performanceMode && !display.performanceHintShown;
+    _chrome.setPerformanceMode(
+      display.performanceMode,
+      keepChromeUp: introduceChrome,
+    );
     _piecePageCounts = List<int>.from(pieceCounts);
+    await _metronome.updatePrefs(metronomePrefs);
     _applySystemUi();
+    if (introduceChrome) {
+      _displayPrefs = display.copyWith(performanceHintShown: true);
+      unawaited(displayStore.save(_displayPrefs));
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _showPerformanceHint(),
+      );
+    }
 
     await _loadCurrentScorePrefs(initialPage: 1, showHint: !pageTurn.hintShown);
+  }
+
+  Future<void> _saveMetronomePrefs(MetronomePrefs prefs) async {
+    await _metronome.updatePrefs(prefs);
+    await _metronomeStore?.save(prefs);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _openMetronome() async {
+    await showMetronomeSheet(
+      context: context,
+      engine: _metronome,
+      onPrefsChanged: _saveMetronomePrefs,
+    );
   }
 
   Future<void> _saveDisplayPrefs(DisplayPrefs prefs) async {
     setState(() => _displayPrefs = prefs);
     _applySystemUi();
+    _chrome.setPerformanceMode(prefs.performanceMode);
     await _displayStore?.save(prefs);
   }
 
@@ -302,8 +379,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
     final bookmarkStore = BookmarkStore(root: root, scoreId: _score.id);
     final jumpLinkStore = JumpLinkStore(root: root, scoreId: _score.id);
-    final annotationPersistence =
-        AnnotationPersistence(root: root, scoreId: _score.id);
+    final annotationPersistence = AnnotationPersistence(
+      root: root,
+      scoreId: _score.id,
+    );
     final pageOrderStore = PageOrderStore(root: root, scoreId: _score.id);
     final annotationStore = AnnotationStore();
     await annotationPersistence.loadInto(annotationStore);
@@ -399,8 +478,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   void _onEyedropperColor(Color color) {
-    final target =
-        DrawToolPresets.isInkTool(_lastInkTool) ? _lastInkTool : DrawTool.pen;
+    final target = DrawToolPresets.isInkTool(_lastInkTool)
+        ? _lastInkTool
+        : DrawTool.pen;
     _saveDrawStyle(_drawStyle.withColorFor(target, color));
   }
 
@@ -427,6 +507,20 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     setState(() => _selectedStampId = id);
   }
 
+  Future<void> _undo() async {
+    if (!_store.undo()) return;
+    final id = _selectedStampId;
+    if (id != null && !_store.stamps.any((s) => s.id == id)) {
+      _selectedStampId = null;
+    }
+    await _onAnnotationsChanged();
+  }
+
+  Future<void> _redo() async {
+    if (!_store.redo()) return;
+    await _onAnnotationsChanged();
+  }
+
   Future<void> _deleteSelectedStamp() async {
     final id = _selectedStampId;
     if (id == null) return;
@@ -447,6 +541,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _selectedStampId = null;
       }
     });
+    // Chrome is laid out and pinned for the whole Draw session (0034).
+    _chrome.setDrawing(enabled);
   }
 
   Future<void> _exportAnnotatedPdf() async {
@@ -466,7 +562,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         final rawTitle = _score.title.replaceAll(RegExp(r'[^\w\-]+'), '_');
         final safeTitle = rawTitle.isEmpty
             ? 'score'
-            : rawTitle.substring(0, rawTitle.length > 40 ? 40 : rawTitle.length);
+            : rawTitle.substring(
+                0,
+                rawTitle.length > 40 ? 40 : rawTitle.length,
+              );
         final exportsDir = Directory(
           p.join((await getApplicationDocumentsDirectory()).path, 'exports'),
         );
@@ -487,7 +586,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           messenger
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              const SnackBar(content: Text('Export ready — share sheet opened')),
+              const SnackBar(
+                content: Text('Export ready — share sheet opened'),
+              ),
             );
         } on MissingPluginException {
           if (!mounted) return;
@@ -615,9 +716,31 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     await _switchToPiece(chosen, page: 1);
   }
 
-  void _onOverflowSelected(String value) {
-    switch (value) {
-      case 'bookmarks':
+  Future<void> _openScoreMenu() async {
+    final action = await showScoreMenu(
+      context: context,
+      groups: buildScoreMenu(
+        layoutMode: _layoutPrefs.mode,
+        colorFilter: _colorFilterMode,
+        zoomLocked: _pageScalePrefs.locked,
+        annotationsVisible: _annotationsVisible,
+        exporting: _exporting,
+        metronomeRunning: _metronome.isRunning,
+        stagePreset: StagePreset.directionFor(
+          display: _displayPrefs,
+          scale: _pageScalePrefs,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    // Reading the menu counts as interaction, whether or not it led anywhere.
+    _chrome.keepAlive();
+    if (action != null) _onScoreMenuSelected(action);
+  }
+
+  void _onScoreMenuSelected(ScoreMenuAction action) {
+    switch (action) {
+      case ScoreMenuAction.bookmarks:
         if (_bookmarkStore == null) return;
         showBookmarksSheet(
           context: context,
@@ -625,33 +748,82 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           currentPage: _pageNumber,
           onJumpToPage: _jumpToPage,
         );
-      case 'jump_links':
+      case ScoreMenuAction.jumpLinks:
         _showJumpLinks();
-      case 'layout':
+      case ScoreMenuAction.layout:
         showLayoutSettingsSheet(
           context: context,
           prefs: _layoutPrefs,
           onChanged: _saveLayoutPrefs,
         );
-      case 'page_turn':
+      case ScoreMenuAction.pageTurnSettings:
         showPageTurnSettingsSheet(
           context: context,
           prefs: _pageTurnPrefs,
           onChanged: _savePageTurnPrefs,
         );
-      case 'page_order':
+      case ScoreMenuAction.pageOrder:
         _openPageOrderEditor();
-      case 'toggle_annotations':
+      case ScoreMenuAction.toggleAnnotations:
         setState(() => _annotationsVisible = !_annotationsVisible);
-      case 'export_annotated':
+      case ScoreMenuAction.exportAnnotated:
         _exportAnnotatedPdf();
-      case 'color_filter':
+      case ScoreMenuAction.colorFilter:
         _pickColorFilter();
-      case 'page_scale':
+      case ScoreMenuAction.pageScale:
         _pickPageScale();
-      case 'display':
+      case ScoreMenuAction.display:
         _pickDisplay();
+      case ScoreMenuAction.metronome:
+        _openMetronome();
+      case ScoreMenuAction.stagePreset:
+        _applyStagePreset();
     }
+  }
+
+  /// Set the app up to play, or back to practise (Spec 0036).
+  ///
+  /// An action, not a mode: it writes the same prefs the Display and Page
+  /// scale sheets write, and Undo holds the previous values only for as long
+  /// as the snackbar is up.
+  Future<void> _applyStagePreset() async {
+    final direction = StagePreset.directionFor(
+      display: _displayPrefs,
+      scale: _pageScalePrefs,
+    );
+    final beforeDisplay = _displayPrefs;
+    final beforeScale = _pageScalePrefs;
+    final afterDisplay = StagePreset.applyToDisplay(beforeDisplay, direction);
+    final afterScale = StagePreset.applyToScale(beforeScale, direction);
+    final changes = StagePreset.changes(
+      beforeDisplay: beforeDisplay,
+      beforeScale: beforeScale,
+      afterDisplay: afterDisplay,
+      afterScale: afterScale,
+    );
+
+    await _applyStageSettings(afterDisplay, afterScale);
+    if (!mounted || changes.isEmpty) return;
+    ScaffoldMessenger.of(context)
+      // Two presets in a row must not queue two four-second messages over the
+      // Score.
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        undoSnackBar(
+          message: changes.join(' · '),
+          onUndo: () => _applyStageSettings(beforeDisplay, beforeScale),
+        ),
+      );
+  }
+
+  Future<void> _applyStageSettings(
+    DisplayPrefs display,
+    PageScalePrefs scale,
+  ) async {
+    await _saveDisplayPrefs(display);
+    if (!mounted) return;
+    setState(() => _pageScalePrefs = scale);
+    await _pageScaleStore?.save(scale);
   }
 
   Future<void> _pickDisplay() async {
@@ -659,6 +831,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       context: context,
       prefs: _displayPrefs,
       onChanged: _saveDisplayPrefs,
+      performanceModeHint: gestureMapRevealHint(_pageTurnPrefs.gestureMap),
     );
   }
 
@@ -669,10 +842,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   double _resolvePageScale(int? sourcePage) {
-    return _pageScalePrefs.resolve(
-      scoreId: _score.id,
-      sourcePage: sourcePage,
-    );
+    return _pageScalePrefs.resolve(scoreId: _score.id, sourcePage: sourcePage);
   }
 
   Future<void> _pickPageScale() async {
@@ -830,10 +1000,78 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     await _savePageTurnPrefs(_pageTurnPrefs.copyWith(hintShown: true));
   }
 
+  void _showPerformanceHint() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(gestureMapRevealHint(_pageTurnPrefs.gestureMap)),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
   bool get _atFitZoom {
     if (_isSingle || _isHalfPage || _useCustomContinuous) return true;
-    if (!_controller.isReady) return true;
-    return _controller.currentZoom <= _controller.minScale * 1.08;
+    final fit = _fitZoom(_controller);
+    if (fit == null) return true;
+    return _controller.currentZoom <= fit * kFitZoomTolerance;
+  }
+
+  /// The zoom this layout opens at in the current viewport, or null before the
+  /// viewer knows its own size.
+  double? _fitZoom(PdfViewerController controller, {Size? viewSize}) {
+    if (!controller.isReady) return null;
+    final layout = controller.layout;
+    final margin = controller.params.margin;
+    return pdfFitZoom(
+      mode: _layoutPrefs.mode,
+      viewSize: viewSize ?? controller.viewSize,
+      documentSize: layout.documentSize,
+      spreadHeight: _layoutPrefs.mode != PdfLayoutMode.twoPage
+          ? 0
+          : twoPageSpreadHeight(layout.pageLayouts, _navPage) + margin * 2,
+    );
+  }
+
+  /// One instance for the screen's life: pdfrx rebuilds its sizing delegate
+  /// whenever the provider compares unequal, and a fresh one per build would
+  /// reset the zoom mid-read.
+  late final _sizeDelegate = PdfViewerSizeDelegateProviderLegacy(
+    calculateInitialZoom: _initialZoom,
+  );
+
+  /// The viewer opens on a whole reading unit, not on whatever fits across.
+  double? _initialZoom(
+    PdfDocument document,
+    PdfViewerController controller,
+    double fitZoom,
+    double coverZoom,
+  ) => _fitZoom(controller) ?? coverZoom;
+
+  /// Rotation changes what fits, so a Score that was showing a whole spread
+  /// must still show one afterwards. A musician who had pinched in keeps their
+  /// zoom — only an untouched fit is re-fitted.
+  void _onViewSizeChanged(
+    Size viewSize,
+    Size? oldViewSize,
+    PdfViewerController controller,
+  ) {
+    if (oldViewSize == null) return;
+    final before = _fitZoom(controller, viewSize: oldViewSize);
+    if (before == null) return;
+    if (controller.currentZoom > before * kFitZoomTolerance) return;
+    final after = _fitZoom(controller, viewSize: viewSize);
+    if (after == null) return;
+    // pdfrx calls this during build, and the delegate is still settling its
+    // own matrix; take the last word once that has run.
+    Future.delayed(kRefitDelay, () {
+      if (!mounted || !controller.isReady) return;
+      controller.setZoom(
+        controller.centerPosition,
+        after,
+        duration: Duration.zero,
+      );
+    });
   }
 
   bool get _panEnabled {
@@ -900,15 +1138,13 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     PageTurnAction action, {
     required PageTurnInputKind kind,
   }) async {
+    // Any PageTurn (tap, swipe or pedal) means the musician is back on the
+    // Score — drop the chrome without waiting for the timer (0034).
+    _chrome.hide();
     final now = DateTime.now();
     final delay = _pageTurnPrefs.delay;
     final scope = _pageTurnPrefs.delayScope;
-    if (!_delayGate.allow(
-      now: now,
-      kind: kind,
-      delay: delay,
-      scope: scope,
-    )) {
+    if (!_delayGate.allow(now: now, kind: kind, delay: delay, scope: scope)) {
       return;
     }
 
@@ -1021,10 +1257,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final next = horizontal
         ? Offset(center.dx + sign * docDelta, center.dy)
         : Offset(center.dx, center.dy + sign * docDelta);
-    await _controller.goTo(
-      _controller.calcMatrixFor(next),
-      duration: duration,
-    );
+    await _controller.goTo(_controller.calcMatrixFor(next), duration: duration);
     final after = _controller.centerPosition;
     return (after - before).distance > 0.5;
   }
@@ -1039,9 +1272,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     if (!_prefsReady) return;
     switch (action) {
       case GestureMapAction.showChrome:
-        _overflowMenuKey.currentState?.showButtonMenu();
-      case GestureMapAction.enterDraw:
-        if (!_drawEnabled) _setDrawEnabled(true);
+        // Hidden chrome → reveal only. Already visible → the ScoreMenu (0015).
+        if (!_chrome.shown) {
+          _chrome.reveal();
+        } else {
+          _openScoreMenu();
+        }
       case GestureMapAction.disabled:
         break;
     }
@@ -1086,6 +1322,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       reverseHorizontal: _pageTurnPrefs.reverseDirection,
       onAction: _onInteractionAction,
       onGestureAction: _onGestureMapAction,
+      onScoreTap: _chrome.hide,
       pageTurnEnabled: true,
       doubleTapZoomEnabled: !_pageScalePrefs.locked,
       onDoubleTapZoom: _toggleViewerZoom,
@@ -1107,9 +1344,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               height: band,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => _onGestureMapAction(
-                  _pageTurnPrefs.gestureMap.topEdge,
-                ),
+                onTap: () =>
+                    _onGestureMapAction(_pageTurnPrefs.gestureMap.topEdge),
               ),
             ),
             Positioned(
@@ -1119,9 +1355,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               height: band,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => _onGestureMapAction(
-                  _pageTurnPrefs.gestureMap.bottomEdge,
-                ),
+                onTap: () =>
+                    _onGestureMapAction(_pageTurnPrefs.gestureMap.bottomEdge),
               ),
             ),
           ],
@@ -1153,10 +1388,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
-              child: Text(
-                _score.title,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(_score.title, overflow: TextOverflow.ellipsis),
             ),
             const Icon(Icons.arrow_drop_down),
           ],
@@ -1166,8 +1398,37 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   Widget _wrapViewerInsets(Widget child) {
-    if (!_displayPrefs.avoidNotches) return child;
-    return SafeArea(top: false, child: child);
+    // Inset bands must read as the same surface as the viewer gutter — with
+    // the chrome hidden, a different colour looks like the Score is boxed in
+    // top and bottom (Spec 0034).
+    return ColoredBox(
+      color: pdfSurfaceColor(context, filter: _colorFilterMode),
+      child: !_displayPrefs.avoidNotches
+          ? child
+          : SafeArea(
+              // In PerformanceMode the AppBar floats over the viewer, so the
+              // viewer owns the top inset instead of inheriting it from
+              // laid-out chrome (0034).
+              top: _chrome.active,
+              // …and keeps the bottom edge: the home indicator is an overlay
+              // bar, not a cutout, and that strip is prime PageTurn tap area
+              // once the PageNavBar is hidden.
+              bottom: !_chrome.active,
+              child: child,
+            ),
+    );
+  }
+
+  /// Fades chrome in/out over a viewer that keeps its size (Spec 0034).
+  Widget _fadingChrome(Widget child, {required bool shown}) {
+    return IgnorePointer(
+      ignoring: !shown,
+      child: AnimatedOpacity(
+        opacity: shown ? 1 : 0,
+        duration: kChromeFadeDuration,
+        child: child,
+      ),
+    );
   }
 
   void _paintPageBorder(Canvas canvas, Rect pageRect, PdfPage page) {
@@ -1182,154 +1443,131 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   @override
   Widget build(BuildContext context) {
     final layoutMode = _layoutPrefs.mode;
-    return Scaffold(
-      appBar: AppBar(
-        title: _buildTitle(),
-        actions: [
-          // Primary: Draw (+ Undo while drawing). Everything else → ⋯
-          ExcludeFocus(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_drawEnabled) ...[
-                  IconButton(
-                    tooltip: 'Undo',
-                    onPressed: !_store.canUndo
-                        ? null
-                        : () async {
-                            if (_store.undo()) {
-                              final id = _selectedStampId;
-                              if (id != null &&
-                                  !_store.stamps.any((s) => s.id == id)) {
-                                _selectedStampId = null;
-                              }
-                              await _onAnnotationsChanged();
-                            }
-                          },
-                    icon: const Icon(Icons.undo),
-                  ),
-                  IconButton(
-                    tooltip: 'Redo',
-                    onPressed: !_store.canRedo
-                        ? null
-                        : () async {
-                            if (_store.redo()) await _onAnnotationsChanged();
-                          },
-                    icon: const Icon(Icons.redo),
-                  ),
-                  if (_selectedStampId != null)
-                    IconButton(
-                      tooltip: 'Delete stamp',
-                      onPressed: _deleteSelectedStamp,
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                ],
+    final performanceChrome = _chrome.active;
+    final chromeShown = _chrome.shown;
+    final appBar = AppBar(
+      // Taller than the default: this bar carries the title and every action,
+      // so it gets the room the one-slider PageNavBar gives back (0034).
+      toolbarHeight: kPdfAppBarHeight,
+      title: _buildTitle(),
+      actions: [
+        // Primary: Draw. Draw-mode history lives on the DrawToolbar (0035),
+        // everything else → ⋯
+        ExcludeFocus(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_metronome.isRunning)
                 IconButton(
-                  tooltip: _drawEnabled ? 'Exit draw' : 'Draw',
-                  onPressed: () => _setDrawEnabled(!_drawEnabled),
-                  icon: Icon(_drawEnabled ? Icons.edit_off : Icons.edit),
-                ),
-                PopupMenuButton<String>(
-                  key: _overflowMenuKey,
-                  tooltip: 'More',
-                  enabled: _prefsReady,
-                  onSelected: _onOverflowSelected,
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'bookmarks',
-                      child: Text('Bookmarks'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'jump_links',
-                      child: Text('Jump Links'),
-                    ),
-                    PopupMenuItem(
-                      value: 'toggle_annotations',
-                      child: Text(
-                        _annotationsVisible
-                            ? 'Hide annotations'
-                            : 'Show annotations',
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'export_annotated',
-                      enabled: !_exporting,
-                      child: Text(
-                        _exporting
-                            ? 'Exporting…'
-                            : 'Export PDF with annotations',
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'color_filter',
-                      child: Text(
-                        _colorFilterMode == PageColorFilterMode.off
-                            ? 'Color filter…'
-                            : 'Color filter (${_colorFilterMode.label})…',
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'page_scale',
-                      child: Text(
-                        _pageScalePrefs.locked
-                            ? 'Page scale (locked)…'
-                            : 'Page scale…',
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'display',
-                      child: Text('Display…'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'layout',
-                      child: Text('Layout'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'page_turn',
-                      child: Text('Page turn settings'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'page_order',
-                      child: Text('Page order…'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (_drawEnabled)
-            DrawToolbar(
-              tool: _drawTool,
-              style: _drawStyle,
-              onToolChanged: _onDrawToolChanged,
-              onStyleChanged: _saveDrawStyle,
-              pendingStamp: _pendingStamp,
-              onStampArmed: _onStampArmed,
-            ),
-          Expanded(
-            child: !_prefsReady
-                ? const Center(child: CircularProgressIndicator())
-                : _wrapViewerInsets(
-                    _isSingle
-                        ? _buildSinglePageBody()
-                        : _isHalfPage
-                            ? _buildHalfPageBody()
-                            : _useCustomContinuous
-                                ? _buildCustomContinuousBody(layoutMode)
-                                : _buildContinuousBody(layoutMode),
+                  tooltip: 'Metronome (running)',
+                  onPressed: _prefsReady ? _openMetronome : null,
+                  icon: MetronomeIcon(
+                    color: _metronome.isAccent
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
                   ),
+                ),
+              IconButton(
+                tooltip: _drawEnabled ? 'Exit draw' : 'Draw',
+                onPressed: () => _setDrawEnabled(!_drawEnabled),
+                icon: DrawIcon(
+                  color: _drawEnabled
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+              ),
+              IconButton(
+                tooltip: 'More',
+                onPressed: _prefsReady ? _openScoreMenu : null,
+                icon: const Icon(Icons.more_vert),
+              ),
+            ],
           ),
-          if (_prefsReady && _pageCount > 0)
-            PageNavBar(
-              pageNumber: _pageNumber,
-              pageCount: _pageCount,
-              onJumpToPage: _jumpToPage,
-              avoidNotches: _displayPrefs.avoidNotches,
+        ),
+      ],
+    );
+
+    final pageNav = _prefsReady && _pageCount > 0
+        ? PageNavBar(
+            pageNumber: _pageNumber,
+            pageCount: _pageCount,
+            onJumpToPage: (page) {
+              // Using the scrubber counts as interaction: restart auto-hide.
+              _chrome.keepAlive();
+              _jumpToPage(page);
+            },
+            avoidNotches: _displayPrefs.avoidNotches,
+          )
+        : null;
+
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_drawEnabled)
+          DrawToolbar(
+            tool: _drawTool,
+            style: _drawStyle,
+            onToolChanged: _onDrawToolChanged,
+            onStyleChanged: _saveDrawStyle,
+            pendingStamp: _pendingStamp,
+            onStampArmed: _onStampArmed,
+            onUndo: _store.canUndo ? _undo : null,
+            onRedo: _store.canRedo ? _redo : null,
+            onDeleteStamp: _selectedStampId == null
+                ? null
+                : _deleteSelectedStamp,
+          ),
+        Expanded(
+          child: !_prefsReady
+              ? const Center(child: CircularProgressIndicator())
+              : _wrapViewerInsets(
+                  _isSingle
+                      ? _buildSinglePageBody()
+                      : _isHalfPage
+                      ? _buildHalfPageBody()
+                      : _useCustomContinuous
+                      ? _buildCustomContinuousBody(layoutMode)
+                      : _buildContinuousBody(layoutMode),
+                ),
+        ),
+      ],
+    );
+
+    if (!performanceChrome) {
+      return Scaffold(appBar: appBar, bottomNavigationBar: pageNav, body: body);
+    }
+
+    // PerformanceMode: chrome floats in a Stack rather than using Scaffold's
+    // slots, so revealing it never resizes (and re-fits) the viewer, and the
+    // body keeps the device's own insets instead of Scaffold padding it out
+    // by the height of an AppBar the musician cannot even see.
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          if (_pageCount > 0)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: PagePositionPill(
+                pageNumber: _pageNumber,
+                pageCount: _pageCount,
+                enabled: !chromeShown,
+              ),
+            ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _fadingChrome(appBar, shown: chromeShown),
+          ),
+          if (pageNav != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _fadingChrome(pageNav, shown: chromeShown),
             ),
         ],
       ),
@@ -1492,6 +1730,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
             ),
             controller: _controller,
             params: PdfViewerParams(
+              // Unfiltered: the whole viewer is inside PageColorFiltered here.
+              backgroundColor: pdfSurfaceColor(context),
+              sizeDelegateProvider: _sizeDelegate,
+              onViewSizeChanged: _onViewSizeChanged,
               panEnabled: _panEnabled,
               scaleEnabled: !_drawEnabled && !_pageScalePrefs.locked,
               scrollPhysics: _drawEnabled

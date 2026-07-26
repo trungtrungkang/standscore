@@ -1,16 +1,12 @@
 /// Page scale scope for Spec 0031 / P2.14.
-enum PageScaleScope {
-  fixed,
-  perScore,
-  perPage,
-}
+enum PageScaleScope { fixed, perScore, perPage }
 
 extension PageScaleScopeX on PageScaleScope {
   String get label => switch (this) {
-        PageScaleScope.fixed => 'Fixed',
-        PageScaleScope.perScore => 'Per Score',
-        PageScaleScope.perPage => 'Per Page',
-      };
+    PageScaleScope.fixed => 'Fixed',
+    PageScaleScope.perScore => 'Per Score',
+    PageScaleScope.perPage => 'Per Page',
+  };
 }
 
 /// App + Score + page scale preferences (inheritance: page → score → fixed).
@@ -45,10 +41,7 @@ class PageScalePrefs {
       '$scoreId:$sourcePage';
 
   /// Effective scale for a Score page (page override → score → fixed).
-  double resolve({
-    required String scoreId,
-    required int? sourcePage,
-  }) {
+  double resolve({required String scoreId, required int? sourcePage}) {
     if (sourcePage != null) {
       final page = pageScales[pageKey(scoreId, sourcePage)];
       if (page != null) return clampScale(page);
@@ -59,10 +52,7 @@ class PageScalePrefs {
   }
 
   /// Scale currently shown/edited for [editScope] in the sheet.
-  double scaleForEdit({
-    required String scoreId,
-    required int? sourcePage,
-  }) {
+  double scaleForEdit({required String scoreId, required int? sourcePage}) {
     switch (editScope) {
       case PageScaleScope.fixed:
         return clampScale(fixedScale);
@@ -86,20 +76,13 @@ class PageScalePrefs {
       case PageScaleScope.fixed:
         return copyWith(fixedScale: clamped);
       case PageScaleScope.perScore:
-        return copyWith(
-          scoreScales: {...scoreScales, scoreId: clamped},
-        );
+        return copyWith(scoreScales: {...scoreScales, scoreId: clamped});
       case PageScaleScope.perPage:
         if (sourcePage == null) {
-          return copyWith(
-            scoreScales: {...scoreScales, scoreId: clamped},
-          );
+          return copyWith(scoreScales: {...scoreScales, scoreId: clamped});
         }
         return copyWith(
-          pageScales: {
-            ...pageScales,
-            pageKey(scoreId, sourcePage): clamped,
-          },
+          pageScales: {...pageScales, pageKey(scoreId, sourcePage): clamped},
         );
     }
   }
@@ -121,12 +104,12 @@ class PageScalePrefs {
   }
 
   Map<String, dynamic> toJson() => {
-        'editScope': editScope.name,
-        'locked': locked,
-        'fixedScale': fixedScale,
-        'scoreScales': scoreScales,
-        'pageScales': pageScales,
-      };
+    'editScope': editScope.name,
+    'locked': locked,
+    'fixedScale': fixedScale,
+    'scoreScales': scoreScales,
+    'pageScales': pageScales,
+  };
 
   factory PageScalePrefs.fromJson(Map<String, dynamic> json) {
     PageScaleScope scope = PageScaleScope.fixed;
@@ -142,7 +125,8 @@ class PageScalePrefs {
       if (raw is! Map) return const {};
       return {
         for (final e in raw.entries)
-          if (e.value is num) e.key.toString(): clampScale((e.value as num).toDouble()),
+          if (e.value is num)
+            e.key.toString(): clampScale((e.value as num).toDouble()),
       };
     }
 
@@ -169,12 +153,12 @@ class PageScalePrefs {
 
   @override
   int get hashCode => Object.hash(
-        editScope,
-        locked,
-        fixedScale,
-        Object.hashAll(scoreScales.entries),
-        Object.hashAll(pageScales.entries),
-      );
+    editScope,
+    locked,
+    fixedScale,
+    Object.hashAll(scoreScales.entries),
+    Object.hashAll(pageScales.entries),
+  );
 }
 
 bool _mapEquals(Map<String, double> a, Map<String, double> b) {

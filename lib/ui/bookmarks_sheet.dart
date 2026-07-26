@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:standscore/bookmark/bookmark.dart';
 import 'package:standscore/bookmark/bookmark_store.dart';
+import 'package:standscore/ui/title_prompt.dart';
 
 Future<void> showBookmarksSheet({
   required BuildContext context,
@@ -57,7 +58,7 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
   }
 
   Future<void> _add() async {
-    final title = await _promptTitle(
+    final title = await promptForTitle(
       context: context,
       title: 'Add bookmark',
       initial: 'Page ${widget.currentPage}',
@@ -68,7 +69,7 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
   }
 
   Future<void> _rename(Bookmark bookmark) async {
-    final title = await _promptTitle(
+    final title = await promptForTitle(
       context: context,
       title: 'Rename bookmark',
       initial: bookmark.title,
@@ -116,109 +117,51 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
                 child: _loading
                     ? const Center(child: CircularProgressIndicator())
                     : _items.isEmpty
-                        ? Center(
-                            child: Text(
-                              'No bookmarks yet',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: _items.length,
-                            itemBuilder: (context, index) {
-                              final bookmark = _items[index];
-                              return ListTile(
-                                leading: const Icon(Icons.bookmark_outline),
-                                title: Text(bookmark.title),
-                                subtitle: Text('Page ${bookmark.pageNumber}'),
-                                onTap: () {
-                                  Navigator.of(context).pop();
-                                  widget.onJumpToPage(bookmark.pageNumber);
-                                },
-                                trailing: PopupMenuButton<String>(
-                                  onSelected: (value) {
-                                    if (value == 'rename') {
-                                      _rename(bookmark);
-                                    } else if (value == 'delete') {
-                                      _delete(bookmark);
-                                    }
-                                  },
-                                  itemBuilder: (context) => const [
-                                    PopupMenuItem(
-                                      value: 'rename',
-                                      child: Text('Rename'),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'delete',
-                                      child: Text('Delete'),
-                                    ),
-                                  ],
-                                ),
-                              );
+                    ? Center(
+                        child: Text(
+                          'No bookmarks yet',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: _items.length,
+                        itemBuilder: (context, index) {
+                          final bookmark = _items[index];
+                          return ListTile(
+                            leading: const Icon(Icons.bookmark_outline),
+                            title: Text(bookmark.title),
+                            subtitle: Text('Page ${bookmark.pageNumber}'),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              widget.onJumpToPage(bookmark.pageNumber);
                             },
-                          ),
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'rename') {
+                                  _rename(bookmark);
+                                } else if (value == 'delete') {
+                                  _delete(bookmark);
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'rename',
+                                  child: Text('Rename'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-Future<String?> _promptTitle({
-  required BuildContext context,
-  required String title,
-  required String initial,
-}) {
-  return showDialog<String>(
-    context: context,
-    builder: (context) => _TitlePromptDialog(title: title, initial: initial),
-  );
-}
-
-/// Owns its [TextEditingController] so dispose runs after the route unmounts.
-class _TitlePromptDialog extends StatefulWidget {
-  const _TitlePromptDialog({required this.title, required this.initial});
-
-  final String title;
-  final String initial;
-
-  @override
-  State<_TitlePromptDialog> createState() => _TitlePromptDialogState();
-}
-
-class _TitlePromptDialogState extends State<_TitlePromptDialog> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initial);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submit() => Navigator.of(context).pop(_controller.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        decoration: const InputDecoration(labelText: 'Title'),
-        onSubmitted: (_) => _submit(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Save'),
-        ),
-      ],
     );
   }
 }

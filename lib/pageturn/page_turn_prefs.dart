@@ -6,13 +6,7 @@ import 'package:standscore/pageturn/page_turn_animation.dart';
 import 'package:standscore/pageturn/page_turn_delay.dart';
 
 /// Where a tap should send PageTurn.
-enum PageTurnTapMode {
-  previous,
-  next,
-  leftRight,
-  topBottom,
-  disabled,
-}
+enum PageTurnTapMode { previous, next, leftRight, topBottom, disabled }
 
 enum PageTurnAction { previous, next }
 
@@ -57,8 +51,7 @@ class PageTurnPrefs {
   /// Duration for Single-page slide turns (Spec 0007).
   Duration get animationDuration => animationPreset.duration;
 
-  bool get anySwipeEnabled =>
-      swipeLeft || swipeRight || swipeUp || swipeDown;
+  bool get anySwipeEnabled => swipeLeft || swipeRight || swipeUp || swipeDown;
 
   PageTurnPrefs copyWith({
     PageTurnTapMode? tapMode,
@@ -91,19 +84,19 @@ class PageTurnPrefs {
   }
 
   Map<String, dynamic> toJson() => {
-        'tapMode': tapMode.name,
-        'swipeLeft': swipeLeft,
-        'swipeRight': swipeRight,
-        'swipeUp': swipeUp,
-        'swipeDown': swipeDown,
-        'hintShown': hintShown,
-        'delayMs': delayPreset.duration.inMilliseconds,
-        'delayScope': delayScope.name,
-        'animation': animationPreset.name,
-        'reverseDirection': reverseDirection,
-        'turnAmount': turnAmount.name,
-        'gestureMap': gestureMap.toJson(),
-      };
+    'tapMode': tapMode.name,
+    'swipeLeft': swipeLeft,
+    'swipeRight': swipeRight,
+    'swipeUp': swipeUp,
+    'swipeDown': swipeDown,
+    'hintShown': hintShown,
+    'delayMs': delayPreset.duration.inMilliseconds,
+    'delayScope': delayScope.name,
+    'animation': animationPreset.name,
+    'reverseDirection': reverseDirection,
+    'turnAmount': turnAmount.name,
+    'gestureMap': gestureMap.toJson(),
+  };
 
   factory PageTurnPrefs.fromJson(Map<String, dynamic> json) {
     return PageTurnPrefs(

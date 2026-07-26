@@ -7,7 +7,7 @@ import 'package:standscore/library/library_sort.dart';
 /// App-level Library sort under `standscore/library_sort_prefs.json`.
 class LibrarySortPrefsStore {
   LibrarySortPrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'library_sort_prefs.json'));
+    : _file = File(p.join(root.path, 'library_sort_prefs.json'));
 
   final File _file;
 

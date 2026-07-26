@@ -23,27 +23,27 @@ extension StampKindX on StampKind {
 
   /// Short picker label (one token — avoid glyph+label duplication).
   String get label => switch (this) {
-        StampKind.dynamicP => 'p',
-        StampKind.dynamicF => 'f',
-        StampKind.sharp => '\u266F',
-        StampKind.flat => '\u266D',
-        StampKind.natural => '\u266E',
-        StampKind.box => 'Box',
-        StampKind.circle => 'Circle',
-        StampKind.arrow => 'Arrow',
-        StampKind.text => 'Text',
-      };
+    StampKind.dynamicP => 'p',
+    StampKind.dynamicF => 'f',
+    StampKind.sharp => '\u266F',
+    StampKind.flat => '\u266D',
+    StampKind.natural => '\u266E',
+    StampKind.box => 'Box',
+    StampKind.circle => 'Circle',
+    StampKind.arrow => 'Arrow',
+    StampKind.text => 'Text',
+  };
 
   /// Glyph drawn on the page for symbol stamps (empty for shapes/text).
   String get glyph => switch (this) {
-        StampKind.dynamicP => 'p',
-        StampKind.dynamicF => 'f',
-        StampKind.sharp => '\u266F',
-        StampKind.flat => '\u266D',
-        StampKind.natural => '\u266E',
-        StampKind.text => '',
-        StampKind.box || StampKind.circle || StampKind.arrow => '',
-      };
+    StampKind.dynamicP => 'p',
+    StampKind.dynamicF => 'f',
+    StampKind.sharp => '\u266F',
+    StampKind.flat => '\u266D',
+    StampKind.natural => '\u266E',
+    StampKind.text => '',
+    StampKind.box || StampKind.circle || StampKind.arrow => '',
+  };
 }
 
 /// Placed stamp in normalized page coordinates (Spec 0019).
@@ -98,15 +98,15 @@ class AnnotationStamp {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'pageNumber': pageNumber,
-        'kind': kind.name,
-        'cx': center.dx,
-        'cy': center.dy,
-        'size': size,
-        'color': color.toARGB32(),
-        if (text != null) 'text': text,
-      };
+    'id': id,
+    'pageNumber': pageNumber,
+    'kind': kind.name,
+    'cx': center.dx,
+    'cy': center.dy,
+    'size': size,
+    'color': color.toARGB32(),
+    if (text != null) 'text': text,
+  };
 
   /// Returns null if [kind] is unknown (forward-compatible load).
   static AnnotationStamp? tryFromJson(Map<String, dynamic> json) {
@@ -132,7 +132,9 @@ class AnnotationStamp {
         (json['cy'] as num).toDouble(),
       ),
       size: (json['size'] as num?)?.toDouble() ?? 0.06,
-      color: Color(json['color'] as int? ?? DrawToolPresets.penColor.toARGB32()),
+      color: Color(
+        json['color'] as int? ?? DrawToolPresets.penColor.toARGB32(),
+      ),
       text: json['text'] as String?,
     );
   }

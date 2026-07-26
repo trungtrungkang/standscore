@@ -22,11 +22,11 @@ class Bookmark {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'pageNumber': pageNumber,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'pageNumber': pageNumber,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory Bookmark.fromJson(Map<String, dynamic> json) {
     return Bookmark(

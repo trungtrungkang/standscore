@@ -22,17 +22,17 @@ class DrawStylePrefs {
   Color get markerColor => Color(markerColorValue);
 
   Color colorFor(DrawTool tool) => switch (tool) {
-        DrawTool.pen => penColor,
-        DrawTool.marker => markerColor,
-        DrawTool.eraser || DrawTool.eyedropper => penColor,
-      };
+    DrawTool.pen => penColor,
+    DrawTool.marker => markerColor,
+    DrawTool.eraser || DrawTool.eyedropper => penColor,
+  };
 
   double widthFor(DrawTool tool) => switch (tool) {
-        DrawTool.pen => penWidth,
-        DrawTool.marker => markerWidth,
-        DrawTool.eraser => DrawToolPresets.eraserRadius * 2,
-        DrawTool.eyedropper => penWidth,
-      };
+    DrawTool.pen => penWidth,
+    DrawTool.marker => markerWidth,
+    DrawTool.eraser => DrawToolPresets.eraserRadius * 2,
+    DrawTool.eyedropper => penWidth,
+  };
 
   DrawStylePrefs copyWith({
     int? penColorValue,
@@ -54,28 +54,28 @@ class DrawStylePrefs {
   DrawStylePrefs withColorFor(DrawTool tool, Color color) {
     final argb = color.toARGB32();
     return switch (tool) {
-      DrawTool.marker => copyWith(
-          markerColorValue: _withMarkerAlpha(argb),
-        ),
+      DrawTool.marker => copyWith(markerColorValue: _withMarkerAlpha(argb)),
       _ => copyWith(penColorValue: 0xFF000000 | (argb & 0x00FFFFFF)),
     };
   }
 
   Map<String, dynamic> toJson() => {
-        'penColor': penColorValue,
-        'penWidth': penWidth,
-        'markerColor': markerColorValue,
-        'markerWidth': markerWidth,
-        'straightLine': straightLine,
-      };
+    'penColor': penColorValue,
+    'penWidth': penWidth,
+    'markerColor': markerColorValue,
+    'markerWidth': markerWidth,
+    'straightLine': straightLine,
+  };
 
   factory DrawStylePrefs.fromJson(Map<String, dynamic> json) {
     return DrawStylePrefs(
       penColorValue: json['penColor'] as int? ?? 0xFFE11D48,
-      penWidth: (json['penWidth'] as num?)?.toDouble() ?? DrawToolPresets.penWidth,
+      penWidth:
+          (json['penWidth'] as num?)?.toDouble() ?? DrawToolPresets.penWidth,
       markerColorValue: json['markerColor'] as int? ?? 0x99FACC15,
       markerWidth:
-          (json['markerWidth'] as num?)?.toDouble() ?? DrawToolPresets.markerWidth,
+          (json['markerWidth'] as num?)?.toDouble() ??
+          DrawToolPresets.markerWidth,
       straightLine: json['straightLine'] as bool? ?? false,
     );
   }

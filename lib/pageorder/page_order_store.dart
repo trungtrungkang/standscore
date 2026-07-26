@@ -6,10 +6,8 @@ import 'package:standscore/pageorder/page_order.dart';
 
 /// Per-Score PageOrder at `standscore/page_orders/<scoreId>.json`.
 class PageOrderStore {
-  PageOrderStore({
-    required Directory root,
-    required this.scoreId,
-  }) : _file = File(p.join(root.path, 'page_orders', '$scoreId.json'));
+  PageOrderStore({required Directory root, required this.scoreId})
+    : _file = File(p.join(root.path, 'page_orders', '$scoreId.json'));
 
   final String scoreId;
   final File _file;

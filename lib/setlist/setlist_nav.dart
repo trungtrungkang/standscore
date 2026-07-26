@@ -1,9 +1,6 @@
 /// Target location after a PageTurn that may cross Setlist Score boundaries.
 class SetlistNavTarget {
-  const SetlistNavTarget({
-    required this.scoreIndex,
-    required this.pageNumber,
-  });
+  const SetlistNavTarget({required this.scoreIndex, required this.pageNumber});
 
   final int scoreIndex;
 

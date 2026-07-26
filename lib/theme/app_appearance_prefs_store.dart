@@ -7,7 +7,7 @@ import 'package:standscore/theme/app_appearance.dart';
 /// App-level appearance under `standscore/app_appearance_prefs.json`.
 class AppAppearancePrefsStore {
   AppAppearancePrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'app_appearance_prefs.json'));
+    : _file = File(p.join(root.path, 'app_appearance_prefs.json'));
 
   final File _file;
 

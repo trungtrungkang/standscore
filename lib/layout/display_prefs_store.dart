@@ -7,7 +7,7 @@ import 'package:standscore/layout/display_prefs.dart';
 /// App-level display prefs under `standscore/display_prefs.json`.
 class DisplayPrefsStore {
   DisplayPrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'display_prefs.json'));
+    : _file = File(p.join(root.path, 'display_prefs.json'));
 
   final File _file;
 

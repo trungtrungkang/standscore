@@ -350,8 +350,8 @@ Future<void> showManageLabelsSheet({
                                           usage == 0
                                               ? 'Delete “${label.name}”?'
                                               : 'Delete “${label.name}”? '
-                                                  'It will be removed from $usage '
-                                                  'score${usage == 1 ? '' : 's'}.',
+                                                    'It will be removed from $usage '
+                                                    'score${usage == 1 ? '' : 's'}.',
                                         ),
                                         actions: [
                                           TextButton(
@@ -452,10 +452,7 @@ class _LabelNameDialogState extends State<_LabelNameDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Save'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('Save')),
       ],
     );
   }

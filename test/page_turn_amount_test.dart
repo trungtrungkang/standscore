@@ -56,9 +56,7 @@ void main() {
     final dir = await Directory.systemTemp.createTemp('turn_amount_');
     addTearDown(() => dir.delete(recursive: true));
     final store = PageTurnPrefsStore(root: dir);
-    await store.save(
-      const PageTurnPrefs(turnAmount: TurnAmount.half),
-    );
+    await store.save(const PageTurnPrefs(turnAmount: TurnAmount.half));
     final loaded = await store.load();
     expect(loaded.turnAmount, TurnAmount.half);
   });

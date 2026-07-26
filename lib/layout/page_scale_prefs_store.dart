@@ -7,7 +7,7 @@ import 'package:standscore/layout/page_scale.dart';
 /// App-level page scale prefs under `standscore/page_scale_prefs.json`.
 class PageScalePrefsStore {
   PageScalePrefsStore({required Directory root})
-      : _file = File(p.join(root.path, 'page_scale_prefs.json'));
+    : _file = File(p.join(root.path, 'page_scale_prefs.json'));
 
   final File _file;
 

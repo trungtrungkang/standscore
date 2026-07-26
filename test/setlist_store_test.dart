@@ -22,10 +22,7 @@ void main() {
     );
     await store.upsert(list);
 
-    expect(
-      File(p.join(root.path, 'setlists.json')).existsSync(),
-      isTrue,
-    );
+    expect(File(p.join(root.path, 'setlists.json')).existsSync(), isTrue);
 
     final listed = await store.list();
     expect(listed, hasLength(1));

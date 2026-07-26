@@ -75,25 +75,35 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
           children: [
             Text('Page scale', style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
+            // Say what this is before showing knobs: pinch changes the view
+            // and forgets; this is remembered (Spec 0036).
             Text(
-              'Effective on this page: ${effective.toStringAsFixed(2)}×',
+              'How big the music is drawn, remembered between sessions. '
+              'Pinching changes the view for now; this changes it for good.',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'On this page right now: ${effective.toStringAsFixed(2)}×',
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 16),
-            Text('Scope', style: theme.textTheme.labelLarge),
+            Text('Applies to', style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
             SegmentedButton<PageScaleScope>(
               segments: [
                 for (final scope in PageScaleScope.values)
-                  ButtonSegment(
-                    value: scope,
-                    label: Text(scope.label),
-                  ),
+                  ButtonSegment(value: scope, label: Text(scope.label)),
               ],
               selected: {_prefs.editScope},
               onSelectionChanged: (selected) {
                 _update(_prefs.copyWith(editScope: selected.first));
               },
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _scopeHint(_prefs.editScope),
+              style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 20),
             Row(
@@ -121,8 +131,12 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Lock zoom'),
-              subtitle: const Text('Disables pinch and double-tap scale'),
+              // The intent, not the mechanism — the mechanism is the subtitle.
+              title: const Text('Keep this scale'),
+              subtitle: const Text(
+                'Pinch and double-tap are off, so a stray touch mid-piece '
+                'cannot move the music',
+              ),
               value: _prefs.locked,
               onChanged: (value) => _update(_prefs.copyWith(locked: value)),
             ),
@@ -132,3 +146,12 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
     );
   }
 }
+
+/// What each scope covers, in the terms the musician is choosing between.
+String _scopeHint(PageScaleScope scope) => switch (scope) {
+  PageScaleScope.fixed => 'Every Score, unless one has its own scale',
+  PageScaleScope.perScore => 'This Score only, on every page of it',
+  PageScaleScope.perPage =>
+    'This page only — a dense page can be bigger '
+        'without changing the rest',
+};

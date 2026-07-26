@@ -8,10 +8,7 @@ import 'package:standscore/setlist/setlist.dart';
 
 /// One resolved Score slot in an open Setlist session.
 class SetlistPiece {
-  const SetlistPiece({
-    required this.score,
-    required this.filePath,
-  });
+  const SetlistPiece({required this.score, required this.filePath});
 
   final Score score;
   final String filePath;
