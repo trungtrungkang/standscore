@@ -47,6 +47,7 @@ import 'package:standscore/ui/display_sheet.dart';
 import 'package:standscore/ui/draw_toolbar.dart';
 import 'package:standscore/ui/jump_link_edit_sheet.dart';
 import 'package:standscore/ui/jump_link_overlay.dart';
+import 'package:standscore/ui/jump_links_sheet.dart';
 import 'package:standscore/ui/layout_settings_sheet.dart';
 import 'package:standscore/ui/page_nav_bar.dart';
 import 'package:standscore/ui/page_order_editor_screen.dart';
@@ -623,8 +624,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           currentPage: _pageNumber,
           onJumpToPage: _jumpToPage,
         );
-      case 'add_jump_link':
-        _addJumpLink();
+      case 'jump_links':
+        _showJumpLinks();
       case 'layout':
         showLayoutSettingsSheet(
           context: context,
@@ -727,29 +728,20 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     setState(() => _jumpLinks = links);
   }
 
-  Future<void> _addJumpLink() async {
-    if (_jumpLinkStore == null || _pageCount < 1) return;
-    final result = await showJumpLinkEditor(
+  Future<void> _showJumpLinks() async {
+    final store = _jumpLinkStore;
+    if (store == null) return;
+    await showJumpLinksSheet(
       context: context,
+      store: store,
+      currentPage: _pageNumber,
       pageCount: _pageCount,
-      originPage: _pageNumber,
-    );
-    if (result == null || result.action != JumpLinkEditAction.save) return;
-    final draft = result.link!;
-    await _jumpLinkStore!.add(
-      originPage: draft.originPage,
-      destinationPage: draft.destinationPage,
-      normRect: draft.normRect,
-      colorValue: draft.colorValue,
+      onJumpToPage: _jumpToPage,
+      onChanged: () {
+        _reloadJumpLinks();
+      },
     );
     await _reloadJumpLinks();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Drag the button to a clear spot. Long-press to edit.'),
-        duration: Duration(seconds: 3),
-      ),
-    );
   }
 
   Future<void> _editJumpLink(JumpLink link) async {
@@ -1218,8 +1210,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                       child: Text('Bookmarks'),
                     ),
                     const PopupMenuItem(
-                      value: 'add_jump_link',
-                      child: Text('Add jump link'),
+                      value: 'jump_links',
+                      child: Text('Jump Links'),
                     ),
                     PopupMenuItem(
                       value: 'toggle_annotations',

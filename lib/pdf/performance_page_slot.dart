@@ -65,12 +65,17 @@ class PerformancePageSlot extends StatelessWidget {
   final double pageBorderWidth;
   final Color pageBorderColor;
 
-  BoxDecoration _pageDecoration({Color fill = Colors.white}) {
-    return BoxDecoration(
-      color: fill,
-      border: pageBorderEnabled
-          ? Border.all(color: pageBorderColor, width: pageBorderWidth)
-          : null,
+  /// Drawn above page pixels — PdfPageView [decoration] sits under the image
+  /// and is fully covered, so borders there are invisible.
+  Widget? _pageBorderOverlay() {
+    if (!pageBorderEnabled) return null;
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: pageBorderColor, width: pageBorderWidth),
+        ),
+        child: const SizedBox.expand(),
+      ),
     );
   }
 
@@ -83,16 +88,20 @@ class PerformancePageSlot extends StatelessWidget {
         child: Center(
           child: AspectRatio(
             aspectRatio: 1 / 1.414,
-            child: DecoratedBox(
-              decoration: _pageDecoration(),
-              child: Center(
-                child: Text(
-                  'Blank',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                const ColoredBox(color: Colors.white),
+                Center(
+                  child: Text(
+                    'Blank',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                  ),
                 ),
-              ),
+                ?_pageBorderOverlay(),
+              ],
             ),
           ),
         ),
@@ -135,7 +144,8 @@ class PerformancePageSlot extends StatelessWidget {
                           document: document,
                           pageNumber: source,
                           alignment: Alignment.center,
-                          decoration: _pageDecoration(),
+                          decoration:
+                              const BoxDecoration(color: Colors.white),
                         ),
                         PageAnnotationOverlay(
                           pageRect: pageRect,
@@ -154,6 +164,7 @@ class PerformancePageSlot extends StatelessWidget {
                           onSelectedStampChanged: onSelectedStampChanged,
                           annotationsVisible: annotationsVisible,
                         ),
+                        ?_pageBorderOverlay(),
                       ],
                     ),
                   );
