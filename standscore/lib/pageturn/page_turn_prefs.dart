@@ -6,14 +6,32 @@ import 'package:standscore/pageturn/page_turn_animation.dart';
 import 'package:standscore/pageturn/page_turn_delay.dart';
 
 /// Where a tap should send PageTurn.
-enum PageTurnTapMode { previous, next, leftRight, topBottom, disabled }
+///
+/// [matchLayout] is a sentinel, not a zone: it means "whichever halves lie
+/// along the axis this layout moves pages" and is resolved by
+/// `resolvePageTurnPrefsForLayout` before any tap is read (Spec 0041).
+enum PageTurnTapMode {
+  matchLayout,
+  previous,
+  next,
+  leftRight,
+  topBottom,
+  disabled,
+}
+
+/// Whether the swipe switches are the musician's or the layout's (Spec 0041).
+enum SwipeMode { matchLayout, custom }
 
 enum PageTurnAction { previous, next }
 
 /// App-level PageTurn preferences (Spec 0003 + 0006–0008 + 0014–0015).
 class PageTurnPrefs {
+  /// [tapMode] and [swipeMode] default to Match layout, which only reaches a
+  /// new install — an existing prefs file keeps the switches its owner set
+  /// (Spec 0041).
   const PageTurnPrefs({
-    this.tapMode = PageTurnTapMode.leftRight,
+    this.tapMode = PageTurnTapMode.matchLayout,
+    this.swipeMode = SwipeMode.matchLayout,
     this.swipeLeft = true,
     this.swipeRight = true,
     this.swipeUp = false,
@@ -28,6 +46,10 @@ class PageTurnPrefs {
   });
 
   final PageTurnTapMode tapMode;
+
+  /// When [SwipeMode.matchLayout], the four switches below are ignored in
+  /// favour of the layout's own axis.
+  final SwipeMode swipeMode;
   final bool swipeLeft;
   final bool swipeRight;
   final bool swipeUp;
@@ -55,6 +77,7 @@ class PageTurnPrefs {
 
   PageTurnPrefs copyWith({
     PageTurnTapMode? tapMode,
+    SwipeMode? swipeMode,
     bool? swipeLeft,
     bool? swipeRight,
     bool? swipeUp,
@@ -69,6 +92,7 @@ class PageTurnPrefs {
   }) {
     return PageTurnPrefs(
       tapMode: tapMode ?? this.tapMode,
+      swipeMode: swipeMode ?? this.swipeMode,
       swipeLeft: swipeLeft ?? this.swipeLeft,
       swipeRight: swipeRight ?? this.swipeRight,
       swipeUp: swipeUp ?? this.swipeUp,
@@ -85,6 +109,7 @@ class PageTurnPrefs {
 
   Map<String, dynamic> toJson() => {
     'tapMode': tapMode.name,
+    'swipeMode': swipeMode.name,
     'swipeLeft': swipeLeft,
     'swipeRight': swipeRight,
     'swipeUp': swipeUp,
@@ -103,6 +128,12 @@ class PageTurnPrefs {
       tapMode: PageTurnTapMode.values.firstWhere(
         (m) => m.name == json['tapMode'],
         orElse: () => PageTurnTapMode.leftRight,
+      ),
+      // Absent means the file predates 0041, so its switches are explicit:
+      // Match layout is offered to those installs, never imposed on them.
+      swipeMode: SwipeMode.values.firstWhere(
+        (m) => m.name == json['swipeMode'],
+        orElse: () => SwipeMode.custom,
       ),
       swipeLeft: json['swipeLeft'] as bool? ?? true,
       swipeRight: json['swipeRight'] as bool? ?? true,
@@ -137,6 +168,11 @@ PageTurnAction? resolveTapAction({
 }) {
   if (viewSize.width <= 0 || viewSize.height <= 0) return null;
   switch (mode) {
+    case PageTurnTapMode.matchLayout:
+      // Resolved against the layout before it gets here; a tap arriving with
+      // the sentinel still on means a caller skipped that step.
+      assert(false, 'resolvePageTurnPrefsForLayout was not applied');
+      return null;
     case PageTurnTapMode.disabled:
       return null;
     case PageTurnTapMode.previous:

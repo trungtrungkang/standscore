@@ -70,6 +70,51 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  group('layout notice (Spec 0041)', () {
+    Future<void> pumpNotice(
+      WidgetTester tester, {
+      required String text,
+      required int seq,
+      required bool enabled,
+    }) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TransientPill(
+              text: text,
+              trigger: seq,
+              enabled: enabled,
+              duration: duration,
+            ),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('a layout the screen chose announces itself once', (
+      tester,
+    ) async {
+      await pumpNotice(tester, text: '', seq: 0, enabled: false);
+      await pumpNotice(tester, text: 'Two pages', seq: 1, enabled: true);
+      await tester.pump();
+
+      expect(opacity(tester), 1);
+      expect(find.text('Two pages'), findsOneWidget);
+
+      // Same layout still on screen a moment later is not news.
+      await tester.pump(duration);
+      expect(opacity(tester), 0);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('a rebuild that changed nothing says nothing', (tester) async {
+      await pumpNotice(tester, text: 'Two pages', seq: 1, enabled: true);
+      await pumpNotice(tester, text: 'Two pages', seq: 1, enabled: true);
+      await tester.pump();
+      expect(opacity(tester), 0);
+    });
+  });
+
   testWidgets('never takes a tap meant for the PageTurn zone', (tester) async {
     // It floats over the bottom-right corner, which is where the musician
     // taps to turn the page once the PageNavBar is hidden (0034).

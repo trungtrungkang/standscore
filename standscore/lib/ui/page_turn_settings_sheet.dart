@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:standscore/layout/pdf_layout_mode.dart';
 import 'package:standscore/pageturn/gesture_map.dart';
+import 'package:standscore/pageturn/layout_navigation.dart';
 import 'package:standscore/pageturn/page_turn_amount.dart';
 import 'package:standscore/pageturn/page_turn_animation.dart';
 import 'package:standscore/pageturn/page_turn_delay.dart';
@@ -9,6 +11,10 @@ Future<void> showPageTurnSettingsSheet({
   required BuildContext context,
   required PageTurnPrefs prefs,
   required ValueChanged<PageTurnPrefs> onChanged,
+
+  /// The layout in force, already resolved: the sheet describes what Match
+  /// layout means here and hides what this layout ignores (Spec 0041).
+  PdfLayoutMode layoutMode = PdfLayoutMode.single,
 }) async {
   var current = prefs;
   await showModalBottomSheet<void>(
@@ -77,6 +83,12 @@ Future<void> showPageTurnSettingsSheet({
                           'Tap zones',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'In ${layoutMode.label}: '
+                          '${navigationHintFor(layoutMode, current)}.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                         const SizedBox(height: 8),
                         Wrap(
                           spacing: 8,
@@ -97,29 +109,45 @@ Future<void> showPageTurnSettingsSheet({
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         SwitchListTile(
-                          title: const Text('Swipe left → next'),
-                          value: current.swipeLeft,
-                          onChanged: (v) =>
-                              update(current.copyWith(swipeLeft: v)),
+                          title: const Text('Match layout'),
+                          subtitle: const Text(
+                            'Swipe along the way the pages move',
+                          ),
+                          value: current.swipeMode == SwipeMode.matchLayout,
+                          onChanged: (v) => update(
+                            current.copyWith(
+                              swipeMode: v
+                                  ? SwipeMode.matchLayout
+                                  : SwipeMode.custom,
+                            ),
+                          ),
                         ),
-                        SwitchListTile(
-                          title: const Text('Swipe right → previous'),
-                          value: current.swipeRight,
-                          onChanged: (v) =>
-                              update(current.copyWith(swipeRight: v)),
-                        ),
-                        SwitchListTile(
-                          title: const Text('Swipe up → next'),
-                          value: current.swipeUp,
-                          onChanged: (v) =>
-                              update(current.copyWith(swipeUp: v)),
-                        ),
-                        SwitchListTile(
-                          title: const Text('Swipe down → previous'),
-                          value: current.swipeDown,
-                          onChanged: (v) =>
-                              update(current.copyWith(swipeDown: v)),
-                        ),
+                        if (current.swipeMode == SwipeMode.custom) ...[
+                          SwitchListTile(
+                            title: const Text('Swipe left → next'),
+                            value: current.swipeLeft,
+                            onChanged: (v) =>
+                                update(current.copyWith(swipeLeft: v)),
+                          ),
+                          SwitchListTile(
+                            title: const Text('Swipe right → previous'),
+                            value: current.swipeRight,
+                            onChanged: (v) =>
+                                update(current.copyWith(swipeRight: v)),
+                          ),
+                          SwitchListTile(
+                            title: const Text('Swipe up → next'),
+                            value: current.swipeUp,
+                            onChanged: (v) =>
+                                update(current.copyWith(swipeUp: v)),
+                          ),
+                          SwitchListTile(
+                            title: const Text('Swipe down → previous'),
+                            value: current.swipeDown,
+                            onChanged: (v) =>
+                                update(current.copyWith(swipeDown: v)),
+                          ),
+                        ],
                         const Divider(height: 32),
                         SwitchListTile(
                           title: const Text('Reverse page-turn direction'),
@@ -130,30 +158,38 @@ Future<void> showPageTurnSettingsSheet({
                           onChanged: (v) =>
                               update(current.copyWith(reverseDirection: v)),
                         ),
-                        const Divider(height: 32),
-                        Text(
-                          'Turn amount',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Half page advances ~½ screen in Fit width/height scroll. '
-                          'Not the same as Half page layout.',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: TurnAmount.values.map((amount) {
-                            return ChoiceChip(
-                              label: Text(_turnAmountLabel(amount)),
-                              selected: current.turnAmount == amount,
-                              onSelected: (_) =>
-                                  update(current.copyWith(turnAmount: amount)),
-                            );
-                          }).toList(),
-                        ),
+                        // Hidden where it does nothing: One page and the peek
+                        // layouts always advance one page (Spec 0041).
+                        if (turnAmountApplies(layoutMode)) ...[
+                          const Divider(height: 32),
+                          Text(
+                            'Turn amount',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            layoutMode == PdfLayoutMode.twoPage
+                                ? 'Half advances one page of the spread '
+                                      'instead of the whole pair.'
+                                : 'Half advances ~½ screen instead of a whole '
+                                      'one. Not the same as the peek layouts.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: TurnAmount.values.map((amount) {
+                              return ChoiceChip(
+                                label: Text(_turnAmountLabel(amount)),
+                                selected: current.turnAmount == amount,
+                                onSelected: (_) => update(
+                                  current.copyWith(turnAmount: amount),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                         const Divider(height: 32),
                         Text(
                           'Animation',
@@ -338,6 +374,7 @@ String _scopeLabel(PageTurnDelayScope scope) {
 
 String _tapModeLabel(PageTurnTapMode mode) {
   return switch (mode) {
+    PageTurnTapMode.matchLayout => 'Match layout',
     PageTurnTapMode.leftRight => 'Left / right',
     PageTurnTapMode.topBottom => 'Top / bottom',
     PageTurnTapMode.previous => 'Anywhere → prev',

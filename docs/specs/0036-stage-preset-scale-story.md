@@ -1,6 +1,6 @@
 # 0036 — Stage preset, the scale story, and the hidden page indicator
 
-- **Status:** accepted
+- **Status:** done
 - **Type:** feature
 - **Horizon:** H2
 - **Owner (human):** Orchestrator
@@ -9,6 +9,8 @@
 - **Parity IDs:** Q4 (roadmap B3)
 - **G3:** accepted (2026-07-26)
 - **G3 notes:** Recommendations taken, with the preset revised at G3: **one ScoreMenu entry whose label flips with the current state**, in the **Playing** group — not two sibling entries in View. It follows the Show/Hide annotations idiom already in the menu, keeps every group inside 0035's four-entry ceiling, and "get ready to play" is a Playing verb, not a View one. Zoom lock stays in the bundle but is the first thing to cut if it feels wrong on device.
+- **G4:** pass (2026-07-26)
+- **G4 notes:** Zoom lock stayed — the device run gave no reason to cut it. Three fixes were needed to get here, all recorded in the DECISIONS-LOG: the Undo snackbar parked itself over the Score (`SnackBar.persist` defaults to `action != null` in Flutter 3.44, so `undoSnackBar()` sets it false), the scrubber sat flush on the home indicator where a drag switched apps (`kPageNavBarGestureGap`), and landscape reported an untouched Score as zoomed in, killing swipe PageTurn — the zoom checks now go through one `pdfFitZoom`, which 0041 then built on.
 
 ## Problem
 
@@ -89,18 +91,18 @@ A preset that bundles existing settings may want a name in `CONTEXT.md` at G1 �
 
 Testable checklist (G4):
 
-- [ ] One entry puts the app into playing shape: chrome hidden, status bar hidden, zoom locked
-- [ ] The same entry, now reading the other way, brings it back: chrome visible, status bar visible, zoom unlocked
-- [ ] The entry's label is derived from the current prefs, so flipping a switch by hand changes what it offers next
-- [ ] Neither action changes page scale, layout, page order, colour filter or borders
-- [ ] Undo restores every setting the preset changed, and only those
-- [ ] The individual switches still work after a preset, and disagree with it freely (no mode to fight)
-- [ ] Both actions survive a restart — they set the same persisted prefs the switches do, not a parallel state
-- [ ] With chrome hidden, turning the page shows the position briefly and it fades on its own
-- [ ] The indicator does not appear while chrome is visible, and never blocks a PageTurn tap zone
-- [ ] The indicator agrees with the PageNavBar, including under a custom PageOrder and Half Page
-- [ ] The Page scale sheet says what the scope applies to and what happens to pinch when the scale is kept
-- [ ] Reachable and readable on the smallest supported phone width, light and dark (0026)
+- [x] One entry puts the app into playing shape: chrome hidden, status bar hidden, zoom locked
+- [x] The same entry, now reading the other way, brings it back: chrome visible, status bar visible, zoom unlocked
+- [x] The entry's label is derived from the current prefs, so flipping a switch by hand changes what it offers next
+- [x] Neither action changes page scale, layout, page order, colour filter or borders
+- [x] Undo restores every setting the preset changed, and only those
+- [x] The individual switches still work after a preset, and disagree with it freely (no mode to fight)
+- [x] Both actions survive a restart — they set the same persisted prefs the switches do, not a parallel state
+- [x] With chrome hidden, turning the page shows the position briefly and it fades on its own
+- [x] The indicator does not appear while chrome is visible, and never blocks a PageTurn tap zone
+- [x] The indicator agrees with the PageNavBar, including under a custom PageOrder and Half Page
+- [x] The Page scale sheet says what the scope applies to and what happens to pinch when the scale is kept
+- [x] Reachable and readable on the smallest supported phone width, light and dark (0026)
 
 ## UX notes
 

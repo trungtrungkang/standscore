@@ -8,6 +8,7 @@ import 'package:standscore/ui/score_menu_sheet.dart';
 
 List<ScoreMenuGroup> menu({
   PdfLayoutMode layoutMode = PdfLayoutMode.single,
+  PdfLayoutMode? resolvedLayout,
   PageColorFilterMode colorFilter = PageColorFilterMode.off,
   bool zoomLocked = false,
   bool annotationsVisible = true,
@@ -17,6 +18,7 @@ List<ScoreMenuGroup> menu({
 }) {
   return buildScoreMenu(
     layoutMode: layoutMode,
+    resolvedLayout: resolvedLayout ?? layoutMode,
     colorFilter: colorFilter,
     zoomLocked: zoomLocked,
     annotationsVisible: annotationsVisible,
@@ -53,13 +55,37 @@ void main() {
     });
 
     test('Layout always shows the current mode', () {
-      expect(entryFor(menu(), ScoreMenuAction.layout).value, 'Single page');
+      expect(entryFor(menu(), ScoreMenuAction.layout).value, 'One page');
       expect(
         entryFor(
           menu(layoutMode: PdfLayoutMode.halfPageLeftRight),
           ScoreMenuAction.layout,
         ).value,
-        'Half page (left/right)',
+        'One page + side peek',
+      );
+    });
+
+    test('Layout admits when the screen picked something else (0041)', () {
+      expect(
+        entryFor(
+          menu(
+            layoutMode: PdfLayoutMode.auto,
+            resolvedLayout: PdfLayoutMode.twoPage,
+          ),
+          ScoreMenuAction.layout,
+        ).value,
+        'Auto · Two pages',
+      );
+      expect(
+        entryFor(
+          menu(
+            layoutMode: PdfLayoutMode.twoPage,
+            resolvedLayout: PdfLayoutMode.single,
+          ),
+          ScoreMenuAction.layout,
+        ).value,
+        'Two pages · One page',
+        reason: 'a spread that did not fit must say so where it is read',
       );
     });
 

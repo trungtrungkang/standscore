@@ -6,8 +6,10 @@ import 'package:standscore/layout/half_page.dart';
 import 'package:standscore/layout/pdf_layout_mode.dart';
 
 class PdfLayoutPrefs {
+  /// [mode] defaults to Auto, which only ever reaches a new install: a prefs
+  /// file that already exists keeps the layout its owner chose (Spec 0041).
   const PdfLayoutPrefs({
-    this.mode = PdfLayoutMode.single,
+    this.mode = PdfLayoutMode.auto,
     this.halfPageSeparatorRatio = halfPageSeparatorDefault,
   });
 
@@ -36,6 +38,8 @@ class PdfLayoutPrefs {
     return PdfLayoutPrefs(
       mode: PdfLayoutMode.values.firstWhere(
         (m) => m.name == json['mode'],
+        // A file with no readable mode belongs to an install that predates
+        // Auto, so it keeps the old default rather than being switched over.
         orElse: () => PdfLayoutMode.single,
       ),
       halfPageSeparatorRatio: ratio == null

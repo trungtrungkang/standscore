@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:standscore/layout/half_page.dart';
 
-/// PdfMode reading layout (Specs 0004 / 0013 / ScorePDF-style).
+/// PdfMode reading layout (Specs 0004 / 0013 / 0041).
 enum PdfLayoutMode {
+  /// Whatever the screen can afford — resolved from `LayoutFit`, never drawn
+  /// directly. Stored as a choice; see `resolveLayoutMode` (Spec 0041).
+  auto,
+
   /// One page at a time with horizontal slider turn (not continuous scroll).
   /// Rendered by [SinglePageSlider], not pdfrx [layoutPagesFor].
   single,
@@ -13,10 +17,15 @@ enum PdfLayoutMode {
   /// Facing pages side-by-side.
   twoPage,
 
-  /// Pages stacked vertically (continuous scroll); fit-to-width reading.
+  /// Pages stacked vertically (continuous scroll).
   fitWidth,
 
-  /// Pages in a horizontal strip (continuous scroll); fit-to-height reading.
+  /// Pages in a horizontal strip (continuous scroll).
+  ///
+  /// Cut from the picker at 0041 — its result was whatever the screen's aspect
+  /// happened to produce, including a page wider than a portrait phone. Kept
+  /// in the enum because 0027 restores and older prefs files contain it, and
+  /// resolved to [fitWidth] before anything draws it.
   fitHeight,
 
   /// Current page + peek of next (peek on top). Dedicated [HalfPageView].
@@ -26,29 +35,56 @@ enum PdfLayoutMode {
   halfPageLeftRight,
 }
 
+/// The direction pages move in a layout — and therefore the direction the
+/// musician's thumb should move to turn one (Spec 0041).
+enum LayoutAxis { horizontal, vertical }
+
+LayoutAxis layoutAxisFor(PdfLayoutMode mode) => switch (mode) {
+  PdfLayoutMode.single ||
+  PdfLayoutMode.twoPage ||
+  PdfLayoutMode.fitHeight ||
+  PdfLayoutMode.halfPageLeftRight => LayoutAxis.horizontal,
+  PdfLayoutMode.fitWidth ||
+  PdfLayoutMode.halfPageTopBottom => LayoutAxis.vertical,
+  // Never drawn: resolve first, then ask.
+  PdfLayoutMode.auto => LayoutAxis.horizontal,
+};
+
+/// Layouts offered in the Layout sheet, in reading order (Spec 0041).
+const List<PdfLayoutMode> pickableLayoutModes = [
+  PdfLayoutMode.auto,
+  PdfLayoutMode.single,
+  PdfLayoutMode.twoPage,
+  PdfLayoutMode.halfPageTopBottom,
+  PdfLayoutMode.halfPageLeftRight,
+  PdfLayoutMode.fitWidth,
+];
+
 extension PdfLayoutModeX on PdfLayoutMode {
+  /// Named for what the musician gets, not for how it is computed — "fit" is
+  /// a zoom rule these modes stopped implementing when 0036 took the fit over.
   String get label => switch (this) {
-    PdfLayoutMode.single => 'Single page',
+    PdfLayoutMode.auto => 'Auto',
+    PdfLayoutMode.single => 'One page',
     PdfLayoutMode.twoPage => 'Two pages',
-    PdfLayoutMode.fitWidth => 'Fit width (scroll)',
-    PdfLayoutMode.fitHeight => 'Fit height (scroll)',
-    PdfLayoutMode.halfPageTopBottom => 'Half page (top/bottom)',
-    PdfLayoutMode.halfPageLeftRight => 'Half page (left/right)',
+    PdfLayoutMode.fitWidth => 'Scroll',
+    PdfLayoutMode.fitHeight => 'Scroll (sideways)',
+    PdfLayoutMode.halfPageTopBottom => 'One page + peek',
+    PdfLayoutMode.halfPageLeftRight => 'One page + side peek',
   };
 }
 
 /// pdfrx continuous layouts. Discrete modes use dedicated widgets.
 PdfPageLayoutFunction layoutPagesFor(PdfLayoutMode mode) {
   assert(
-    !isHalfPageLayoutMode(mode) && mode != PdfLayoutMode.single,
-    'Single/half-page modes use dedicated viewers, not layoutPagesFor',
+    !isHalfPageLayoutMode(mode) &&
+        mode != PdfLayoutMode.single &&
+        mode != PdfLayoutMode.auto,
+    'Single/half-page modes use dedicated viewers, and Auto must be resolved',
   );
   return switch (mode) {
-    PdfLayoutMode.single => (pages, params) => _layoutVertical(
-      pages,
-      params,
-      gap: params.margin,
-    ),
+    PdfLayoutMode.auto || PdfLayoutMode.single =>
+      (pages, params) => _layoutVertical(pages, params, gap: params.margin),
     PdfLayoutMode.fitWidth => (pages, params) => _layoutVertical(
       pages,
       params,

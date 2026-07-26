@@ -39,6 +39,7 @@ class SinglePageSlider extends StatefulWidget {
     this.allowUserScroll = false,
     this.reverseDirection = false,
     this.onDocumentReady,
+    this.initialPage = 1,
   });
 
   final String filePath;
@@ -67,6 +68,11 @@ class SinglePageSlider extends StatefulWidget {
   final bool allowUserScroll;
   final bool reverseDirection;
   final ValueChanged<int>? onDocumentReady;
+
+  /// Performance page to open on, read only when this view is built or when it
+  /// opens a different file — a layout change or a draw toggle rebuilds the
+  /// viewer, and the musician should still be looking at their own page.
+  final int initialPage;
 
   @override
   State<SinglePageSlider> createState() => _SinglePageSliderState();
@@ -116,9 +122,13 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
     super.initState();
     widget.controller._attach(this);
     _pageCount = widget.pageOrder.length;
-    _pageController = PageController();
+    _pageIndex = _initialIndex();
+    _pageController = PageController(initialPage: _pageIndex);
     _open();
   }
+
+  int _initialIndex() =>
+      (widget.initialPage - 1).clamp(0, _pageCount > 0 ? _pageCount - 1 : 0);
 
   @override
   void didUpdateWidget(covariant SinglePageSlider oldWidget) {
@@ -169,7 +179,7 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
       _error = null;
       _document = null;
       _pageCount = widget.pageOrder.length;
-      _pageIndex = 0;
+      _pageIndex = _initialIndex();
     });
     previous?.dispose();
     try {
@@ -181,10 +191,18 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
       setState(() {
         _document = doc;
         _pageCount = widget.pageOrder.length;
-        _pageIndex = 0;
+        _pageIndex = _initialIndex();
       });
       widget.onDocumentReady?.call(doc.pages.length);
       widget.controller._notify();
+      // The PageView is built after the document arrives, so a controller
+      // carried over from the previous file is still sitting on its old page.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_pageController.hasClients || _pageCount <= 0) return;
+        if (_pageController.page?.round() != _pageIndex) {
+          _pageController.jumpToPage(_pageIndex);
+        }
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString());

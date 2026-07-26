@@ -39,15 +39,30 @@ void main() {
       );
     });
 
-    test('fitWidth/fitHeight half uses viewport fraction', () {
+    test('a scrolling layout moves by the screen, not by page index', () {
+      // Full used to be goToPage(±1) with a top anchor, which reads the top of
+      // the next page and never the bottom of the one it left — a lost system
+      // per page on any screen where a page does not fit (Spec 0041).
       for (final mode in [PdfLayoutMode.fitWidth, PdfLayoutMode.fitHeight]) {
         final half = resolvePageTurnStep(mode: mode, amount: TurnAmount.half);
         expect(half.kind, PageTurnStepKind.viewportFraction);
         expect(half.viewportFraction, 0.5);
 
         final full = resolvePageTurnStep(mode: mode, amount: TurnAmount.full);
-        expect(full.kind, PageTurnStepKind.performancePages);
-        expect(full.pageDelta, 1);
+        expect(full.kind, PageTurnStepKind.viewportFraction);
+        expect(full.viewportFraction, 1.0);
+      }
+    });
+
+    test('Turn amount is only offered where it changes something', () {
+      expect(turnAmountApplies(PdfLayoutMode.fitWidth), isTrue);
+      expect(turnAmountApplies(PdfLayoutMode.twoPage), isTrue);
+      for (final mode in [
+        PdfLayoutMode.single,
+        PdfLayoutMode.halfPageTopBottom,
+        PdfLayoutMode.halfPageLeftRight,
+      ]) {
+        expect(turnAmountApplies(mode), isFalse, reason: mode.name);
       }
     });
   });

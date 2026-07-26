@@ -39,19 +39,29 @@ Future<double> _layoutSheetHeight(WidgetTester tester, PdfLayoutMode mode) {
     (context) => showLayoutSettingsSheet(
       context: context,
       prefs: PdfLayoutPrefs(mode: mode),
+      pageTurnPrefs: const PageTurnPrefs(),
       onChanged: (_) {},
     ),
   );
 }
 
 void main() {
-  testWidgets('Layout sheet is sized by its chips, not by the screen', (
+  testWidgets('Layout sheet is sized by its rows, not by the screen', (
     tester,
   ) async {
-    final height = await _layoutSheetHeight(tester, PdfLayoutMode.single);
-    final screen = tester.getSize(find.byType(MaterialApp)).height;
-    // The old sheet was a fixed 90% of the screen whatever it held.
-    expect(height, lessThan(screen * 0.75));
+    // The old sheet was a fixed 90% of the screen whatever it held, so the
+    // test that catches a relapse is that a taller screen does not make a
+    // taller sheet — not a magic fraction, which the 0041 rows outgrew while
+    // staying content-sized.
+    final onShort = await _layoutSheetHeight(tester, PdfLayoutMode.single);
+
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final onTall = await _layoutSheetHeight(tester, PdfLayoutMode.single);
+
+    expect(onTall, onShort);
+    expect(onTall, lessThan(1600 * 0.9), reason: 'nowhere near the cap');
   });
 
   testWidgets('Layout sheet grows for the half-page slider', (tester) async {

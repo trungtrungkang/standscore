@@ -14,6 +14,9 @@ import 'package:standscore/pdf/zoom_toggle.dart';
 
 const double _handleExtent = 28;
 
+/// A4, matching the blank page [PerformancePageSlot] draws.
+const double _blankPageAspect = 1 / 1.414;
+
 /// Current page + peek of next page with a draggable separator (Spec 0013).
 class HalfPageView extends StatefulWidget {
   const HalfPageView({
@@ -251,7 +254,65 @@ class _HalfPageViewState extends State<HalfPageView> {
     }
   }
 
-  Widget _buildPeek(PdfDocument doc, Color bg) {
+  double _peekPageWidth(
+    BoxConstraints constraints,
+    double currentAspect,
+    double ratio,
+  ) => halfPagePeekPageWidth(
+    mode: widget.layoutMode,
+    viewerSize: Size(constraints.maxWidth, constraints.maxHeight),
+    separatorRatio: ratio,
+    pageAspect: currentAspect,
+    handleExtent: _handleExtent,
+  );
+
+  /// The peek band, showing the *top* of the next page at reading size.
+  ///
+  /// The band is short and wide, so fitting a whole page inside it drew the
+  /// next page at 42% of the current page's size on a phone — every note
+  /// legible only in principle. What a musician reads ahead for is the first
+  /// system or two, at the size they are about to play it, so the page is laid
+  /// out at [width] and whatever does not fit the band is simply cut off
+  /// (Spec 0013, fixed in 0041).
+  Widget _topOfPage({
+    required double width,
+    required double aspect,
+    required Widget child,
+  }) {
+    if (width <= 0 || aspect <= 0) return child;
+    final height = width / aspect;
+    return ClipRect(
+      child: LayoutBuilder(
+        builder: (context, band) => OverflowBox(
+          // Anchored to the top only when there is more page than band; a side
+          // peek that fits whole sits centred, like the page it is beside.
+          alignment: height > band.maxHeight
+              ? Alignment.topCenter
+              : Alignment.center,
+          minWidth: width,
+          maxWidth: width,
+          minHeight: height,
+          maxHeight: height,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  /// Width over height of the page drawn for [index], blanks included.
+  double _pageAspect(PdfDocument doc, int index) {
+    if (index < 0 || index >= widget.pageOrder.entries.length) {
+      return _blankPageAspect;
+    }
+    final entry = widget.pageOrder.entries[index];
+    final source = entry.sourcePage;
+    if (entry.isBlank || source == null) return _blankPageAspect;
+    if (source < 1 || source > doc.pages.length) return _blankPageAspect;
+    final page = doc.pages[source - 1];
+    return page.width / page.height;
+  }
+
+  Widget _buildPeek(PdfDocument doc, Color bg, {required double pageWidth}) {
     final nextPage = halfPageNextPerformancePage(
       currentPage: _pageIndex + 1,
       pageCount: _pageCount,
@@ -260,21 +321,25 @@ class _HalfPageViewState extends State<HalfPageView> {
       final entry = widget.pageOrder.entries[nextPage - 1];
       return ColoredBox(
         color: bg,
-        child: PerformancePageSlot(
-          document: doc,
-          entry: entry,
-          store: widget.store,
-          drawEnabled: false,
-          onAnnotateChanged: () {},
-          colorFilterMode: widget.colorFilterMode,
-          pageScale:
-              widget.resolvePageScale?.call(entry.sourcePage) ??
-              widget.pageScale,
-          pageBorderEnabled: widget.pageBorderEnabled,
-          pageBorderWidth: widget.pageBorderWidth,
-          pageBorderColor: widget.pageBorderColor,
-          panEnabled: false,
-          scaleEnabled: false,
+        child: _topOfPage(
+          width: pageWidth,
+          aspect: _pageAspect(doc, nextPage - 1),
+          child: PerformancePageSlot(
+            document: doc,
+            entry: entry,
+            store: widget.store,
+            drawEnabled: false,
+            onAnnotateChanged: () {},
+            colorFilterMode: widget.colorFilterMode,
+            pageScale:
+                widget.resolvePageScale?.call(entry.sourcePage) ??
+                widget.pageScale,
+            pageBorderEnabled: widget.pageBorderEnabled,
+            pageBorderWidth: widget.pageBorderWidth,
+            pageBorderColor: widget.pageBorderColor,
+            panEnabled: false,
+            scaleEnabled: false,
+          ),
         ),
       );
     }
@@ -373,13 +438,18 @@ class _HalfPageViewState extends State<HalfPageView> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final peek = _buildPeek(doc, bg);
         final current = _buildCurrent(doc);
         final overlay = widget.viewerOverlay;
+        final currentAspect = _pageAspect(doc, _pageIndex);
 
         if (topBottom) {
           final usable = constraints.maxHeight - _handleExtent;
           final peekSize = usable * ratio;
+          final peek = _buildPeek(
+            doc,
+            bg,
+            pageWidth: _peekPageWidth(constraints, currentAspect, ratio),
+          );
           final handle = GestureDetector(
             behavior: HitTestBehavior.opaque,
             onPanUpdate: (d) => _onDragUpdate(d, constraints),
@@ -409,6 +479,11 @@ class _HalfPageViewState extends State<HalfPageView> {
 
         final usable = constraints.maxWidth - _handleExtent;
         final peekSize = usable * ratio;
+        final peek = _buildPeek(
+          doc,
+          bg,
+          pageWidth: _peekPageWidth(constraints, currentAspect, ratio),
+        );
         final peekFirst = !widget.reverseHorizontal;
         final handle = GestureDetector(
           behavior: HitTestBehavior.opaque,

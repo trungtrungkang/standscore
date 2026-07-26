@@ -21,7 +21,7 @@ const kPagePillFade = Duration(milliseconds: 200);
 ///   prime PageTurn tap area once the PageNavBar is gone (0034).
 /// - **Not tied to the chrome countdown.** Its timer is its own; showing the
 ///   page number is not interaction and must not restart the auto-hide.
-class PagePositionPill extends StatefulWidget {
+class PagePositionPill extends StatelessWidget {
   const PagePositionPill({
     super.key,
     required this.pageNumber,
@@ -40,22 +40,54 @@ class PagePositionPill extends StatefulWidget {
   final Duration duration;
 
   @override
-  State<PagePositionPill> createState() => _PagePositionPillState();
+  Widget build(BuildContext context) {
+    return TransientPill(
+      text: '$pageNumber / $pageCount',
+      // Only a turn brings it up — not a reveal, not a rebuild.
+      trigger: pageNumber,
+      enabled: enabled,
+      duration: duration,
+    );
+  }
 }
 
-class _PagePositionPillState extends State<PagePositionPill> {
+/// A pill that appears when [trigger] changes and fades on its own.
+///
+/// Extracted from [PagePositionPill] so a layout that re-resolved under the
+/// musician's hands can say so in the same voice (Spec 0041), without either
+/// message touching the chrome countdown or taking a tap.
+class TransientPill extends StatefulWidget {
+  const TransientPill({
+    super.key,
+    required this.text,
+    required this.trigger,
+    required this.enabled,
+    this.duration = kPagePillDuration,
+  });
+
+  final String text;
+
+  /// Changing this — and only this — brings the pill up.
+  final Object? trigger;
+  final bool enabled;
+  final Duration duration;
+
+  @override
+  State<TransientPill> createState() => _TransientPillState();
+}
+
+class _TransientPillState extends State<TransientPill> {
   bool _visible = false;
   Timer? _timer;
 
   @override
-  void didUpdateWidget(PagePositionPill oldWidget) {
+  void didUpdateWidget(TransientPill oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!widget.enabled) {
       if (_visible || _timer != null) _hide();
       return;
     }
-    // Only a turn brings it up — not a reveal, not a rebuild.
-    if (widget.pageNumber != oldWidget.pageNumber) _show();
+    if (widget.trigger != oldWidget.trigger) _show();
   }
 
   void _show() {
@@ -100,7 +132,7 @@ class _PagePositionPillState extends State<PagePositionPill> {
                   vertical: 6,
                 ),
                 child: Text(
-                  '${widget.pageNumber} / ${widget.pageCount}',
+                  widget.text,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: scheme.onInverseSurface,
                   ),

@@ -38,6 +38,7 @@ class ContinuousPageOrderView extends StatefulWidget {
     this.pageBorderEnabled = false,
     this.pageBorderWidth = 2.0,
     this.pageBorderColor = const Color(0xFF424242),
+    this.initialPage = 1,
   });
 
   final String filePath;
@@ -64,6 +65,10 @@ class ContinuousPageOrderView extends StatefulWidget {
   final bool pageBorderEnabled;
   final double pageBorderWidth;
   final Color pageBorderColor;
+
+  /// Performance page to scroll to once the document is open — a layout change
+  /// builds a new view, and it should start where the reading was.
+  final int initialPage;
 
   @override
   State<ContinuousPageOrderView> createState() =>
@@ -172,27 +177,69 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
         doc.dispose();
         return;
       }
-      setState(() => _document = doc);
+      setState(() {
+        _document = doc;
+        _visibleIndex = (widget.initialPage - 1).clamp(
+          0,
+          _orderLength > 0 ? _orderLength - 1 : 0,
+        );
+      });
+      // Claim the page before notifying, then scroll to it: the screen reads
+      // this controller the moment it reports ready, and a 0 there would be
+      // written back as the musician's position.
       widget.controller._notify();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _visibleIndex > 0) {
+          _goToPage(_visibleIndex + 1, duration: Duration.zero);
+        }
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString());
     }
   }
 
-  Future<void> _goToPage(int pageNumber) async {
+  /// Rows the list lays out, which is pages except in a two-page spread.
+  int get _rowCount => widget.layoutMode == PdfLayoutMode.twoPage
+      ? (_orderLength + 1) ~/ 2
+      : _orderLength;
+
+  int _rowOf(int index) =>
+      widget.layoutMode == PdfLayoutMode.twoPage ? index ~/ 2 : index;
+
+  Future<void> _goToPage(
+    int pageNumber, {
+    Duration duration = const Duration(milliseconds: 200),
+  }) async {
     final index = (pageNumber - 1).clamp(0, _orderLength - 1);
-    final key = _keys[index];
-    final ctx = key?.currentContext;
-    if (ctx != null) {
-      await Scrollable.ensureVisible(
-        ctx,
-        duration: const Duration(milliseconds: 200),
-        alignment: 0.1,
-      );
+    if (_keys[index]?.currentContext == null) {
+      await _approach(index);
+      if (!mounted) return;
     }
+    final ctx = _keys[index]?.currentContext;
+    if (ctx != null && ctx.mounted) {
+      await Scrollable.ensureVisible(ctx, duration: duration, alignment: 0.1);
+    }
+    if (!mounted) return;
     setState(() => _visibleIndex = index);
     widget.controller._notify();
+  }
+
+  /// Land near a row that is too far away to have been built.
+  ///
+  /// `ensureVisible` needs a context, and a lazy list has none for a page
+  /// forty rows down — so a scrubber jump, or reopening a Score in a new
+  /// layout, would set the page number and leave the score where it was.
+  /// One jump using the list's own extent estimate builds the row, and
+  /// `ensureVisible` corrects the aim from there.
+  Future<void> _approach(int index) async {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final rows = _rowCount;
+    if (rows < 2 || position.maxScrollExtent <= 0) return;
+    final target = position.maxScrollExtent * _rowOf(index) / (rows - 1);
+    _scrollController.jumpTo(target.clamp(0.0, position.maxScrollExtent));
+    await WidgetsBinding.instance.endOfFrame;
   }
 
   /// Returns true if the scroll offset actually changed.

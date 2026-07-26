@@ -54,6 +54,10 @@ _Avoid_: Overflow menu, kebab menu, settings (it holds actions as well as settin
 **StagePreset**:
 One ScoreMenu entry that sets the app up to play (chrome hidden, status bar hidden, scale kept) or back to practise. An action, not a mode: it writes the same prefs the Display and Page scale sheets write, and its label is read back off those prefs. *Avoid*: stage mode, gig mode, performance mode (that is the 0034 setting it flips).
 
+**LayoutFit**:
+What the current viewport can afford a Score: whether a two-page spread fits, how much next-page peek is free, and which layout suits the screen. Computed from viewport and page aspect on every build, never stored.
+_Avoid_: Auto layout (that is the user-facing mode that reads this), fit zoom (that is `pdfFitZoom`, the scale), responsive layout
+
 **PageTurn**:
 Moving the performance view forward or backward according to layout and gesture rules (including pedal/keyboard equivalents).
 _Avoid_: Scroll (only when layout is continuous scroll), swipe (a gesture, not the action)

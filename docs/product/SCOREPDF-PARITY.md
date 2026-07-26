@@ -17,8 +17,8 @@ Status legend: `todo` | `specced` | `done` | `reopen` | `wont` (explicit cut)
 | P0.2 | Open Score in PdfMode fullscreen-friendly viewer | done (0002) |
 | P0.3 | PageTurn via tap zones (prev / next / L-R / T-B / disable) | done (0003) |
 | P0.4 | PageTurn via swipe (per-direction toggle) | done (0003) |
-| P0.5 | Basic layouts: single page, two-page spread | done (0004) |
-| P0.6 | Fit width / fit height (scroll) | done (0004) |
+| P0.5 | Basic layouts: single page, two-page spread | done (0004) — 0041 added **Auto** and completed 0004's own "facing pages when width allows": a spread the viewport cannot fit falls back to one page and says so, without touching the stored choice. |
+| P0.6 | Fit width / fit height (scroll) | done (0004) — fit width kept as **Scroll**; **fit height `wont`** (0041): its result was whatever the screen's aspect produced, including a page wider than a portrait phone. Stored value still loads, and resolves to Scroll. |
 | P0.7 | Zoom pinch + double-tap; optional pan when zoomed | done (0033) |
 | P0.8 | Library list: titles, open recent | done (0002) |
 | P0.9 | Delete Score from Library (confirm; remove file + overlays) | done (0028) |
@@ -71,11 +71,12 @@ Tracked in [IMPROVEMENT-ROADMAP.md](./IMPROVEMENT-ROADMAP.md). Do not treat as b
 | Q1 | Pinch / PageTurn coexist (+ double-tap) | A1 — done (0033) |
 | Q2 | Performance mode (hide AppBar / PageNav) | B1 — done (0034) |
 | Q3 | PdfMode overflow menu grouping | B2 — done (0035) |
-| Q4 | Page scale vs pinch / stage preset copy | B3 — G3 accepted (0036), building |
+| Q4 | Page scale vs pinch / stage preset copy | B3 — done (0036) |
 | Q5 | Duplicate Score | C1 |
 | Q6 | Annotated export/share discoverability | C2 |
 | Q7 | First-run / coach tips | C3 |
 | Q8 | Library Score row (rename, thumbnail, recency, filter state) | C4 — done (0040) |
+| Q9 | Layout modes: honest names, Auto by screen, per-layout turn gesture | unsequenced — done (0041) |
 
 ---
 

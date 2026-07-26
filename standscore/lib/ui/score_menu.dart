@@ -49,8 +49,21 @@ class ScoreMenuGroup {
 ///
 /// Group names are verbs the musician would say out loud, and each group stays
 /// short enough to scan mid-piece (Spec 0035).
+/// What the Layout row says without being opened (Specs 0035 / 0041).
+///
+/// Auto is only honest if it admits what it picked, and a spread that could
+/// not fit has to say so where the musician is already looking.
+String layoutMenuValue({
+  required PdfLayoutMode stored,
+  required PdfLayoutMode resolved,
+}) {
+  if (stored == resolved) return stored.label;
+  return '${stored.label} · ${resolved.label}';
+}
+
 List<ScoreMenuGroup> buildScoreMenu({
   required PdfLayoutMode layoutMode,
+  required PdfLayoutMode resolvedLayout,
   required PageColorFilterMode colorFilter,
   required bool zoomLocked,
   required bool annotationsVisible,
@@ -88,7 +101,7 @@ List<ScoreMenuGroup> buildScoreMenu({
         ScoreMenuEntry(
           action: ScoreMenuAction.layout,
           label: 'Layout',
-          value: layoutMode.label,
+          value: layoutMenuValue(stored: layoutMode, resolved: resolvedLayout),
         ),
         const ScoreMenuEntry(
           action: ScoreMenuAction.display,

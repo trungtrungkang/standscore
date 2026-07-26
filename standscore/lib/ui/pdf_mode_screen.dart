@@ -18,6 +18,7 @@ import 'package:standscore/jumplink/jump_link.dart';
 import 'package:standscore/jumplink/jump_link_geometry.dart';
 import 'package:standscore/jumplink/jump_link_store.dart';
 import 'package:standscore/layout/half_page.dart';
+import 'package:standscore/layout/layout_fit.dart';
 import 'package:standscore/layout/display_prefs.dart';
 import 'package:standscore/layout/display_prefs_store.dart';
 import 'package:standscore/metronome/metronome_engine.dart';
@@ -35,6 +36,7 @@ import 'package:standscore/library/score.dart';
 import 'package:standscore/pageorder/page_order.dart';
 import 'package:standscore/pageorder/page_order_store.dart';
 import 'package:standscore/pageturn/gesture_map.dart';
+import 'package:standscore/pageturn/layout_navigation.dart';
 import 'package:standscore/pageturn/page_jump.dart';
 import 'package:standscore/pageturn/page_turn_amount.dart';
 import 'package:standscore/pageturn/page_turn_delay.dart';
@@ -265,9 +267,26 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     return true;
   }
 
-  bool get _isSingle => _layoutPrefs.mode == PdfLayoutMode.single;
+  /// What this screen can afford, refreshed from MediaQuery on every build so
+  /// a rotation is the only thing that has to change it (Spec 0041).
+  LayoutFit _fit = const LayoutFit(viewSize: Size.zero);
 
-  bool get _isHalfPage => isHalfPageLayoutMode(_layoutPrefs.mode);
+  /// The last layout the musician was told about, so a re-resolve announces
+  /// itself once and a deliberate pick never does.
+  PdfLayoutMode? _announcedLayout;
+  int _layoutNoticeSeq = 0;
+  String? _layoutNotice;
+
+  /// The layout actually drawn: what was picked, through what fits.
+  PdfLayoutMode get _layoutMode => resolveLayoutMode(
+    stored: _layoutPrefs.mode,
+    fit: _fit,
+    peekRatio: _layoutPrefs.halfPageSeparatorRatio,
+  );
+
+  bool get _isSingle => _layoutMode == PdfLayoutMode.single;
+
+  bool get _isHalfPage => isHalfPageLayoutMode(_layoutMode);
 
   bool get _useCustomContinuous =>
       !_isSingle &&
@@ -323,6 +342,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _metronomeStore = metronomeStore;
     _pageTurnPrefs = pageTurn;
     _layoutPrefs = layout;
+    _announcedLayout = null;
     _drawStyle = drawStyle;
     _colorFilterMode = colorFilter;
     _pageScalePrefs = pageScale;
@@ -417,6 +437,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       _pageAspectRatio = aspect;
       _navPage = nav;
       _prefsReady = true;
+      // The layout that arrives with the prefs is the one this Score opens
+      // with, not a re-resolve to explain (Spec 0041).
+      _announcedLayout = null;
       if (_piecePageCounts.isNotEmpty &&
           _scoreIndex >= 0 &&
           _scoreIndex < _piecePageCounts.length) {
@@ -624,6 +647,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
   Future<void> _saveLayoutPrefs(PdfLayoutPrefs prefs) async {
     setState(() => _layoutPrefs = prefs);
+    // The musician just chose this; the pill is for when the screen chooses.
+    _announcedLayout = _layoutMode;
     await _layoutStore?.save(prefs);
     if (_controller.isReady) {
       _controller.invalidate();
@@ -721,6 +746,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       context: context,
       groups: buildScoreMenu(
         layoutMode: _layoutPrefs.mode,
+        resolvedLayout: _layoutMode,
         colorFilter: _colorFilterMode,
         zoomLocked: _pageScalePrefs.locked,
         annotationsVisible: _annotationsVisible,
@@ -754,14 +780,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         showLayoutSettingsSheet(
           context: context,
           prefs: _layoutPrefs,
+          pageTurnPrefs: _pageTurnPrefs,
           onChanged: _saveLayoutPrefs,
+          onOpenPageTurnSettings: _openPageTurnSettings,
         );
       case ScoreMenuAction.pageTurnSettings:
-        showPageTurnSettingsSheet(
-          context: context,
-          prefs: _pageTurnPrefs,
-          onChanged: _savePageTurnPrefs,
-        );
+        _openPageTurnSettings();
       case ScoreMenuAction.pageOrder:
         _openPageOrderEditor();
       case ScoreMenuAction.toggleAnnotations:
@@ -779,6 +803,15 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       case ScoreMenuAction.stagePreset:
         _applyStagePreset();
     }
+  }
+
+  void _openPageTurnSettings() {
+    showPageTurnSettingsSheet(
+      context: context,
+      prefs: _pageTurnPrefs,
+      onChanged: _savePageTurnPrefs,
+      layoutMode: _layoutMode,
+    );
   }
 
   /// Set the app up to play, or back to practise (Spec 0036).
@@ -941,7 +974,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     if (_isHalfPage) {
       final pane = halfPageCurrentPaneRect(
         viewerSize: viewSize,
-        layoutMode: _layoutPrefs.mode,
+        layoutMode: _layoutMode,
         separatorRatio: _layoutPrefs.halfPageSeparatorRatio,
         reverseHorizontal: _pageTurnPrefs.reverseDirection,
       );
@@ -1024,10 +1057,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final layout = controller.layout;
     final margin = controller.params.margin;
     return pdfFitZoom(
-      mode: _layoutPrefs.mode,
+      mode: _layoutMode,
       viewSize: viewSize ?? controller.viewSize,
       documentSize: layout.documentSize,
-      spreadHeight: _layoutPrefs.mode != PdfLayoutMode.twoPage
+      spreadHeight: _layoutMode != PdfLayoutMode.twoPage
           ? 0
           : twoPageSpreadHeight(layout.pageLayouts, _navPage) + margin * 2,
     );
@@ -1149,7 +1182,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     }
 
     final step = resolvePageTurnStep(
-      mode: _layoutPrefs.mode,
+      mode: _layoutMode,
       amount: _pageTurnPrefs.turnAmount,
     );
 
@@ -1248,7 +1281,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final view = _controller.viewSize;
     final zoom = _controller.currentZoom;
     if (zoom <= 0 || view.isEmpty) return false;
-    final horizontal = _layoutPrefs.mode == PdfLayoutMode.fitHeight;
+    final horizontal = _layoutMode == PdfLayoutMode.fitHeight;
     final extent = horizontal ? view.width : view.height;
     final docDelta = (extent * fraction) / zoom;
     final sign = forward ? 1.0 : -1.0;
@@ -1318,7 +1351,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       return _drawModeEdgeGestureChrome();
     }
     return PageTurnInteractionLayer(
-      prefs: _pageTurnPrefs,
+      // Tap zones and swipe run along the axis this layout moves pages (0041).
+      prefs: resolvePageTurnPrefsForLayout(_pageTurnPrefs, _layoutMode),
       reverseHorizontal: _pageTurnPrefs.reverseDirection,
       onAction: _onInteractionAction,
       onGestureAction: _onGestureMapAction,
@@ -1440,9 +1474,25 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     canvas.drawRect(pageRect.deflate(_displayPrefs.borderWidth / 2), paint);
   }
 
+  /// Say so when the screen, not the musician, changed the layout (Spec 0041).
+  ///
+  /// A layout that rearranges itself under your hands mid-piece with no
+  /// explanation is worse than a layout that was wrong to begin with.
+  void _noticeIfLayoutReresolved(PdfLayoutMode resolved) {
+    final previous = _announcedLayout;
+    if (previous == resolved) return;
+    _announcedLayout = resolved;
+    // First build has nothing to compare against, and nothing to explain.
+    if (previous == null || !_prefsReady) return;
+    _layoutNotice = resolved.label;
+    _layoutNoticeSeq++;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final layoutMode = _layoutPrefs.mode;
+    _fit = LayoutFit(viewSize: MediaQuery.sizeOf(context));
+    final layoutMode = _layoutMode;
+    _noticeIfLayoutReresolved(layoutMode);
     final performanceChrome = _chrome.active;
     final chromeShown = _chrome.shown;
     final appBar = AppBar(
@@ -1533,42 +1583,69 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       ],
     );
 
-    if (!performanceChrome) {
-      return Scaffold(appBar: appBar, bottomNavigationBar: pageNav, body: body);
-    }
+    // Over the Score in both chrome states: the screen may re-resolve the
+    // layout while the toolbar is up just as easily as while it is hidden.
+    final withNotice = Stack(
+      fit: StackFit.expand,
+      children: [
+        body,
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: TransientPill(
+              text: _layoutNotice ?? '',
+              trigger: _layoutNoticeSeq,
+              enabled: _layoutNotice != null,
+            ),
+          ),
+        ),
+      ],
+    );
 
-    // PerformanceMode: chrome floats in a Stack rather than using Scaffold's
-    // slots, so revealing it never resizes (and re-fits) the viewer, and the
-    // body keeps the device's own insets instead of Scaffold padding it out
-    // by the height of an AppBar the musician cannot even see.
+    // One Scaffold for both chrome states, and the Score always the first
+    // child of the same Stack. Returning two different Scaffold shapes made
+    // the viewer a different element in each, so entering Draw mode — which
+    // suspends PerformanceMode — rebuilt it from nothing and lost the page.
+    //
+    // In PerformanceMode the chrome floats over that Stack instead of taking
+    // Scaffold's slots, so revealing it never resizes (and re-fits) the
+    // viewer, and the body keeps the device's own insets instead of being
+    // padded out by the height of an AppBar the musician cannot even see.
     return Scaffold(
+      appBar: performanceChrome ? null : appBar,
+      bottomNavigationBar: performanceChrome ? null : pageNav,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          body,
-          if (_pageCount > 0)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: PagePositionPill(
-                pageNumber: _pageNumber,
-                pageCount: _pageCount,
-                enabled: !chromeShown,
+          withNotice,
+          if (performanceChrome) ...[
+            if (_pageCount > 0)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: PagePositionPill(
+                  pageNumber: _pageNumber,
+                  pageCount: _pageCount,
+                  enabled: !chromeShown,
+                ),
               ),
-            ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _fadingChrome(appBar, shown: chromeShown),
-          ),
-          if (pageNav != null)
             Positioned(
-              bottom: 0,
+              top: 0,
               left: 0,
               right: 0,
-              child: _fadingChrome(pageNav, shown: chromeShown),
+              child: _fadingChrome(appBar, shown: chromeShown),
             ),
+            if (pageNav != null)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _fadingChrome(pageNav, shown: chromeShown),
+              ),
+          ],
         ],
       ),
     );
@@ -1611,6 +1688,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               controller: _sliderController,
               allowUserScroll: false,
               reverseDirection: _pageTurnPrefs.reverseDirection,
+              initialPage: _pageNumber,
             ),
             _interactionLayer(),
           ],
@@ -1625,13 +1703,13 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       autofocus: true,
       child: _withJumpLinkLayer(
         HalfPageView(
-          key: ValueKey(
-            'half-${_layoutPrefs.mode.name}-${_score.id}-'
-            '$_filePath-${_pageOrder.hashCode}',
-          ),
+          // Not keyed by layout mode: moving the peek from the top to the side
+          // is a rebuild, not a new viewer, and reopening the document there
+          // would cost the page and the loaded PDF for nothing.
+          key: ValueKey('half-${_score.id}-$_filePath-${_pageOrder.hashCode}'),
           filePath: _filePath,
           pageOrder: _pageOrder,
-          layoutMode: _layoutPrefs.mode,
+          layoutMode: _layoutMode,
           separatorRatio: _layoutPrefs.halfPageSeparatorRatio,
           onSeparatorRatioChanged: (ratio) {
             _saveLayoutPrefs(
@@ -1705,6 +1783,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               pageBorderColor: _displayPrefs.borderColor,
               onAnnotateChanged: _onAnnotationsChanged,
               controller: _orderScrollController,
+              initialPage: _pageNumber,
             ),
             _interactionLayer(),
           ],
@@ -1729,6 +1808,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               '${_displayPrefs.borderColorValue}',
             ),
             controller: _controller,
+            // Changing layout or borders builds a new PdfViewer; this is what
+            // keeps it from opening at the front of the Score (Spec 0004).
+            initialPageNumber: _pageNumber,
             params: PdfViewerParams(
               // Unfiltered: the whole viewer is inside PageColorFiltered here.
               backgroundColor: pdfSurfaceColor(context),

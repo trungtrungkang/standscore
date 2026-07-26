@@ -47,9 +47,11 @@
 |------:|------|----------------|---------|
 | B1 | **Performance mode:** hide AppBar + PageNav while viewing; one GestureMap / edge action to reveal | **0034** — **done** | Less “settings app” on stand |
 | B2 | **PdfMode ⋯ IA:** group Navigate / Mark / Display / Advanced (or equivalent) | **0035** — **done** | Faster mid-gig settings |
-| B3 | **Scale story copy:** Page scale vs pinch; “stage preset”; the page indicator 0034 deferred | **0036** — G3 accepted, building | Lock/scale understandable; one action to get ready to play |
+| B3 | **Scale story copy:** Page scale vs pinch; “stage preset”; the page indicator 0034 deferred | **0036** — **done** | Lock/scale understandable; one action to get ready to play |
 
 **Exit B:** First viewport in PdfMode feels performance-first; settings are findable without a wall of peers.
+
+Phase B is complete (2026-07-26). **0041** ran unsequenced right after it — parity Q9, a UI/UX review of the six layout modes that the B3 device run made unavoidable: `pdfFitZoom` had just proved that which layout suits a screen is arithmetic, and the picker was still six equal chips. Phase C is next, starting at C1.
 
 ---
 

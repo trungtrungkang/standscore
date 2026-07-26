@@ -10,6 +10,7 @@ Widget _shell({
   required bool performanceChrome,
   required bool chromeShown,
   VoidCallback? onScoreTap,
+  bool drawToolbar = false,
 }) {
   final appBar = AppBar(
     toolbarHeight: kPdfAppBarHeight,
@@ -41,6 +42,7 @@ Widget _shell({
         final body = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (drawToolbar) const SizedBox(height: 56),
             Expanded(
               // Mirrors PdfModeScreen._wrapViewerInsets.
               child: SafeArea(
@@ -49,26 +51,25 @@ Widget _shell({
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: onScoreTap,
-                  child: const Placeholder(),
+                  child: const _ViewerStub(),
                 ),
               ),
             ),
           ],
         );
-        if (!performanceChrome) {
-          return Scaffold(
-            appBar: appBar,
-            bottomNavigationBar: pageNav,
-            body: body,
-          );
-        }
+        // One Scaffold, one Stack, the Score always first in it — see the
+        // comment on PdfModeScreen.build.
         return Scaffold(
+          appBar: performanceChrome ? null : appBar,
+          bottomNavigationBar: performanceChrome ? null : pageNav,
           body: Stack(
             fit: StackFit.expand,
             children: [
               body,
-              Positioned(top: 0, left: 0, right: 0, child: fade(appBar)),
-              Positioned(bottom: 0, left: 0, right: 0, child: fade(pageNav)),
+              if (performanceChrome) ...[
+                Positioned(top: 0, left: 0, right: 0, child: fade(appBar)),
+                Positioned(bottom: 0, left: 0, right: 0, child: fade(pageNav)),
+              ],
             ],
           ),
         );
@@ -77,7 +78,52 @@ Widget _shell({
   );
 }
 
+/// Stands in for a viewer: the thing that matters about it is that its State,
+/// and so the page it is showing, is the same object after a rebuild.
+class _ViewerStub extends StatefulWidget {
+  const _ViewerStub();
+
+  @override
+  State<_ViewerStub> createState() => _ViewerStubState();
+}
+
+class _ViewerStubState extends State<_ViewerStub> {
+  int page = 1;
+
+  @override
+  Widget build(BuildContext context) => const Placeholder();
+}
+
 void main() {
+  testWidgets('entering draw mode keeps the viewer, and the page it is on', (
+    tester,
+  ) async {
+    // Regression: Draw mode suspends PerformanceMode (`active` is off while
+    // drawing), and the screen used to answer that with a different Scaffold
+    // shape. The viewer was then a different element in each shape, so it was
+    // rebuilt from nothing and the musician landed back on page 1.
+    await tester.pumpWidget(
+      _shell(performanceChrome: true, chromeShown: false),
+    );
+    tester.state<_ViewerStubState>(find.byType(_ViewerStub)).page = 12;
+
+    await tester.pumpWidget(
+      _shell(performanceChrome: false, chromeShown: true, drawToolbar: true),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.state<_ViewerStubState>(find.byType(_ViewerStub)).page, 12);
+
+    await tester.pumpWidget(
+      _shell(performanceChrome: true, chromeShown: false),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.state<_ViewerStubState>(find.byType(_ViewerStub)).page,
+      12,
+      reason: 'leaving draw mode must not cost the page either',
+    );
+  });
+
   testWidgets('PageNavBar stays compact in the Scaffold bottom slot', (
     tester,
   ) async {
@@ -133,13 +179,13 @@ void main() {
   ) async {
     await tester.pumpWidget(_shell(performanceChrome: true, chromeShown: true));
     await tester.pumpAndSettle();
-    final shown = tester.getRect(find.byType(Placeholder));
+    final shown = tester.getRect(find.byType(_ViewerStub));
 
     await tester.pumpWidget(
       _shell(performanceChrome: true, chromeShown: false),
     );
     await tester.pumpAndSettle();
-    expect(tester.getRect(find.byType(Placeholder)), shown);
+    expect(tester.getRect(find.byType(_ViewerStub)), shown);
 
     final screen = tester.getSize(find.byType(MaterialApp));
     expect(shown.top, 47, reason: 'clears the notch, not the AppBar');
@@ -194,7 +240,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final screen = tester.getSize(find.byType(MaterialApp));
-    final body = tester.getRect(find.byType(Placeholder));
+    final body = tester.getRect(find.byType(_ViewerStub));
     final nav = tester.getRect(find.byType(PageNavBar));
     expect(body.top, greaterThan(0), reason: 'below the AppBar');
     expect(body.bottom, nav.top, reason: 'above the PageNavBar');

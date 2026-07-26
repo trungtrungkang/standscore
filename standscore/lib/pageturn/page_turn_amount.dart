@@ -48,20 +48,28 @@ class PageTurnStep {
   final double viewportFraction;
 }
 
-/// Resolve PageTurn step from layout + turn amount (Spec 0014).
+/// Resolve PageTurn step from layout + turn amount (Specs 0014 / 0041).
 PageTurnStep resolvePageTurnStep({
   required PdfLayoutMode mode,
   required TurnAmount amount,
 }) {
+  assert(mode != PdfLayoutMode.auto, 'resolve the layout before stepping it');
   if (mode == PdfLayoutMode.single || isHalfPageLayoutMode(mode)) {
     return PageTurnStep.pages(1);
   }
   if (mode == PdfLayoutMode.twoPage) {
     return PageTurnStep.pages(amount == TurnAmount.half ? 1 : 2);
   }
-  // fitWidth / fitHeight continuous
-  if (amount == TurnAmount.half) {
-    return PageTurnStep.viewport(0.5);
-  }
-  return PageTurnStep.pages(1);
+  // Scrolling layouts move by what is on the screen, not by page index. A
+  // page-anchored jump leaves whatever did not fit unread — invisible on a
+  // phone, where a page has vertical slack to spare, and a lost system at the
+  // bottom of every page on a tablet (Spec 0041).
+  return PageTurnStep.viewport(amount == TurnAmount.half ? 0.5 : 1.0);
 }
+
+/// Whether Turn amount changes anything in [mode].
+///
+/// One page and the peek layouts always advance one page, so offering the
+/// setting there teaches the musician that settings do nothing (Spec 0041).
+bool turnAmountApplies(PdfLayoutMode mode) =>
+    mode != PdfLayoutMode.single && !isHalfPageLayoutMode(mode);
