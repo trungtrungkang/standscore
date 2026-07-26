@@ -7,6 +7,7 @@ import 'package:standscore/annotation/stamp.dart';
 import 'package:standscore/layout/page_color_filter.dart';
 import 'package:standscore/pageorder/page_order.dart';
 import 'package:standscore/pdf/performance_page_slot.dart';
+import 'package:standscore/pdf/zoom_toggle.dart';
 
 /// ScorePDF-style single-page slider over [PageOrder] (Specs 0004 / 0011).
 class SinglePageSlider extends StatefulWidget {
@@ -94,6 +95,9 @@ class SinglePageSliderController extends ChangeNotifier {
     return _state?._goToPage(pageNumber, duration: duration) ??
         Future<void>.value();
   }
+
+  /// Spec 0033: double-tap zoom toggle on the current page.
+  void toggleZoom() => _state?._toggleZoom();
 
   void _notify() => notifyListeners();
 }
@@ -215,10 +219,18 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
   bool _isZoomed(int index) {
     final t = _transforms[index];
     if (t == null) return false;
-    return t.value.getMaxScaleOnAxis() > 1.02;
+    return isInteractivelyZoomed(t.value);
   }
 
   bool get _currentZoomed => _isZoomed(_pageIndex);
+
+  void _toggleZoom() {
+    if (widget.zoomLocked || widget.drawEnabled) return;
+    final t = _transformFor(_pageIndex);
+    toggleTransformationZoom(t);
+    setState(() {});
+    widget.controller._notify();
+  }
 
   TransformationController _transformFor(int index) {
     return _transforms.putIfAbsent(index, () {

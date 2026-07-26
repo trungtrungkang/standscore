@@ -40,6 +40,7 @@ import 'package:standscore/pdf/continuous_page_order_view.dart';
 import 'package:standscore/pdf/half_page_view.dart';
 import 'package:standscore/pdf/page_annotation_overlay.dart';
 import 'package:standscore/pdf/single_page_slider.dart';
+import 'package:standscore/pdf/zoom_toggle.dart';
 import 'package:standscore/setlist/setlist_nav.dart';
 import 'package:standscore/setlist/setlist_session.dart';
 import 'package:standscore/ui/bookmarks_sheet.dart';
@@ -1046,6 +1047,33 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     }
   }
 
+  void _toggleViewerZoom() {
+    if (_pageScalePrefs.locked || _drawEnabled) return;
+    if (_isSingle) {
+      _sliderController.toggleZoom();
+      return;
+    }
+    if (_isHalfPage) {
+      _halfPageController.toggleZoom();
+      return;
+    }
+    if (_useCustomContinuous) {
+      _orderScrollController.toggleZoom();
+      return;
+    }
+    // Identity continuous PdfViewer.
+    if (!_controller.isReady) return;
+    final center = Offset(
+      MediaQuery.sizeOf(context).width / 2,
+      MediaQuery.sizeOf(context).height / 2,
+    );
+    final zoomed = _controller.currentZoom > _controller.minScale * 1.08;
+    final target = zoomed
+        ? _controller.minScale
+        : _controller.minScale * kDoubleTapZoomScale;
+    _controller.setZoom(center, target);
+  }
+
   Widget _interactionLayer() {
     // While drawing, keep PageTurn chrome off the page so ink gestures are not
     // shared with the viewer's scroll arena (which caused the score to scroll).
@@ -1059,6 +1087,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       onAction: _onInteractionAction,
       onGestureAction: _onGestureMapAction,
       pageTurnEnabled: true,
+      doubleTapZoomEnabled: !_pageScalePrefs.locked,
+      onDoubleTapZoom: _toggleViewerZoom,
     );
   }
 

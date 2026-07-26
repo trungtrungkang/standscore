@@ -5,6 +5,7 @@ import 'package:standscore/pageturn/page_turn_delay.dart';
 import 'package:standscore/pageturn/page_turn_prefs.dart';
 
 /// Tap zones, swipe, edge gestures, and long-press (Specs 0003 / 0015 / 0016).
+/// Spec 0033: multi-touch passes through for pinch; optional double-tap zoom.
 class PageTurnInteractionLayer extends StatefulWidget {
   const PageTurnInteractionLayer({
     super.key,
@@ -13,6 +14,8 @@ class PageTurnInteractionLayer extends StatefulWidget {
     required this.onAction,
     this.onGestureAction,
     this.pageTurnEnabled = true,
+    this.doubleTapZoomEnabled = false,
+    this.onDoubleTapZoom,
     this.resolveJumpLink,
     this.onJumpLinkTap,
     this.onJumpLinkLongPress,
@@ -28,6 +31,10 @@ class PageTurnInteractionLayer extends StatefulWidget {
   /// When false, PageTurn tap/swipe are ignored; Show menu gestures still work.
   final bool pageTurnEnabled;
 
+  /// When true, double-tap calls [onDoubleTapZoom] instead of PageTurn.
+  final bool doubleTapZoomEnabled;
+  final VoidCallback? onDoubleTapZoom;
+
   /// JumpLink hit-test before PageTurn (Spec 0016). Return null = miss.
   final JumpLink? Function(Offset local, Size viewSize)? resolveJumpLink;
   final ValueChanged<JumpLink>? onJumpLinkTap;
@@ -41,6 +48,9 @@ class PageTurnInteractionLayer extends StatefulWidget {
 class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
   Offset? _tapDown;
   Offset? _longPressPos;
+  final Set<int> _pointers = {};
+
+  bool get _multiTouch => _pointers.length >= 2;
 
   void _emitGesture(GestureMapAction action) {
     if (action == GestureMapAction.disabled) return;
@@ -91,7 +101,7 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
   }
 
   void _handleDragEnd(DragEndDetails details) {
-    if (!widget.pageTurnEnabled) return;
+    if (!widget.pageTurnEnabled || _multiTouch) return;
     final action = resolveSwipeAction(
       velocity: details.velocity.pixelsPerSecond,
       prefs: widget.prefs,
@@ -116,36 +126,64 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
     _emitGesture(action);
   }
 
+  void _onPointerDown(PointerDownEvent event) {
+    final wasMulti = _multiTouch;
+    _pointers.add(event.pointer);
+    if (_multiTouch != wasMulti && mounted) setState(() {});
+  }
+
+  void _onPointerUp(PointerEvent event) {
+    final wasMulti = _multiTouch;
+    _pointers.remove(event.pointer);
+    if (_multiTouch != wasMulti && mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         final swipeOn =
-            widget.pageTurnEnabled && widget.prefs.anySwipeEnabled;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            if (swipeOn)
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragEnd: _handleDragEnd,
-                  onVerticalDragEnd: _handleDragEnd,
+            widget.pageTurnEnabled && widget.prefs.anySwipeEnabled && !_multiTouch;
+        // When ≥2 pointers, ignore PageTurn chrome so pinch reaches the viewer.
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: _onPointerDown,
+          onPointerUp: _onPointerUp,
+          onPointerCancel: _onPointerUp,
+          child: IgnorePointer(
+            ignoring: _multiTouch,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (swipeOn)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onHorizontalDragEnd: _handleDragEnd,
+                      onVerticalDragEnd: _handleDragEnd,
+                    ),
+                  ),
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTapDown: (details) => _tapDown = details.localPosition,
+                    onTapCancel: () => _tapDown = null,
+                    onTap: () => _handleTap(size),
+                    onDoubleTap: widget.doubleTapZoomEnabled
+                        ? () {
+                            _tapDown = null;
+                            widget.onDoubleTapZoom?.call();
+                          }
+                        : null,
+                    onLongPressStart: (details) =>
+                        _longPressPos = details.localPosition,
+                    onLongPress: () => _handleLongPress(size),
+                  ),
                 ),
-              ),
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTapDown: (details) => _tapDown = details.localPosition,
-                onTapCancel: () => _tapDown = null,
-                onTap: () => _handleTap(size),
-                onLongPressStart: (details) =>
-                    _longPressPos = details.localPosition,
-                onLongPress: () => _handleLongPress(size),
-              ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

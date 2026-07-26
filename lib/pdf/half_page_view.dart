@@ -9,6 +9,7 @@ import 'package:standscore/layout/page_color_filter.dart';
 import 'package:standscore/layout/pdf_layout_mode.dart';
 import 'package:standscore/pageorder/page_order.dart';
 import 'package:standscore/pdf/performance_page_slot.dart';
+import 'package:standscore/pdf/zoom_toggle.dart';
 
 const double _handleExtent = 28;
 
@@ -110,6 +111,8 @@ class HalfPageController extends ChangeNotifier {
     return _state?._goToPage(pageNumber) ?? Future<void>.value();
   }
 
+  void toggleZoom() => _state?._toggleZoom();
+
   void _notify() => notifyListeners();
 }
 
@@ -117,6 +120,7 @@ class _HalfPageViewState extends State<HalfPageView> {
   PdfDocument? _document;
   int _pageIndex = 0;
   int _pageCount = 0;
+  final Map<int, TransformationController> _transforms = {};
   String? _error;
 
   @override
@@ -154,8 +158,34 @@ class _HalfPageViewState extends State<HalfPageView> {
   @override
   void dispose() {
     widget.controller._detach(this);
+    for (final t in _transforms.values) {
+      t.dispose();
+    }
     _document?.dispose();
     super.dispose();
+  }
+
+  TransformationController _transformFor(int index) {
+    return _transforms.putIfAbsent(index, () {
+      final t = TransformationController();
+      t.addListener(() {
+        if (index == _pageIndex && mounted) setState(() {});
+      });
+      return t;
+    });
+  }
+
+  void _toggleZoom() {
+    if (widget.zoomLocked || widget.drawEnabled) return;
+    toggleTransformationZoom(_transformFor(_pageIndex));
+    setState(() {});
+    widget.controller._notify();
+  }
+
+  bool _isZoomed(int index) {
+    final t = _transforms[index];
+    if (t == null) return false;
+    return isInteractivelyZoomed(t.value);
   }
 
   Future<void> _open() async {
@@ -284,8 +314,9 @@ class _HalfPageViewState extends State<HalfPageView> {
       pageBorderEnabled: widget.pageBorderEnabled,
       pageBorderWidth: widget.pageBorderWidth,
       pageBorderColor: widget.pageBorderColor,
-      // Pan fights PageTurn swipe; pinch-zoom still available when unlocked.
-      panEnabled: false,
+      transformationController: _transformFor(_pageIndex),
+      // Pan only when zoomed so single-finger PageTurn swipe still works at fit.
+      panEnabled: !widget.drawEnabled && _isZoomed(_pageIndex),
       scaleEnabled: !widget.drawEnabled && !widget.zoomLocked,
     );
   }

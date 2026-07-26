@@ -8,6 +8,7 @@ import 'package:standscore/layout/page_color_filter.dart';
 import 'package:standscore/layout/pdf_layout_mode.dart';
 import 'package:standscore/pageorder/page_order.dart';
 import 'package:standscore/pdf/performance_page_slot.dart';
+import 'package:standscore/pdf/zoom_toggle.dart';
 
 /// Scrollable PageOrder view for non-identity continuous layouts (Spec 0011).
 class ContinuousPageOrderView extends StatefulWidget {
@@ -98,6 +99,8 @@ class ContinuousPageOrderController extends ChangeNotifier {
       ) ??
       Future<bool>.value(false);
 
+  void toggleZoom() => _state?._toggleZoom();
+
   void _notify() => notifyListeners();
 }
 
@@ -108,6 +111,7 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
   int _orderLength = 0;
   String? _error;
   final _keys = <int, GlobalKey>{};
+  final Map<int, TransformationController> _transforms = {};
 
   @override
   void initState() {
@@ -136,8 +140,22 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
   void dispose() {
     widget.controller._detach(this);
     _scrollController.dispose();
+    for (final t in _transforms.values) {
+      t.dispose();
+    }
     _document?.dispose();
     super.dispose();
+  }
+
+  TransformationController _transformFor(int index) {
+    return _transforms.putIfAbsent(index, TransformationController.new);
+  }
+
+  void _toggleZoom() {
+    if (widget.zoomLocked || widget.drawEnabled) return;
+    toggleTransformationZoom(_transformFor(_visibleIndex));
+    setState(() {});
+    widget.controller._notify();
   }
 
   Future<void> _open() async {
@@ -297,6 +315,7 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
             pageBorderEnabled: widget.pageBorderEnabled,
             pageBorderWidth: widget.pageBorderWidth,
             pageBorderColor: widget.pageBorderColor,
+            transformationController: _transformFor(index),
             panEnabled: !widget.drawEnabled,
             scaleEnabled: !widget.drawEnabled && !widget.zoomLocked,
           ),
