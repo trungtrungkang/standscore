@@ -1,0 +1,36 @@
+---
+description: When to tell the Orchestrator that a chat has reached its natural end
+alwaysApply: true
+---
+
+# Session hygiene
+
+Every turn carries the whole chat with it, so a chat that outlives its slice
+costs more each turn and remembers less accurately. Watch for the boundary and
+name it — once.
+
+## Say it when
+
+- The slice is finished: G4 passed, docs updated, work committed
+- The conversation has been summarized or compacted (context is already being dropped)
+- The next request belongs to a different Spec than the one this chat has built
+- The chat has carried two or more Specs end to end
+
+## Do not
+
+- Repeat the suggestion turn after turn, or after the Orchestrator has declined it
+- Stop work or ask them to restart before answering what they just asked — finish the turn first
+- Raise it mid-slice, while a Spec is half-built or a bug is half-diagnosed
+
+## How to say it
+
+One line at the end of the reply, in the language of the conversation, carrying
+the handoff the next chat needs:
+
+> Slice 0036 khép lại ở đây. Chat mới nên bắt đầu bằng: "Đọc
+> `docs/specs/0037` và 15 dòng cuối `DECISIONS-LOG.md`, rồi build slice C1."
+
+The pointer matters more than the suggestion. A fresh chat is only cheaper if
+it starts from the documents instead of re-deriving the context by reading the
+codebase — which is exactly what `docs/specs`, `CONTEXT.md` and the decisions
+log exist for.
