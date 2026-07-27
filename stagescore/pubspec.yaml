@@ -1,7 +1,7 @@
 name: stagescore
 description: StageScore by BackingScore — sheet music for the stand
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+4
 
 environment:
   sdk: ^3.12.2
