@@ -1547,12 +1547,16 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               _jumpToPage(page);
             },
             onPrevPage: () {
-              _chrome.keepAlive();
-              _applyAction(PageTurnAction.previous, kind: PageTurnInputKind.tap);
+              if (_pageNumber > 1) {
+                _jumpToPage(_pageNumber - 1);
+                _chrome.keepAlive();
+              }
             },
             onNextPage: () {
-              _chrome.keepAlive();
-              _applyAction(PageTurnAction.next, kind: PageTurnInputKind.tap);
+              if (_pageNumber < _pageCount) {
+                _jumpToPage(_pageNumber + 1);
+                _chrome.keepAlive();
+              }
             },
             avoidNotches: _displayPrefs.avoidNotches,
           )
