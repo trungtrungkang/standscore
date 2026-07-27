@@ -13,6 +13,7 @@ import 'package:stagescore/label/label.dart';
 import 'package:stagescore/label/label_filter.dart';
 import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/library/library_backup.dart';
+import 'package:stagescore/library/library_root.dart';
 import 'package:stagescore/library/library_search.dart';
 import 'package:stagescore/library/library_sort.dart';
 import 'package:stagescore/library/library_sort_prefs_store.dart';
@@ -154,9 +155,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Future<ScoreLibrary> _openDocumentsLibrary() async {
-    final root = Directory(
-      p.join((await getApplicationDocumentsDirectory()).path, 'standscore'),
-    );
+    final root = await openLibraryRoot();
     return ScoreLibrary(root: root, countPages: countPdfPages);
   }
 
@@ -662,7 +661,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final temp = File(
       p.join(
         (await getTemporaryDirectory()).path,
-        'standscore_sample_score.pdf',
+        'stagescore_sample_score.pdf',
       ),
     );
     await temp.writeAsBytes(bytes.buffer.asUint8List());
@@ -840,7 +839,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: Image.asset(
-              'assets/brand/standscore-logo.png',
+              'assets/brand/stagescore-logo.png',
               height: 32,
               width: 32,
               fit: BoxFit.cover,

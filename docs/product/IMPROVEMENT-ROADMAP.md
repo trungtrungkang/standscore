@@ -107,5 +107,6 @@ If **hold** → more Phase B/C only.
 | Doc | Role |
 |-----|------|
 | [SCOREPDF-PARITY.md](./SCOREPDF-PARITY.md) | Checklist + polish appendix |
+| [RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md) | What stands between the build and a store submission — a separate track from this roadmap, opened when `1.0.0+1` was tagged |
 | [DECISIONS-LOG.md](./DECISIONS-LOG.md) | Soft choices / weekly notes |
 | Specs `0030`, then `0033+` | Executable slices |

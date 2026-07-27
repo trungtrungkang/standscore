@@ -1,1 +1,8 @@
 .DS_Store
+
+# Signing material must never be committed (release checklist R1).
+**/key.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision

@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:stagescore/library/library_root.dart';
 import 'package:stagescore/theme/app_appearance.dart';
 import 'package:stagescore/theme/app_appearance_prefs_store.dart';
 import 'package:stagescore/ui/library_screen.dart';
@@ -32,10 +29,7 @@ class _StageScoreAppState extends State<StageScoreApp> {
   }
 
   Future<void> _loadAppearance() async {
-    final root = Directory(
-      p.join((await getApplicationDocumentsDirectory()).path, 'standscore'),
-    );
-    await root.create(recursive: true);
+    final root = await openLibraryRoot();
     final store = AppAppearancePrefsStore(root: root);
     final appearance = await store.load();
     if (!mounted) return;

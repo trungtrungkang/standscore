@@ -104,7 +104,7 @@ class MetronomeEngine extends ChangeNotifier {
     );
     final id = ++_loopLoadId;
     final source = await SoLoud.instance.loadMem(
-      'standscore_metro_loop_$id.wav',
+      'stagescore_metro_loop_$id.wav',
       wav,
       mode: LoadMode.memory,
     );

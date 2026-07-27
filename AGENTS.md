@@ -1,6 +1,8 @@
-# Agent instructions — StandScore
+# Agent instructions — StageScore
 
-You are implementing **StandScore** (product of **BackingScore**, https://backingscore.com) under human orchestration. Read these before coding.
+You are implementing **StageScore** (product of **BackingScore**, https://backingscore.com) under human orchestration. Read these before coding.
+
+The product was called **StandScore** until 2026-07-27. On-device paths (`<documents>/standscore/`) and the backup format id keep the old spelling on purpose — see the README in `stagescore/`. Do not "clean up" either one.
 
 Application ID / bundle ID: **`com.backingscore.scoreapp`** (ADR 0009). Do not invent another reverse-DNS root.
 
@@ -33,7 +35,9 @@ If chat history conflicts with an accepted Spec/ADR, **Spec/ADR win**.
 Prefer Feature Specs that reference IDs in `docs/product/SCOREPDF-PARITY.md`.  
 Do not implement Verovio, MIDI Transport, BackingTrack, or OMR unless a Spec with status `accepted` explicitly says so for that slice.
 
-**Shell:** Flutter (ADR 0005). Specs **0005–0033** **done** (P2.13 metronome). Roadmap **accepted** — Phase A complete; next **Phase B** (Performance mode / Spec **0034**).
+**Shell:** Flutter (ADR 0005), in `stagescore/`. All ScorePDF parity rows P0–P2 are **done** (Specs 0001–0041; fit height and max DPI are explicit cuts). Roadmap **accepted** — Phases A and B complete. Orchestrator chose to **ship v1 (`1.0.0+1`) before Phase C**, so the active track is `docs/product/RELEASE-CHECKLIST.md`; Phase C (**0037** duplicate Score, then 0038, 0039) becomes 1.1, and the Phase D go/hold on H3 follows it.
+
+Release builds are signed from `android/key.properties`, which is gitignored and absent on a fresh clone — release builds there come out **unsigned by design**. Do not restore a debug-key fallback.
 
 ## Before writing code for a slice
 
@@ -51,4 +55,4 @@ Do not implement Verovio, MIDI Transport, BackingTrack, or OMR unless a Spec wit
 
 ## Out of scope of this folder
 
-`sheet-app/` is the StandScore product home (folder name may lag the brand). The parent repo may contain unrelated study projects (e.g. FITFR viewer). Do not mix their domain language or dependencies unless an ADR explicitly says so.
+`sheet-app/` is the StageScore product home (folder name lags the brand); the Flutter app is `sheet-app/stagescore/`. The parent repo may contain unrelated study projects (e.g. FITFR viewer). Do not mix their domain language or dependencies unless an ADR explicitly says so.

@@ -32,6 +32,7 @@ import 'package:stagescore/layout/page_scale_prefs_store.dart';
 import 'package:stagescore/layout/pdf_fit_zoom.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
+import 'package:stagescore/library/library_root.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pageorder/page_order_store.dart';
@@ -305,8 +306,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   Future<void> _loadPrefs() async {
-    final docs = await getApplicationDocumentsDirectory();
-    final root = Directory(p.join(docs.path, 'standscore'));
+    final root = await openLibraryRoot();
     final pageTurnStore = PageTurnPrefsStore(root: root);
     final layoutStore = PdfLayoutPrefsStore(root: root);
     final drawStyleStore = DrawStylePrefsStore(root: root);

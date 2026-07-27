@@ -8,6 +8,8 @@ import 'package:path/path.dart' as p;
 class LibraryBackup {
   const LibraryBackup();
 
+  // These two keep the pre-rename `standscore` spelling on purpose: renaming
+  // them would make every backup ZIP taken before the rename unrestorable.
   static const markerFileName = 'standscore-backup.json';
   static const formatVersion = 1;
   static const formatId = 'standscore-backup';

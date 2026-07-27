@@ -1,5 +1,5 @@
 name: stagescore
-description: StageScore by BackingScore — PdfMode spike (Spec 0001)
+description: StageScore by BackingScore — sheet music for the stand
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -33,23 +33,23 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/brand/standscore-logo.png
+  image_path: assets/brand/stagescore-logo.png
   adaptive_icon_background: "#0D8B86"
-  adaptive_icon_foreground: assets/brand/standscore-logo.png
+  adaptive_icon_foreground: assets/brand/stagescore-logo.png
   remove_alpha_ios: true
 
 flutter_native_splash:
   color: "#0D8B86"
-  image: assets/brand/standscore-logo.png
+  image: assets/brand/stagescore-logo.png
   android_12:
     color: "#0D8B86"
-    image: assets/brand/standscore-logo.png
+    image: assets/brand/stagescore-logo.png
   ios: true
 
 flutter:
   uses-material-design: true
   assets:
     - assets/sample_score.pdf
-    - assets/brand/standscore-logo.png
+    - assets/brand/stagescore-logo.png
     - assets/icons/metronome.png
     - assets/icons/draw.png
