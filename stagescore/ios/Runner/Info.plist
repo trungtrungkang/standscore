@@ -103,5 +103,11 @@
 				</array>
 			</dict>
 		</array>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>StageScore needs access to your photo library to import sheet music images and scores.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>StageScore needs camera access to scan and capture physical sheet music pages.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>StageScore uses location services for nearby Bluetooth pedal connection if required.</string>
 	</dict>
 </plist>
