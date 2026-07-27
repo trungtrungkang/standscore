@@ -1546,6 +1546,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               _chrome.keepAlive();
               _jumpToPage(page);
             },
+            onPrevPage: () {
+              _chrome.keepAlive();
+              _onPageTurn(backward: true);
+            },
+            onNextPage: () {
+              _chrome.keepAlive();
+              _onPageTurn(backward: false);
+            },
             avoidNotches: _displayPrefs.avoidNotches,
           )
         : null;

@@ -24,12 +24,16 @@ class PageNavBar extends StatelessWidget {
     required this.pageNumber,
     required this.pageCount,
     required this.onJumpToPage,
+    this.onPrevPage,
+    this.onNextPage,
     this.avoidNotches = true,
   });
 
   final int pageNumber;
   final int pageCount;
   final ValueChanged<int> onJumpToPage;
+  final VoidCallback? onPrevPage;
+  final VoidCallback? onNextPage;
 
   /// When false, sit edge-to-edge over the home indicator (Spec 0032).
   final bool avoidNotches;
@@ -42,6 +46,9 @@ class PageNavBar extends StatelessWidget {
     final max = pageCount.toDouble();
     final value = pageNumber.clamp(1, pageCount).toDouble();
 
+    final canGoPrev = pageNumber > 1;
+    final canGoNext = pageNumber < pageCount;
+
     return ExcludeFocus(
       child: Material(
         elevation: 2,
@@ -53,13 +60,26 @@ class PageNavBar extends StatelessWidget {
           bottom: avoidNotches,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-              12,
+              4,
               0,
-              12,
+              4,
               kPageNavBarGestureGap,
             ),
             child: Row(
               children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  tooltip: 'Previous page',
+                  onPressed: canGoPrev
+                      ? () {
+                          if (onPrevPage != null) {
+                            onPrevPage!();
+                          } else {
+                            onJumpToPage(pageNumber - 1);
+                          }
+                        }
+                      : null,
+                ),
                 TextButton(
                   onPressed: () => _onJumpPressed(context),
                   child: Text('$pageNumber / $pageCount'),
@@ -78,6 +98,19 @@ class PageNavBar extends StatelessWidget {
                       onChanged: (v) => onJumpToPage(v.round()),
                     ),
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  tooltip: 'Next page',
+                  onPressed: canGoNext
+                      ? () {
+                          if (onNextPage != null) {
+                            onNextPage!();
+                          } else {
+                            onJumpToPage(pageNumber + 1);
+                          }
+                        }
+                      : null,
                 ),
               ],
             ),
