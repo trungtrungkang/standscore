@@ -15,7 +15,7 @@ const double kPageNavBarHeight = kMinInteractiveDimension;
 /// the safe area is close enough to lose the drag, which is what happened when
 /// 0034 shortened this bar, so the gap it used to have as padding is now
 /// explicit.
-const double kPageNavBarGestureGap = 8;
+const double kPageNavBarGestureGap = 20;
 
 /// Compact bottom chrome: page label, scrubber, jump-to-page (Spec 0009).
 class PageNavBar extends StatelessWidget {
