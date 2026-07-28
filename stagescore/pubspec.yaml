@@ -1,5 +1,5 @@
 name: stagescore
-description: StageScore by BackingScore — sheet music for the stand
+description: StageScore by Backing & Score — sheet music for the stand
 publish_to: 'none'
 version: 1.0.0+4
 
@@ -22,6 +22,8 @@ dependencies:
   flutter_soloud: ^4.0.13
   audio_session: ^0.2.4
   wakelock_plus: ^1.5.2
+  package_info_plus: ^9.0.1
+  url_launcher: ^6.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

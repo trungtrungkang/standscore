@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_handler/share_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:stagescore/brand/brand.dart';
 import 'package:stagescore/label/label.dart';
 import 'package:stagescore/label/label_filter.dart';
 import 'package:stagescore/label/label_store.dart';
@@ -27,6 +28,7 @@ import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
 import 'package:stagescore/setlist/setlist_store.dart';
 import 'package:stagescore/theme/app_appearance.dart';
+import 'package:stagescore/ui/about_sheet.dart';
 import 'package:stagescore/ui/appearance_sheet.dart';
 import 'package:stagescore/ui/label_sheets.dart';
 import 'package:stagescore/ui/pdf_mode_screen.dart';
@@ -44,6 +46,8 @@ class LibraryScreen extends StatefulWidget {
     this.appearance = AppAppearance.defaults,
     this.onAppearanceChanged,
     this.onLibraryRestored,
+    this.readBuild,
+    this.launchUrl,
   });
 
   /// Injected for tests; production creates a documents-based library.
@@ -58,6 +62,11 @@ class LibraryScreen extends StatefulWidget {
 
   /// Called after a successful ZIP restore so app chrome prefs can reload.
   final VoidCallback? onLibraryRestored;
+
+  /// Both injected for tests; production lets the About sheet reach the
+  /// bundle and the system browser itself (Spec 0042).
+  final Future<AppBuild> Function()? readBuild;
+  final Future<bool> Function(Uri url)? launchUrl;
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();
@@ -916,12 +925,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   _backupLibrary();
                 case 'restore':
                   _restoreLibrary();
+                case 'about':
+                  showAboutSheet(
+                    context: context,
+                    readBuild: widget.readBuild,
+                    launch: widget.launchUrl,
+                  );
               }
             },
             itemBuilder: (context) => const [
               PopupMenuItem(value: 'appearance', child: Text('Appearance…')),
               PopupMenuItem(value: 'backup', child: Text('Backup…')),
               PopupMenuItem(value: 'restore', child: Text('Restore…')),
+              PopupMenuItem(
+                value: 'about',
+                child: Text('About ${Brand.productName}…'),
+              ),
             ],
           ),
         ],
@@ -1038,6 +1057,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
               TextButton(
                 onPressed: _importSample,
                 child: const Text('Add sample score'),
+              ),
+              // The only screen every new install passes through, so it is the
+              // only place the publisher line can land before someone goes
+              // looking for it in ⋯ → About (Spec 0042). A caption, not a
+              // banner: it must not compete with Add PDF.
+              const SizedBox(height: 32),
+              Text(
+                Brand.publisherLine,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

@@ -8,6 +8,7 @@ import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
 import 'package:stagescore/library/score_thumbnails.dart';
+import 'package:stagescore/ui/about_sheet.dart';
 import 'package:stagescore/ui/library_screen.dart';
 import 'package:stagescore/ui/score_thumbnail_tile.dart';
 
@@ -210,6 +211,59 @@ void main() {
 
     expect(find.byType(InputChip), findsNothing);
     expect(find.text('Other'), findsOneWidget);
+  });
+
+  testWidgets('the empty Library says who makes the app', (tester) async {
+    await pumpLibrary(tester);
+
+    // The first screen of a fresh install, and the only moment this line has
+    // to land — nobody opens ⋯ → About on day one (Spec 0042).
+    expect(find.text('No scores yet'), findsOneWidget);
+    expect(find.text('A Backing & Score app'), findsOneWidget);
+  });
+
+  testWidgets('the Setlists empty state does not repeat the publisher', (
+    tester,
+  ) async {
+    await pumpLibrary(tester);
+    await tester.tap(find.text('Setlists'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No setlists yet'), findsOneWidget);
+    expect(find.text('A Backing & Score app'), findsNothing);
+  });
+
+  testWidgets('⋯ opens About with the build the bundle reports', (
+    tester,
+  ) async {
+    final opened = <Uri>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LibraryScreen(
+          library: library,
+          thumbnails: fakeThumbnails(),
+          readBuild: () async =>
+              const AppBuild(version: '9.9.9', buildNumber: '42'),
+          launchUrl: (url) async {
+            opened.add(url);
+            return true;
+          },
+        ),
+      ),
+    );
+    await settle(tester);
+
+    await tester.tap(find.byTooltip('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('About StageScore…'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Part of Backing & Score'), findsOneWidget);
+    expect(find.text('Version 9.9.9 (42)'), findsOneWidget);
+
+    await tester.tap(find.text('backingscore.com'));
+    await tester.pumpAndSettle();
+    expect(opened.single.toString(), 'https://backingscore.com');
   });
 
   testWidgets('the Setlists tab has one way to make a setlist', (tester) async {
