@@ -1,137 +1,139 @@
 # StageScore
 
-Domain language for **StageScore**, a Backing & Score product (https://backingscore.com).  
-Implementation details do not belong here — only terms and meanings.
+Ngôn ngữ miền của **StageScore**, một sản phẩm thuộc Backing & Score (https://backingscore.com).  
+Chi tiết hiện thực không thuộc về file này — chỉ có thuật ngữ và ý nghĩa.
 
-## Language
+Tên thuật ngữ giữ tiếng Anh, định nghĩa viết tiếng Việt (ADR 0015). Các dòng `_Avoid_` giữ nguyên tiếng Anh, vì đó là những từ có thể lọt vào code hoặc UI.
 
-### Library
+## Ngôn ngữ (Language)
+
+### Library (Thư viện)
 
 **Score**:
-A single piece of sheet music the user stores in the library, backed by a PDF and/or a MusicXML document, and optionally one or more BackingTracks.
+Một bản nhạc đơn lẻ mà người dùng lưu trong library, dựa trên một PDF và/hoặc một tài liệu MusicXML, và tuỳ chọn kèm một hoặc nhiều BackingTrack.
 _Avoid_: Song, file, track (ambiguous), piece (ok in UI copy only)
 
 **Setlist**:
-An ordered group of Scores meant to be viewed or performed in sequence without reopening each Score manually.
+Một nhóm Score có thứ tự, để xem hoặc biểu diễn liên tiếp mà không phải mở lại từng Score bằng tay.
 _Avoid_: Playlist, album, folder
 
 **Label**:
-A user-defined tag applied to Scores or Setlists for filtering.
+Một nhãn do người dùng tự định nghĩa, gán lên Score hoặc Setlist để lọc.
 _Avoid_: Tag (ok as UI synonym), category, genre (too narrow)
 
-### Documents
+### Documents (Tài liệu)
 
 **PdfDocument**:
-The PDF bytes and page images associated with a Score’s performance view.
+Phần byte PDF và các ảnh trang gắn với khung xem biểu diễn của một Score.
 _Avoid_: PDF score (use Score + PdfDocument)
 
 **MusicXmlDocument**:
-The MusicXML source associated with a Score’s Smart Score view.
+Nguồn MusicXML gắn với khung xem Smart Score của một Score.
 _Avoid_: XML score, digital score (vague)
 
 **PageOrder**:
-The user-defined sequence of PDF pages for performance (including duplicates and blanks) used to handle repeats and jumps without live navigation.
+Chuỗi trang PDF do người dùng tự sắp cho lúc biểu diễn (kể cả trang lặp lại và trang trắng), dùng để xử lý đoạn lặp và bước nhảy mà không phải điều hướng trực tiếp.
 _Avoid_: Page sort, rearrange list
 
-### Viewing
+### Viewing (Xem)
 
 **PdfMode**:
-The Score viewing mode that renders PdfDocument with performance-oriented navigation.
+Chế độ xem Score dựng PdfDocument, kèm cách điều hướng hướng tới biểu diễn.
 _Avoid_: Classic mode, ScorePDF mode
 
 **SmartMode**:
-The Score viewing mode that renders MusicXmlDocument (e.g. via Verovio) with playback and practice features.
+Chế độ xem Score dựng MusicXmlDocument (ví dụ qua Verovio), kèm các tính năng phát nhạc và luyện tập.
 _Avoid_: MusicXML mode, Verovio mode (engine name ≠ product mode)
 
 **PerformanceMode**:
-A PdfMode viewing state in which app chrome is hidden until a GestureMap reveal, leaving only the Score.
+Một trạng thái xem của PdfMode, trong đó chrome của app bị ẩn cho tới khi một GestureMap gọi nó ra, chỉ để lại Score.
 _Avoid_: Immersive mode, fullscreen (system-level), presentation mode
 
 **ScoreMenu**:
-The grouped entry point to everything PdfMode can do to the Score being viewed, opened from the AppBar ⋯ or a GestureMap reveal.
+Điểm vào được gom nhóm cho mọi thứ PdfMode có thể làm với Score đang xem, mở từ dấu ⋯ trên AppBar hoặc từ một GestureMap.
 _Avoid_: Overflow menu, kebab menu, settings (it holds actions as well as settings)
 
 **StagePreset**:
-One ScoreMenu entry that sets the app up to play (chrome hidden, status bar hidden, scale kept) or back to practise. An action, not a mode: it writes the same prefs the Display and Page scale sheets write, and its label is read back off those prefs. *Avoid*: stage mode, gig mode, performance mode (that is the 0034 setting it flips).
+Một entry trong ScoreMenu, đưa app vào trạng thái sẵn sàng biểu diễn (ẩn chrome, ẩn status bar, giữ nguyên scale) hoặc quay về trạng thái luyện tập. Đây là một hành động, không phải một chế độ: nó ghi đúng những pref mà các sheet Display và Page scale ghi, và nhãn của nó được đọc ngược lại từ chính những pref đó. *Avoid*: stage mode, gig mode, performance mode (that is the 0034 setting it flips).
 
 **LayoutFit**:
-What the current viewport can afford a Score: whether a two-page spread fits, how much next-page peek is free, and which layout suits the screen. Computed from viewport and page aspect on every build, never stored.
+Những gì viewport hiện tại cho phép một Score: liệu có vừa hai trang cạnh nhau, còn dư bao nhiêu để hé trang kế, và layout nào phù hợp với màn hình. Được tính từ viewport và tỷ lệ trang ở mỗi lần build, không bao giờ lưu lại.
 _Avoid_: Auto layout (that is the user-facing mode that reads this), fit zoom (that is `pdfFitZoom`, the scale), responsive layout
 
 **PageTurn**:
-Moving the performance view forward or backward according to layout and gesture rules (including pedal/keyboard equivalents).
+Việc đưa khung xem biểu diễn tiến lên hay lùi lại theo luật layout và luật cử chỉ (bao gồm cả tương đương từ pedal và bàn phím).
 _Avoid_: Scroll (only when layout is continuous scroll), swipe (a gesture, not the action)
 
 **TurnAmount**:
-How far one PageTurn advances — full page (1/1) or half (1/2). Distinct from Half Page *layout*, which overlays a peek of the next page without using TurnAmount.
+Một PageTurn đi được bao xa — trọn trang (1/1) hay nửa trang (1/2). Khác với *layout* Half Page, thứ chỉ hé trang kế lên trên mà không dùng tới TurnAmount.
 _Avoid_: Half page (ambiguous with layout mode), scroll step (implementation)
 
 **GestureMap**:
-User assignment of non–PageTurn actions (show chrome, disabled) to long-press and screen-edge taps.
+Việc người dùng gán các hành động không phải PageTurn (hiện chrome, hoặc tắt) cho thao tác nhấn giữ và chạm vào rìa màn hình.
 _Avoid_: Shortcut map, hotkeys (keyboard), PageTurn tap zones (prev/next halves)
 
 **Bookmark**:
-A named page marker on a Score for quick jump during performance or practice.
+Một mốc trang có tên trên một Score, để nhảy nhanh khi biểu diễn hoặc luyện tập.
 _Avoid_: Favorite, pin, TOC entry (PDF outline ≠ user Bookmark)
 
 **JumpLink**:
-A visible on-page tap target that navigates to another performance page of the same Score (distinct from Bookmark list jump and from PDF outline links).
+Một vùng chạm thấy được ngay trên trang, dẫn tới một trang biểu diễn khác của cùng Score (khác với việc nhảy từ danh sách Bookmark, và khác với link trong outline của PDF).
 _Avoid_: Hyperlink (web), bookmark button, page jump (UI copy ok)
 
 **Stamp**:
-A placed symbol, shape, or short text mark on a Score page (distinct from freehand ink strokes).
+Một ký hiệu, hình khối, hoặc đoạn chữ ngắn được đặt lên trang của một Score (khác với nét vẽ tay tự do).
 _Avoid_: Sticker, emoji (too casual), annotation (broader)
 
 **Playhead**:
-The visual indicator of the current playback or practice position on the rendered SmartMode score.
+Chỉ báo trực quan cho vị trí phát nhạc hoặc luyện tập hiện tại, trên bản nhạc đã dựng ở SmartMode.
 _Avoid_: Cursor (ambiguous with text caret), progress bar
 
-### Playback & practice
+### Playback & practice (Phát nhạc và luyện tập)
 
 **Transport**:
-The authoritative timing and control engine for playback and practice (play, pause, seek, tempo). It mixes multiple TransportLanes under one clock. Owned by the native audio layer on mobile.
+Engine giữ quyền quyết định về thời gian và điều khiển cho việc phát nhạc và luyện tập (play, pause, seek, tempo). Nó trộn nhiều TransportLane dưới cùng một clock. Trên mobile, nó thuộc quyền của tầng audio native.
 _Avoid_: Player, sequencer (implementation), Web Audio clock
 
 **TransportLane**:
-One audible stream controlled by Transport (click, MIDI guide, or backing audio), with its own gain/mute/solo.
+Một luồng âm thanh nghe được do Transport điều khiển (tiếng click, MIDI dẫn, hoặc audio nền), có gain/mute/solo riêng.
 _Avoid_: Track (ambiguous), channel (audio engineering jargon in product language)
 
 **BackingTrack**:
-An audio recording (full mix or stem) the user plays along with, attached to a Score and aligned through a SyncMap.
+Một bản thu âm (bản mix đầy đủ hoặc một stem) mà người dùng chơi cùng, gắn vào một Score và được khớp thời gian qua một SyncMap.
 _Avoid_: Soundtrack, accompaniment file, band track (UI copy ok), MP3 (format ≠ concept)
 
 **SyncMap**:
-The alignment between musical time (measures/beats or MusicXML time) and audio time on BackingTrack(s).
+Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và thời gian audio trên một hay nhiều BackingTrack.
 _Avoid_: Offset alone, BPM (too narrow), sync file (may be a serialization of SyncMap)
 
 **AutoPlay**:
-Transport-driven playback of armed TransportLanes while advancing the Playhead.
+Việc Transport phát các TransportLane đang được arm, đồng thời đẩy Playhead tiến lên.
 _Avoid_: MIDI play (too low-level alone)
 
 **WaitMode**:
-A practice mode where Transport waits for the user to produce the expected note (MIDI or pitch) before advancing, according to a PracticePolicy.
+Một chế độ luyện tập, trong đó Transport chờ người dùng phát ra đúng nốt được mong đợi (qua MIDI hoặc qua cao độ) rồi mới đi tiếp, theo một PracticePolicy.
 _Avoid_: Follow mode, practice mode (generic), call-and-response
 
 **PracticePolicy**:
-Rules for how WaitMode treats TransportLanes (for example pause all lanes vs loop a bar).
+Luật quy định WaitMode đối xử với các TransportLane thế nào (ví dụ dừng toàn bộ các lane, hay lặp lại một ô nhịp).
 _Avoid_: Wait settings (vague)
 
 **MidiRealization**:
-The timed MIDI events derived from a MusicXmlDocument for the MidiLane and for practice comparison.
+Các sự kiện MIDI đã có mốc thời gian, dẫn xuất từ một MusicXmlDocument, dùng cho MidiLane và để đối chiếu khi luyện tập.
 _Avoid_: MIDI file (may be an export artifact), soundtrack
 
-### Capture
+### Capture (Thu nhận)
 
 **OmrJob**:
-A process that turns a photograph or scan of sheet music into a draft MusicXmlDocument.
+Một tiến trình biến ảnh chụp hoặc bản scan của bản nhạc thành một MusicXmlDocument ở dạng nháp.
 _Avoid_: Scan (the capture act), OCR (wrong domain), recognition (vague)
 
 **CorrectionSession**:
-The human review/edit step that turns OMR draft MusicXML into an accepted MusicXmlDocument.
+Bước con người soát và sửa, biến bản MusicXML nháp do OMR sinh ra thành một MusicXmlDocument đã được chấp nhận.
 _Avoid_: Edit mode (too broad), proofreading
 
-### Monetization (optional later)
+### Monetization (Kiếm tiền — tuỳ chọn về sau)
 
 **ProEntitlement**:
-A purchased unlock for gated features; details TBD and must not leak into core domain until decided.
+Một lần mở khoá đã trả tiền cho các tính năng bị chặn; chi tiết chưa xác định, và không được rò rỉ vào miền cốt lõi cho tới khi có quyết định.
 _Avoid_: Subscription (unless that model is chosen)
