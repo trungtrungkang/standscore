@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stagescore/pageturn/page_jump.dart';
@@ -50,10 +51,13 @@ class PageNavBar extends StatelessWidget {
     final canGoNext = pageNumber < pageCount;
 
     return ExcludeFocus(
-      child: Material(
-        elevation: 2,
-        color: theme.colorScheme.surface,
-        child: SafeArea(
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Material(
+            elevation: 4,
+            color: theme.colorScheme.surface.withValues(alpha: 0.85),
+            child: SafeArea(
           top: false,
           left: avoidNotches,
           right: avoidNotches,
@@ -117,8 +121,9 @@ class PageNavBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
 
   Future<void> _onJumpPressed(BuildContext context) async {
     final result = await showJumpToPageDialog(
