@@ -21,24 +21,23 @@ extension AppThemeModeX on AppThemeMode {
 class AppAppearance {
   const AppAppearance({required this.mode, required this.seedColorValue});
 
-  /// Primary BackingScore brand accent (`#EA6B24` / `#C8A856`).
-  static const int brandOrangeValue = 0xFFEA6B24;
-  static const int brandGoldValue = 0xFFC8A856;
+  /// Brand teal used for splash / launcher (`#0D8B86`).
+  static const int brandTealValue = 0xFF0D8B86;
 
   static const AppAppearance defaults = AppAppearance(
     mode: AppThemeMode.system,
-    seedColorValue: brandOrangeValue,
+    seedColorValue: brandTealValue,
   );
 
-  /// BackingScore ecosystem accent presets.
+  /// Short accent presets (includes brand teal).
   static const List<int> presetSeedValues = [
-    brandOrangeValue, // BackingScore Orange
-    brandGoldValue,   // BackingScore Metallic Gold
-    0xFF2563EB,       // Royal Blue
-    0xFF059669,       // Stage Emerald
-    0xFFDC2626,       // Crimson
-    0xFF7C3AED,       // Deep Violet
-    0xFF475569,       // Slate Grey
+    brandTealValue,
+    0xFF1565C0, // blue
+    0xFF6A1B9A, // purple
+    0xFFC62828, // red
+    0xFFEF6C00, // orange
+    0xFF2E7D32, // green
+    0xFF455A64, // blue grey
   ];
 
   final AppThemeMode mode;
@@ -49,38 +48,12 @@ class AppAppearance {
   ThemeMode get themeMode => mode.themeMode;
 
   ThemeData themeData(Brightness brightness) {
-    final isDark = brightness == Brightness.dark;
-    final baseScheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: brightness,
-    );
-
-    final colorScheme = isDark
-        ? baseScheme.copyWith(
-            surface: const Color(0xFF121212),
-            onSurface: const Color(0xFFFAFAFA),
-            surfaceContainer: const Color(0xFF18181B),
-            surfaceContainerHigh: const Color(0xFF27272A),
-            outline: const Color(0xFF3F3F46),
-            primary: seedColor,
-          )
-        : baseScheme;
-
     return ThemeData(
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: isDark ? const Color(0xFF09090B) : null,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: brightness,
+      ),
       useMaterial3: true,
-      cardTheme: CardThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-      snackBarTheme: SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
     );
   }
 

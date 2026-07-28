@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -122,32 +121,20 @@ class _TransientPillState extends State<TransientPill> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: scheme.inverseSurface.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: scheme.onInverseSurface.withValues(alpha: 0.2),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
-                    ),
-                    child: Text(
-                      widget.text,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: scheme.onInverseSurface,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.inverseSurface.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: Text(
+                  widget.text,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: scheme.onInverseSurface,
                   ),
                 ),
               ),
