@@ -134,8 +134,8 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
               // The intent, not the mechanism — the mechanism is the subtitle.
               title: const Text('Keep this scale'),
               subtitle: const Text(
-                'Pinch and double-tap are off, so a stray touch mid-piece '
-                'cannot move the music',
+                'Pinch is off, so a stray touch mid-piece cannot move the '
+                'music',
               ),
               value: _prefs.locked,
               onChanged: (value) => _update(_prefs.copyWith(locked: value)),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:stagescore/annotation/annotation_store.dart';
@@ -10,6 +12,7 @@ import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/pdf_surface.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
+import 'package:stagescore/pdf/shared_zoom.dart';
 import 'package:stagescore/pdf/zoom_toggle.dart';
 
 const double _handleExtent = 28;
@@ -116,8 +119,6 @@ class HalfPageController extends ChangeNotifier {
     return _state?._goToPage(pageNumber) ?? Future<void>.value();
   }
 
-  void toggleZoom() => _state?._toggleZoom();
-
   void _notify() => notifyListeners();
 }
 
@@ -127,6 +128,11 @@ class _HalfPageViewState extends State<HalfPageView> {
   int _pageCount = 0;
   final Map<int, TransformationController> _transforms = {};
   String? _error;
+
+  /// Shared pinch/pan transform across pages, mirroring
+  /// `_SinglePageSliderState` (post-0043 follow-up — see `shared_zoom.dart`
+  /// for why pan, not just scale, is shared).
+  Matrix4? _sharedZoomTransform;
 
   @override
   void initState() {
@@ -165,6 +171,7 @@ class _HalfPageViewState extends State<HalfPageView> {
   @override
   void dispose() {
     widget.controller._detach(this);
+    _zoomSettleTimer?.cancel();
     for (final t in _transforms.values) {
       t.dispose();
     }
@@ -174,19 +181,43 @@ class _HalfPageViewState extends State<HalfPageView> {
 
   TransformationController _transformFor(int index) {
     return _transforms.putIfAbsent(index, () {
-      final t = TransformationController();
-      t.addListener(() {
-        if (index == _pageIndex && mounted) setState(() {});
-      });
+      final t = TransformationController(
+        sharedZoomMatrix(_sharedZoomTransform),
+      );
+      t.addListener(() => _onTransformChanged(index, t));
       return t;
     });
   }
 
-  void _toggleZoom() {
-    if (widget.zoomLocked || widget.drawEnabled) return;
-    toggleTransformationZoom(_transformFor(_pageIndex));
-    setState(() {});
-    widget.controller._notify();
+  /// Debounces sharing until the current page's transform stops moving — see
+  /// `kZoomSettleDelay` for why `onInteractionEnd` alone reads a mid-fling
+  /// value rather than where the musician actually left it.
+  Timer? _zoomSettleTimer;
+
+  void _onTransformChanged(int index, TransformationController t) {
+    if (index != _pageIndex) return;
+    if (mounted) setState(() {});
+    _zoomSettleTimer?.cancel();
+    _zoomSettleTimer = Timer(
+      kZoomSettleDelay,
+      () => _onZoomSettled(index),
+    );
+  }
+
+  /// Fires once [index]'s transform has sat still for `kZoomSettleDelay`
+  /// (post-0043 follow-up). Shares the resulting transform with every other
+  /// page's controller so PageTurn keeps the zoom *and* the pan.
+  void _onZoomSettled(int index) {
+    if (!mounted) return;
+    final t = _transforms[index];
+    if (t == null) return;
+    final next = nextSharedZoomTransform(t.value);
+    if (!sharedZoomTransformChanged(_sharedZoomTransform, next)) return;
+    _sharedZoomTransform = next;
+    for (final entry in _transforms.entries) {
+      if (entry.key == index) continue;
+      entry.value.value = sharedZoomMatrix(next);
+    }
   }
 
   bool _isZoomed(int index) {
@@ -205,6 +236,7 @@ class _HalfPageViewState extends State<HalfPageView> {
         0,
         _pageCount > 0 ? _pageCount - 1 : 0,
       );
+      _sharedZoomTransform = null;
     });
     previous?.dispose();
     try {

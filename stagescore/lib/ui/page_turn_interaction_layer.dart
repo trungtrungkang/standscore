@@ -5,7 +5,12 @@ import 'package:stagescore/pageturn/page_turn_delay.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
 
 /// Tap zones, swipe, edge gestures, and long-press (Specs 0003 / 0015 / 0016).
-/// Spec 0033: multi-touch passes through for pinch; optional double-tap zoom.
+/// Spec 0033: multi-touch passes through for pinch. Double-tap zoom was cut
+/// (post-0043): pairing `onDoubleTap` with `onTap` on the same
+/// `GestureDetector` forces Flutter's gesture arena to hold every single tap
+/// for `kDoubleTapTimeout` (~300ms) before it fires, which read as PageTurn
+/// lag on every tap. Pinch is the only zoom gesture now, so tap turns pages
+/// with no disambiguation wait.
 class PageTurnInteractionLayer extends StatefulWidget {
   const PageTurnInteractionLayer({
     super.key,
@@ -15,8 +20,6 @@ class PageTurnInteractionLayer extends StatefulWidget {
     this.onGestureAction,
     this.onScoreTap,
     this.pageTurnEnabled = true,
-    this.doubleTapZoomEnabled = false,
-    this.onDoubleTapZoom,
     this.resolveJumpLink,
     this.onJumpLinkTap,
     this.onJumpLinkLongPress,
@@ -35,10 +38,6 @@ class PageTurnInteractionLayer extends StatefulWidget {
 
   /// When false, PageTurn tap/swipe are ignored; Show menu gestures still work.
   final bool pageTurnEnabled;
-
-  /// When true, double-tap calls [onDoubleTapZoom] instead of PageTurn.
-  final bool doubleTapZoomEnabled;
-  final VoidCallback? onDoubleTapZoom;
 
   /// JumpLink hit-test before PageTurn (Spec 0016). Return null = miss.
   final JumpLink? Function(Offset local, Size viewSize)? resolveJumpLink;
@@ -178,13 +177,8 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
                     behavior: HitTestBehavior.translucent,
                     onTapDown: (details) => _tapDown = details.localPosition,
                     onTapCancel: () => _tapDown = null,
+                    // No onDoubleTap here on purpose — see class doc comment.
                     onTap: () => _handleTap(size),
-                    onDoubleTap: widget.doubleTapZoomEnabled
-                        ? () {
-                            _tapDown = null;
-                            widget.onDoubleTapZoom?.call();
-                          }
-                        : null,
                     onLongPressStart: (details) =>
                         _longPressPos = details.localPosition,
                     onLongPress: () => _handleLongPress(size),

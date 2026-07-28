@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:stagescore/annotation/annotation_store.dart';
@@ -7,6 +9,7 @@ import 'package:stagescore/annotation/stamp.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
+import 'package:stagescore/pdf/shared_zoom.dart';
 import 'package:stagescore/pdf/zoom_toggle.dart';
 
 /// ScorePDF-style single-page slider over [PageOrder] (Specs 0004 / 0011).
@@ -103,9 +106,6 @@ class SinglePageSliderController extends ChangeNotifier {
         Future<void>.value();
   }
 
-  /// Spec 0033: double-tap zoom toggle on the current page.
-  void toggleZoom() => _state?._toggleZoom();
-
   void _notify() => notifyListeners();
 }
 
@@ -116,6 +116,13 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
   int _pageCount = 0;
   String? _error;
   final Map<int, TransformationController> _transforms = {};
+
+  /// Pinch/pan transform shared across pages once one page is zoomed
+  /// (post-0043 follow-up): a musician who pinched in *and panned* on page 3
+  /// — say, to hide a scan's wide left margin — does not want fit-to-page
+  /// back, uncentred, the moment they turn to page 4. `null` means "no shared
+  /// zoom" (fit).
+  Matrix4? _sharedZoomTransform;
 
   @override
   void initState() {
@@ -156,6 +163,7 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
     }
     if (oldWidget.pageScale != widget.pageScale ||
         oldWidget.zoomLocked != widget.zoomLocked) {
+      _sharedZoomTransform = null;
       for (final t in _transforms.values) {
         t.value = Matrix4.identity();
       }
@@ -165,6 +173,7 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
   @override
   void dispose() {
     widget.controller._detach(this);
+    _zoomSettleTimer?.cancel();
     _pageController.dispose();
     for (final t in _transforms.values) {
       t.dispose();
@@ -180,6 +189,7 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
       _document = null;
       _pageCount = widget.pageOrder.length;
       _pageIndex = _initialIndex();
+      _sharedZoomTransform = null;
     });
     previous?.dispose();
     try {
@@ -243,20 +253,45 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
 
   bool get _currentZoomed => _isZoomed(_pageIndex);
 
-  void _toggleZoom() {
-    if (widget.zoomLocked || widget.drawEnabled) return;
-    final t = _transformFor(_pageIndex);
-    toggleTransformationZoom(t);
-    setState(() {});
-    widget.controller._notify();
+  /// Debounces sharing until the current page's transform stops moving — see
+  /// `kZoomSettleDelay` for why `onInteractionEnd` alone reads a mid-fling
+  /// value rather than where the musician actually left it.
+  Timer? _zoomSettleTimer;
+
+  void _onTransformChanged(int index, TransformationController t) {
+    if (index != _pageIndex) return;
+    if (mounted) setState(() {});
+    _zoomSettleTimer?.cancel();
+    _zoomSettleTimer = Timer(
+      kZoomSettleDelay,
+      () => _onZoomSettled(index),
+    );
+  }
+
+  /// Fires once [index]'s transform has sat still for `kZoomSettleDelay`
+  /// (post-0043 follow-up — double-tap zoom was cut, pinch is now the only
+  /// zoom gesture). Shares the resulting transform with every other page's
+  /// controller, visited or not, so turning the page keeps the musician's
+  /// zoom *and pan* instead of snapping back to an uncentred fit.
+  void _onZoomSettled(int index) {
+    if (!mounted) return;
+    final t = _transforms[index];
+    if (t == null) return;
+    final next = nextSharedZoomTransform(t.value);
+    if (!sharedZoomTransformChanged(_sharedZoomTransform, next)) return;
+    _sharedZoomTransform = next;
+    for (final entry in _transforms.entries) {
+      if (entry.key == index) continue;
+      entry.value.value = sharedZoomMatrix(next);
+    }
   }
 
   TransformationController _transformFor(int index) {
     return _transforms.putIfAbsent(index, () {
-      final t = TransformationController();
-      t.addListener(() {
-        if (index == _pageIndex && mounted) setState(() {});
-      });
+      final t = TransformationController(
+        sharedZoomMatrix(_sharedZoomTransform),
+      );
+      t.addListener(() => _onTransformChanged(index, t));
       return t;
     });
   }

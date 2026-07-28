@@ -3,29 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stagescore/pdf/zoom_toggle.dart';
 
 void main() {
-  test('toggledZoomMatrix zooms in from identity', () {
-    final next = toggledZoomMatrix(Matrix4.identity());
-    expect(isInteractivelyZoomed(next), isTrue);
-    expect(next.getMaxScaleOnAxis(), closeTo(kDoubleTapZoomScale, 0.01));
+  test('isInteractivelyZoomed is false at identity', () {
+    expect(isInteractivelyZoomed(Matrix4.identity()), isFalse);
   });
 
-  test('toggledZoomMatrix resets when already zoomed', () {
-    final zoomed = Matrix4.identity()
-      ..scaleByDouble(
-        kDoubleTapZoomScale,
-        kDoubleTapZoomScale,
-        kDoubleTapZoomScale,
-        1,
-      );
-    final next = toggledZoomMatrix(zoomed);
-    expect(isInteractivelyZoomed(next), isFalse);
+  test('isInteractivelyZoomed is true once scaled up meaningfully', () {
+    final zoomed = Matrix4.identity()..scaleByDouble(2, 2, 2, 1);
+    expect(isInteractivelyZoomed(zoomed), isTrue);
   });
 
-  test('toggleTransformationZoom mutates controller', () {
-    final c = TransformationController();
-    toggleTransformationZoom(c);
-    expect(isInteractivelyZoomed(c.value), isTrue);
-    toggleTransformationZoom(c);
-    expect(isInteractivelyZoomed(c.value), isFalse);
+  test('isInteractivelyZoomed ignores sub-threshold float jitter', () {
+    final barely = Matrix4.identity()..scaleByDouble(1.02, 1.02, 1.02, 1);
+    expect(isInteractivelyZoomed(barely), isFalse);
   });
 }

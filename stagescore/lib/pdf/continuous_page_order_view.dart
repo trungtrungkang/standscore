@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:stagescore/annotation/annotation_store.dart';
@@ -8,7 +10,7 @@ import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
-import 'package:stagescore/pdf/zoom_toggle.dart';
+import 'package:stagescore/pdf/shared_zoom.dart';
 
 /// Scrollable PageOrder view for non-identity continuous layouts (Spec 0011).
 class ContinuousPageOrderView extends StatefulWidget {
@@ -104,8 +106,6 @@ class ContinuousPageOrderController extends ChangeNotifier {
       ) ??
       Future<bool>.value(false);
 
-  void toggleZoom() => _state?._toggleZoom();
-
   void _notify() => notifyListeners();
 }
 
@@ -117,6 +117,11 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
   String? _error;
   final _keys = <int, GlobalKey>{};
   final Map<int, TransformationController> _transforms = {};
+
+  /// Shared pinch/pan transform across pages, mirroring
+  /// `_SinglePageSliderState` (post-0043 follow-up — see `shared_zoom.dart`
+  /// for why pan, not just scale, is shared).
+  Matrix4? _sharedZoomTransform;
 
   @override
   void initState() {
@@ -144,6 +149,7 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
   @override
   void dispose() {
     widget.controller._detach(this);
+    _zoomSettleTimer?.cancel();
     _scrollController.dispose();
     for (final t in _transforms.values) {
       t.dispose();
@@ -153,14 +159,43 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
   }
 
   TransformationController _transformFor(int index) {
-    return _transforms.putIfAbsent(index, TransformationController.new);
+    return _transforms.putIfAbsent(index, () {
+      final t = TransformationController(
+        sharedZoomMatrix(_sharedZoomTransform),
+      );
+      t.addListener(() => _onTransformChanged(index));
+      return t;
+    });
   }
 
-  void _toggleZoom() {
-    if (widget.zoomLocked || widget.drawEnabled) return;
-    toggleTransformationZoom(_transformFor(_visibleIndex));
-    setState(() {});
-    widget.controller._notify();
+  /// Debounces sharing until a page's transform stops moving — see
+  /// `kZoomSettleDelay` for why `onInteractionEnd` alone reads a mid-fling
+  /// value rather than where the musician actually left it.
+  Timer? _zoomSettleTimer;
+
+  void _onTransformChanged(int index) {
+    _zoomSettleTimer?.cancel();
+    _zoomSettleTimer = Timer(
+      kZoomSettleDelay,
+      () => _onZoomSettled(index),
+    );
+  }
+
+  /// Fires once [index]'s transform has sat still for `kZoomSettleDelay`
+  /// (post-0043 follow-up). Every visible slot can be pinched independently
+  /// here (a scrollable list, not one current page), so this shares
+  /// whichever page the musician actually touched — zoom and pan both.
+  void _onZoomSettled(int index) {
+    if (!mounted) return;
+    final t = _transforms[index];
+    if (t == null) return;
+    final next = nextSharedZoomTransform(t.value);
+    if (!sharedZoomTransformChanged(_sharedZoomTransform, next)) return;
+    _sharedZoomTransform = next;
+    for (final entry in _transforms.entries) {
+      if (entry.key == index) continue;
+      entry.value.value = sharedZoomMatrix(next);
+    }
   }
 
   Future<void> _open() async {
@@ -169,6 +204,7 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
       _error = null;
       _document = null;
       _orderLength = widget.pageOrder.length;
+      _sharedZoomTransform = null;
     });
     previous?.dispose();
     try {
