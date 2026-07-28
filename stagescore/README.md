@@ -1,6 +1,7 @@
 # StageScore (Flutter)
 
-Product of [BackingScore](https://backingscore.com). Bundle ID: `com.backingscore.scoreapp`.
+Product of [Backing & Score](https://backingscore.com) (ADR 0010 — humans read the
+ampersand, identifiers keep `backingscore`). Bundle ID: `com.backingscore.scoreapp`.
 
 ## Run
 

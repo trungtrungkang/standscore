@@ -1,6 +1,8 @@
 # Agent instructions — StageScore
 
-You are implementing **StageScore** (product of **BackingScore**, https://backingscore.com) under human orchestration. Read these before coding.
+You are implementing **StageScore** (product of **Backing & Score**, https://backingscore.com) under human orchestration. Read these before coding.
+
+The brand is written **Backing & Score** wherever a person reads it, and `backingscore` only inside identifiers — ADR 0010. Brand strings have one definition, `Brand` in `lib/brand/brand.dart`, and a test keeps them out of everything a musician can reach while playing.
 
 The product was called **StandScore** until 2026-07-27. On-device paths (`<documents>/standscore/`) and the backup format id keep the old spelling on purpose — see the README in `stagescore/`. Do not "clean up" either one.
 

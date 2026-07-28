@@ -3,7 +3,8 @@
 StageScore is a product of **BackingScore** ([backingscore.com](https://backingscore.com)). Mobile/web application identifiers use the BackingScore reverse-DNS namespace.
 
 **Status:** accepted  
-**Decided by:** Human Orchestrator (2026-07-22)
+**Decided by:** Human Orchestrator (2026-07-22)  
+**Amended by:** [ADR 0010](./0010-backing-and-score-brand-spelling.md) (2026-07-28) — the publisher is written **Backing & Score** wherever a person reads it. Every identifier below is unchanged.
 
 ## Decision
 
