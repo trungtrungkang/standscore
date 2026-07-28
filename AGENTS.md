@@ -18,6 +18,10 @@ Application ID / bundle ID: **`com.backingscore.scoreapp`** (ADR 0009). Do not i
 
 If chat history conflicts with an accepted Spec/ADR, **Spec/ADR win**.
 
+ADR 0013 extends the model rather than replacing it: announce a tier (**S** / **M** / **L**) before working, and the tier decides which gates apply — S none, M means G3 and G4, L adds a G2 ADR and a Security Review. ADR 0016 adds a model to that announcement. Default to Sonnet-class; send exploration and inventory work to a **cheap subagent** so its tokens never enter this context; use Opus-class for the decide phase (ADR, Spec, grilling) and as a floor that is never lowered for audio ownership, OMR, data leaving the device, or destructive changes. Escalate only on a signal — a second failed attempt, tests still red after one deliberate fix, or genuine uncertainty. If a locked Spec needs Opus to implement, the defect is in the Spec: go back to G3.
+
+ADR 0014 keeps this repo's glossary exactly as it is: StageScore and the web app are two bounded contexts with two vocabularies, because StageScore descends from ScorePDF and the web app from Tomplay and FollowKeys. Do not "align" a term across the two. If you work across both, read the translation table in ADR 0014 rather than inventing a third name.
+
 ## Role split
 
 - **Human:** Gates G0–G4, scope cuts, irreversible choices  
@@ -55,6 +59,22 @@ Release builds are signed from `android/key.properties`, which is gitignored and
 - Soft choices / weekly notes → `docs/product/DECISIONS-LOG.md`  
 - Do not put implementation detail in `CONTEXT.md`
 
+**Language (ADR 0015):** write in the language of whoever reads the document to act on it. ADRs, Feature Specs, VISION, the release checklist and the decisions log are **Vietnamese**, because a human accepts or rejects them at a gate. `AGENTS.md`, `docs/engineering/`, code comments and commit messages stay **English**. `CONTEXT.md` keeps English term names with Vietnamese definitions. Three rules hold in both languages: never translate a domain term or identifier, never keep two language versions of one document, and write headings bilingually as `## Bối cảnh (Context)` with test values in backticks. Existing English documents are **not** translated retroactively — only when a decision is next needed from one.
+
 ## Out of scope of this folder
 
-`sheet-app/` is the StageScore product home (folder name lags the brand); the Flutter app is `sheet-app/stagescore/`. The parent repo may contain unrelated study projects (e.g. FITFR viewer). Do not mix their domain language or dependencies unless an ADR explicitly says so.
+`sheet-app/` is the StageScore product home (folder name lags the brand); the Flutter app is `sheet-app/stagescore/`. The parent directory may contain unrelated study projects (e.g. FITFR viewer). Do not mix their domain language or dependencies unless an ADR explicitly says so.
+
+## The other half of the product
+
+Backing & Score's website and web app are a **separate repo**, `trungtrungkang/backing-score`, checked out at `~/projects/paperclip/lotusa/projects/backing-and-score`. That is the only working copy — a second, seven-weeks-stale clone was removed on 2026-07-28 (ADR 0012). If you find another, it is not a fork, it is a mistake.
+
+Anything a musician can reach spans both repos, so a change to one of these is not finished until the other agrees:
+
+| This repo | Web repo |
+|-----------|----------|
+| `Brand.siteUrl`, `Brand.privacyUrl` in `lib/brand/brand.dart` | the routes those URLs resolve to — `/privacy`, `/support` |
+| `docs/product/STORE-LISTING.md` marketing URL | `apps/web/src/app/[locale]/stagescore/page.tsx` (ADR 0011) |
+| What `PrivacyInfo.xcprivacy` declares the app collects | the StageScore section of `/privacy` (R22) |
+
+Nothing enforces this — no shared CI, no shared types. ADR 0012 folds this repo into the monorepo as `apps/stagescore/` once v1 is on the store; until then the agreement is manual, so check it by hand.
