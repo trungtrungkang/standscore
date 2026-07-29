@@ -135,7 +135,8 @@ Lý do dừng nằm ở chính phát hiện định hình phase này: khoảng c
 2. **Spec 0043 `done`** — G4 pass 2026-07-29 trên SM X210. Hình dạng cuối là Revision 3, sau ba lần đảo trong một ngày: `⋯` giữ nguyên với icon trên từng dòng; `ScoreMenuQuickBar` giữ đúng ba lối tắt theo luật "tay đang trên nhạc cụ" (Bookmarks, Draw, Metronome), và hình dạng của hàng đó do `QuickBarFit` **đo** chứ không do bảng breakpoint.
 3. **Spec 0044 `done`** — G3 pass và G4 pass cùng ngày 2026-07-29. Vòng grilling trước G3 sửa lại chính đợt kiểm kê sinh ra Spec (drag handle hoá ra đã ship từ trước; `ChipThemeData` không diễn đạt được mật độ) và cắt `PopupMenuThemeData` cùng thang đổ bóng.
 4. **E3–E7 `hold`** theo quyết định 2026-07-29 — xem "Exit E đạt sớm" ở trên. Việc kế tiếp **không** nằm trong roadmap này: chọn một hai tính năng khác biệt (nghệ sỹ / teacher / student) đủ nhỏ cho v1, rồi draft Spec cho nó.
-5. Chỉ build sau khi mỗi Spec qua G3.
+5. **Chen ngang, ưu tiên trước tính năng mới: Spec 0050 `proposed`** — sao lưu làm đơ app với thư viện thật (musician báo 2026-07-29). Đây là **bug của P2.11 đang ship**, không phải polish, nên nó đứng trước mọi tính năng khác biệt. Tier M, ship được một mình; phần Orchestrator hỏi tới — *chọn sao lưu những gì* — tách thành slice tier L sau nó, vì nó buộc chốt ngữ nghĩa restore (trộn hay thay thế) bằng ADR ở G2.
+6. Chỉ build sau khi mỗi Spec qua G3.
 
 ---
 
