@@ -97,8 +97,8 @@ If **hold** → more Phase B/C only.
 
 | Thứ tự | Việc | Parity / Spec | Kết quả |
 |------:|------|----------------|---------|
-| E1 | **ScoreMenuQuickBar icon-only dưới PageNavBar, `⋯` giữ nguyên:** bản đầu định thay hẳn `⋯` bằng một tab-strip có nhãn cho cả bốn nhóm (**Go to · Marks · View · Playing**) — đảo lại cùng ngày vì rủi ro i18n (nhãn cố định trong hàng bốn tab vỡ layout khi dịch). Revision 1 rút về chỉ một icon-tắt View không nhãn trên AppBar. Revision 2 (hình dạng cuối) đưa tab-strip trở lại đúng vị trí ban đầu — ngay dưới `PageNavBar` — nhưng mọi mục là **icon thuần, không chữ**: Metronome (khi chạy), Draw, Bookmarks, Layout, View. `⋯` không đổi, vẫn mở đủ bốn nhóm/12 action, mỗi action giờ có icon riêng đứng trước tên | Mở lại lựa chọn IA của 0035 — Spec **0043** | Thứ Orchestrator hỏi ba lần, giải quyết mà không thêm rủi ro i18n mới |
-| E2 | **Design token & component theme:** một thang khoảng cách (4/8/12/16/24 nội tuyến hôm nay trở thành hằng số có tên), một thang bo góc/đổ bóng, `PopupMenuThemeData` / `ChipThemeData` / `BottomSheetThemeData` để mọi sheet và menu dùng chung một "chất liệu" bo góc, đổ bóng; sửa lệch màu brand teal (`draw_toolbar.dart:63-65` dùng `0xFF0D9488`, theme dùng `0xFF0D8B86`) | Polish, không có parity ID — Spec **0044** | Mọi slice E sau này thừa hưởng một ngôn ngữ thị giác thay vì thêm kiểu thứ sáu |
+| E1 ✅ | **ScoreMenuQuickBar icon-only dưới PageNavBar, `⋯` giữ nguyên:** bản đầu định thay hẳn `⋯` bằng một tab-strip có nhãn cho cả bốn nhóm (**Go to · Marks · View · Playing**) — đảo lại cùng ngày vì rủi ro i18n (nhãn cố định trong hàng bốn tab vỡ layout khi dịch). Revision 1 rút về chỉ một icon-tắt View không nhãn trên AppBar. Revision 2 (hình dạng cuối) đưa tab-strip trở lại đúng vị trí ban đầu — ngay dưới `PageNavBar` — nhưng mọi mục là **icon thuần, không chữ**: Metronome (khi chạy), Draw, Bookmarks, Layout, View. `⋯` không đổi, vẫn mở đủ bốn nhóm/12 action, mỗi action giờ có icon riêng đứng trước tên | Mở lại lựa chọn IA của 0035 — Spec **0043** | Thứ Orchestrator hỏi ba lần, giải quyết mà không thêm rủi ro i18n mới |
+| E2 ✅ | **Design token & component theme:** một thang khoảng cách (4/8/12/16/24 nội tuyến hôm nay trở thành hằng số có tên), một thang bo góc, `ChipThemeData` / `BottomSheetThemeData` để mọi sheet dùng chung một "chất liệu"; sửa lệch màu brand teal (`draw_toolbar.dart:63-65` dùng `0xFF0D9488`, theme dùng `0xFF0D8B86`). Vòng G3 cắt `PopupMenuThemeData` và thang đổ bóng — không site nào đang phân kỳ ở hai chỗ đó | Polish, không có parity ID — Spec **0044** | Mọi slice E sau này thừa hưởng một ngôn ngữ thị giác thay vì thêm kiểu thứ sáu |
 | E3 | **Nội dung tab dim-scrim:** nội dung Bookmarks / Jump Links / hàng đợi Setlist của tab **Go to** hiển thị trên nền bản nhạc bị làm mờ nhưng vẫn thấy được, thay cho sheet cố định 55% chiều cao, che kín hôm nay | Mở lại cách trình bày của 0010 / 0012 / 0016 — Spec **0045** | Nhạc công giữ được ngữ cảnh không gian ("mình đang ở đâu") khi tra cứu, khớp drawer của ScorePDF |
 | E4 | **Gọn header Library:** gộp ba hàng riêng biệt hôm nay (logo AppBar, `SegmentedButton`, ô tìm kiếm) thành hai — nav/search/view-toggle, rồi filter-chip/sort/hướng sắp xếp — khớp mật độ Home screen thật (không phải marketing) của ScorePDF. **Cắt khỏi phạm vi:** grid thumbnail — ảnh Home thật của ScorePDF cho thấy hàng chỉ có title, không có bằng chứng cho ý này | Chỉ đổi cách trình bày — Spec **0046** | Header ít hàng hơn, gọn hơn; nội dung hàng vốn đã dày hơn của StageScore (thumbnail, ngày, số trang, label) được giữ nguyên, không bị cắt bớt |
 | E5 | **Một khuôn settings-sheet dùng chung:** một `SettingsRow` chung (icon + tiêu đề + mô tả phụ + control bên phải) áp lại cho Display, Page turn, Color filter, Metronome, Page scale, và Layout, thay năm kiểu chrome sheet khác nhau hôm nay | Mở lại cách trình bày của 0025 / 0026 / 0030 / 0031 / 0032 / 0036 — Spec **0047** | Mọi đích cài đặt đọc giống nhau; mô tả phụ đồng thời là copy onboarding thụ động cho E8 |
@@ -107,6 +107,10 @@ If **hold** → more Phase B/C only.
 | E8 | **Đẩy sớm onboarding:** chạy Spec đã dành sẵn **0039** sau E5, vì copy mô tả phụ của E5 giảm một nửa công viết copy onboarding | Parity **Q7** — Spec **0039** (dùng lại) | Không viết copy coach-mark hai lần |
 
 **Exit E:** Orchestrator nhìn StageScore và ScorePDF cạnh nhau, không còn đọc StageScore là "một app Material chưa hoàn thiện" — có cấu trúc phân loại công cụ nhìn thấy được trong PdfMode, một ngữ pháp sheet nhất quán, và một header Library gọn như của ScorePDF.
+
+**Exit E đạt sớm, sau E1 + E2 (Orchestrator, 2026-07-29):** "UI như hiện tại tôi thấy OK rồi." **E3–E7 chuyển sang `hold`** — không cắt, chỉ không chạy: 0045, 0046, 0047, 0048, 0049 giữ số và giữ lý lẽ, mở lại nếu một đợt review sau này thấy cần. E8 (onboarding, Spec **0039**) không còn phụ thuộc E5 nữa nên nó quay về Phase C như thứ tự gốc.
+
+Lý do dừng nằm ở chính phát hiện định hình phase này: khoảng cách với ScorePDF là **cách trình bày**, và hai slice đã đóng đúng hai khoảng cách có bằng chứng (IA của PdfMode, và ngôn ngữ thị giác dùng chung). Phần còn lại của E là làm cho *giống ScorePDF hơn* — mà đó không phải chỗ StageScore thắng. Hướng tiếp theo Orchestrator chọn là **những thứ nghệ sỹ / teacher / student cần mà ScorePDF không có**, trong giới hạn v1: offline, không thu thập dữ liệu, và không đụng SmartMode / Transport / OMR (ADR 0008). Các ứng viên đang được cân — xem `DECISIONS-LOG.md` 2026-07-29 — chưa có Spec nào; mỗi cái vẫn phải qua G3.
 
 ---
 
@@ -129,8 +133,9 @@ If **hold** → more Phase B/C only.
 
 1. Accept Phase E (hoặc cắt/xếp lại thứ tự slice) — mọi thứ ở trên đang `proposed`.
 2. **Spec 0043 `done`** — G4 pass 2026-07-29 trên SM X210. Hình dạng cuối là Revision 3, sau ba lần đảo trong một ngày: `⋯` giữ nguyên với icon trên từng dòng; `ScoreMenuQuickBar` giữ đúng ba lối tắt theo luật "tay đang trên nhạc cụ" (Bookmarks, Draw, Metronome), và hình dạng của hàng đó do `QuickBarFit` **đo** chứ không do bảng breakpoint.
-3. Sau đó tới **0044** (design token) trước khi chạm chi tiết thị giác của E3–E7, vì chúng đều hiển thị đẹp hơn một khi token tồn tại.
-4. Chỉ build sau khi mỗi Spec qua G3.
+3. **Spec 0044 `done`** — G3 pass và G4 pass cùng ngày 2026-07-29. Vòng grilling trước G3 sửa lại chính đợt kiểm kê sinh ra Spec (drag handle hoá ra đã ship từ trước; `ChipThemeData` không diễn đạt được mật độ) và cắt `PopupMenuThemeData` cùng thang đổ bóng.
+4. **E3–E7 `hold`** theo quyết định 2026-07-29 — xem "Exit E đạt sớm" ở trên. Việc kế tiếp **không** nằm trong roadmap này: chọn một hai tính năng khác biệt (nghệ sỹ / teacher / student) đủ nhỏ cho v1, rồi draft Spec cho nó.
+5. Chỉ build sau khi mỗi Spec qua G3.
 
 ---
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stagescore/metronome/metronome_engine.dart';
 import 'package:stagescore/metronome/metronome_prefs.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/beat_dots.dart';
 import 'package:stagescore/ui/metronome_icon.dart';
 import 'package:stagescore/ui/sheet_body.dart';
@@ -13,7 +14,6 @@ Future<void> showMetronomeSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return _MetronomeSheet(engine: engine, onPrefsChanged: onPrefsChanged);
@@ -74,7 +74,7 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
         Row(
           children: [
             const MetronomeIcon(size: 28),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text('Metronome', style: theme.textTheme.titleLarge),
             ),
@@ -86,7 +86,7 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Row(
           children: [
             Text('Tempo', style: theme.textTheme.titleSmall),
@@ -106,12 +106,12 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
           onChanged: (v) => _update(_prefs.copyWith(tempoBpm: v.round())),
         ),
         Text('Meter', style: theme.textTheme.titleSmall),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           'Equal = same click every beat. Labels group accents; tempo is BPM.',
           style: theme.textTheme.bodySmall,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -129,7 +129,7 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
               ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Mute (visual only)'),
@@ -155,7 +155,7 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
             onChanged: (v) => _update(_prefs.copyWith(volume: v)),
           ),
         ],
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         FilledButton.icon(
           onPressed: () => engine.toggle(),
           icon: Icon(engine.isRunning ? Icons.stop : Icons.play_arrow),

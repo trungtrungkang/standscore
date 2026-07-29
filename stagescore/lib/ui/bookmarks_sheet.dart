@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/bookmark/bookmark.dart';
 import 'package:stagescore/bookmark/bookmark_store.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/title_prompt.dart';
 
 Future<void> showBookmarksSheet({
@@ -11,7 +12,6 @@ Future<void> showBookmarksSheet({
 }) async {
   await showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return _BookmarksSheetBody(
@@ -96,7 +96,12 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  0,
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                ),
                 child: Row(
                   children: [
                     Expanded(

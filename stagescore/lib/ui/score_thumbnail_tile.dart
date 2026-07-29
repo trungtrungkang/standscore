@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:stagescore/library/score_thumbnails.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// The first page of a Score, small enough to recognise it by (Spec 0040).
 ///
@@ -72,11 +73,11 @@ class _ScoreThumbnailTileState extends State<ScoreThumbnailTile> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(AppRadius.xs),
           border: Border.all(color: scheme.outlineVariant),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(AppRadius.xs),
           child: bytes == null
               ? Icon(
                   Icons.picture_as_pdf_outlined,

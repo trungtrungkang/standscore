@@ -28,6 +28,7 @@ import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
 import 'package:stagescore/setlist/setlist_store.dart';
 import 'package:stagescore/theme/app_appearance.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/about_sheet.dart';
 import 'package:stagescore/ui/appearance_sheet.dart';
 import 'package:stagescore/ui/label_sheets.dart';
@@ -428,7 +429,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           content: Row(
             children: [
               const CircularProgressIndicator(),
-              const SizedBox(width: 20),
+              const SizedBox(width: AppSpacing.lg),
               Expanded(child: Text(message)),
             ],
           ),
@@ -482,12 +483,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
             (id: label.id, name: label.name),
     ];
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
       child: Row(
         children: [
           if (_filterMode == LabelFilterMode.all && chips.length > 1)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: Text('All of', style: theme.textTheme.labelMedium),
             ),
           Expanded(
@@ -846,7 +852,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         title: Semantics(
           label: 'StageScore',
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             child: Image.asset(
               'assets/brand/stagescore-logo.png',
               height: 32,
@@ -871,11 +877,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ),
               ],
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Row(
                   children: [
                     const Icon(Icons.sort),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: AppSpacing.xs),
                     Text(
                       _sortMode.label,
                       style: Theme.of(context).textTheme.labelLarge,
@@ -948,7 +954,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
             child: SegmentedButton<_LibraryTab>(
               segments: const [
                 ButtonSegment(
@@ -970,7 +981,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ),
           if (!_loading && _tab == _LibraryTab.scores && _scores.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
               child: TextField(
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
@@ -1028,7 +1044,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (_scores.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1037,23 +1053,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 size: 64,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 'No scores yet',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               const Text(
                 'Import PDF sheet music from your device to build your library.',
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               FilledButton.icon(
                 onPressed: _importPdfs,
                 icon: const Icon(Icons.add),
                 label: const Text('Add PDF'),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               TextButton(
                 onPressed: _importSample,
                 child: const Text('Add sample score'),
@@ -1062,7 +1078,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               // only place the publisher line can land before someone goes
               // looking for it in ⋯ → About (Spec 0042). A caption, not a
               // banner: it must not compete with Add PDF.
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
               Text(
                 Brand.publisherLine,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1079,7 +1095,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (visible.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1090,7 +1106,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               if (_searchActive)
                 TextButton(
                   onPressed: () => _searchController.clear(),
@@ -1109,7 +1125,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     final library = _library;
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 88),
+      padding: const EdgeInsets.only(bottom: kFabScrollClearance),
       itemCount: visible.length,
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
@@ -1132,7 +1148,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               Text(_recencyLine(score)),
               if (labelNames.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
                   child: _LabelChips(names: labelNames),
                 ),
             ],
@@ -1177,7 +1193,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (_setlists.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1186,17 +1202,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 size: 64,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 'No setlists yet',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               const Text(
                 'Group scores for continuous performance without reopening each piece.',
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               FilledButton.icon(
                 onPressed: _createSetlist,
                 icon: const Icon(Icons.playlist_add),
@@ -1209,7 +1225,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 88),
+      padding: const EdgeInsets.only(bottom: kFabScrollClearance),
       itemCount: _setlists.length,
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
@@ -1278,10 +1294,16 @@ class _Chip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      // The 2 is measured, not a step: it is what makes this label sit at the
+      // same height as the compact InputChip in the filter row above it.
+      // Allowlisted in `test/design_token_guard_test.dart`.
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: theme.colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Text(
         text,

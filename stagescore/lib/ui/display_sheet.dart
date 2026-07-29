@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/layout/display_prefs.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/sheet_body.dart';
 
-const _borderPresets = <Color>[
-  Color(DisplayPrefs.defaultBorderColorValue),
-  Color(0xFF000000),
-  Color(0xFF0D8B86),
-  Color(0xFFB45309),
+final _borderPresets = <Color>[
+  for (final value in DisplayPrefs.borderColorPresetValues) Color(value),
 ];
 
 Future<void> showDisplaySheet({
@@ -17,7 +15,6 @@ Future<void> showDisplaySheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return _DisplaySheet(
@@ -77,13 +74,13 @@ class _DisplaySheetState extends State<_DisplaySheet> {
                     height: 48,
                     decoration: BoxDecoration(
                       color: color,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
                       border: Border.all(
                         color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Text('Hue ${hsv.hue.round()}'),
                   Slider(
                     value: hsv.hue,
@@ -129,7 +126,7 @@ class _DisplaySheetState extends State<_DisplaySheet> {
     return SheetBody(
       children: [
         Text('Display', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Performance mode'),
@@ -157,7 +154,7 @@ class _DisplaySheetState extends State<_DisplaySheet> {
             onChanged: (v) => _update(_prefs.copyWith(borderWidth: v)),
           ),
           Text('Color', style: theme.textTheme.bodySmall),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -177,7 +174,7 @@ class _DisplaySheetState extends State<_DisplaySheet> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
         ],
         const Divider(),
         SwitchListTile(

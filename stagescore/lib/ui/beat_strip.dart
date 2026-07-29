@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/metronome/metronome_engine.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/beat_dots.dart';
 
 /// The metronome's beat, kept on the Score after the chrome has hidden
@@ -41,7 +42,7 @@ class BeatStrip extends StatelessWidget {
         child: Align(
           alignment: Alignment.topCenter,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: AppSpacing.sm),
             child: ListenableBuilder(
               listenable: engine,
               builder: (context, _) {
@@ -57,12 +58,12 @@ class BeatStrip extends StatelessWidget {
                       // of their own or one lands on a note head and reads as
                       // part of the music.
                       color: scheme.inverseSurface.withValues(alpha: 0.72),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
                       ),
                       child: BeatDots(
                         beatsPerBar: prefs.beatsPerBar,

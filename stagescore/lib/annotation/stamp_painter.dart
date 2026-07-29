@@ -9,12 +9,18 @@ class StampPainter extends CustomPainter {
     required this.stamps,
     required this.pageSize,
     this.selectedId,
+    this.selectionColor,
     this.previewCenters = const {},
   });
 
   final List<AnnotationStamp> stamps;
   final Size pageSize;
   final String? selectedId;
+
+  /// Outline drawn around the selected Stamp. Chrome, not ink — a Stamp's own
+  /// colour is `stamp.color` — so it follows the accent the musician picked
+  /// (Spec 0026 / 0044). Null wherever selection cannot happen, such as export.
+  final Color? selectionColor;
   final Map<String, Offset> previewCenters;
 
   @override
@@ -27,7 +33,8 @@ class StampPainter extends CustomPainter {
       );
       final extent = stamp.size * size.width;
       _paintStamp(canvas, stamp, center, extent);
-      if (stamp.id == selectedId) {
+      final selectionColor = this.selectionColor;
+      if (stamp.id == selectedId && selectionColor != null) {
         final preview = stamp.copyWith(center: centerNorm);
         final hit = preview.hitRect;
         final rect = Rect.fromLTRB(
@@ -39,7 +46,7 @@ class StampPainter extends CustomPainter {
         canvas.drawRect(
           rect.inflate(3),
           Paint()
-            ..color = const Color(0xFF0D9488)
+            ..color = selectionColor
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2,
         );

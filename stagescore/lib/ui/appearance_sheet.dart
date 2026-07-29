@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/theme/app_appearance.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 Future<void> showAppearanceSheet({
   required BuildContext context,
@@ -8,7 +9,6 @@ Future<void> showAppearanceSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return _AppearanceSheet(initial: appearance, onChanged: onChanged);
@@ -54,15 +54,20 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
     final theme = Theme.of(context);
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          AppSpacing.xl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Appearance', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text('Mode', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             SegmentedButton<AppThemeMode>(
               segments: [
                 for (final mode in AppThemeMode.values)
@@ -73,9 +78,9 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
                 _update(_current.copyWith(mode: selected.first));
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             Text('Theme color', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -176,13 +181,13 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
             height: 48,
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               border: Border.all(
                 color: Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           _SliderRow(
             label: 'Hue',
             value: _hsv.hue,
@@ -217,6 +222,11 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
   }
 }
 
+/// Width the value label of a slider row reserves. A measurement, not a step:
+/// it is as wide as the longest label these rows show, so the sliders below
+/// each other start at the same x.
+const double _sliderValueLabelWidth = 36;
+
 class _SliderRow extends StatelessWidget {
   const _SliderRow({
     required this.label,
@@ -234,7 +244,7 @@ class _SliderRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 36, child: Text(label)),
+        SizedBox(width: _sliderValueLabelWidth, child: Text(label)),
         Expanded(
           child: Slider(
             value: value.clamp(0, max),

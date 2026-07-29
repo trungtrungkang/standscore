@@ -72,5 +72,8 @@ class JumpLink {
 /// Default button placement (bottom-right corner of the page).
 Rect defaultJumpLinkNormRect() => const Rect.fromLTWH(0.72, 0.86, 0.24, 0.08);
 
-/// Default teal button (ARGB).
-const int defaultJumpLinkColorValue = 0xCC0D9488;
+/// Default teal button (ARGB). Content, not brand: this is only the colour a
+/// new JumpLink starts at, and the musician can recolour it. It reads as the
+/// same teal as the app but is written out here rather than borrowed from
+/// `Brand` / `AppAppearance`, so retinting the app never repaints saved links.
+const int defaultJumpLinkColorValue = 0xCC0D8B86;

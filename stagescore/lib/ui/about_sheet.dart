@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:stagescore/brand/brand.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Where the musician learns who makes StageScore, and which build they have
@@ -20,7 +21,6 @@ Future<void> showAboutSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) => _AboutSheet(
       readBuild: readBuild ?? AppBuild.fromPlatform,
@@ -112,12 +112,17 @@ class _AboutSheetState extends State<_AboutSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                0,
+                AppSpacing.xs,
+                0,
+              ),
               child: Row(
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 8),
+                      padding: const EdgeInsets.only(left: AppSpacing.sm),
                       child: Text(
                         'About ${Brand.productName}',
                         style: theme.textTheme.titleLarge,
@@ -135,14 +140,19 @@ class _AboutSheetState extends State<_AboutSheet> {
             Flexible(
               child: ListView(
                 shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                    ),
                     child: Row(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                           child: Image.asset(
                             'assets/brand/stagescore-logo.png',
                             height: 56,
@@ -150,7 +160,7 @@ class _AboutSheetState extends State<_AboutSheet> {
                             fit: BoxFit.cover,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: AppSpacing.lg),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +170,7 @@ class _AboutSheetState extends State<_AboutSheet> {
                                 Brand.productName,
                                 style: theme.textTheme.titleMedium,
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
                                 _build?.label ?? '',
                                 style: theme.textTheme.bodySmall?.copyWith(
@@ -174,7 +184,12 @@ class _AboutSheetState extends State<_AboutSheet> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -185,7 +200,7 @@ class _AboutSheetState extends State<_AboutSheet> {
                             color: theme.colorScheme.primary,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xs),
                         Text(
                           Brand.aboutBlurb,
                           style: theme.textTheme.bodyMedium,

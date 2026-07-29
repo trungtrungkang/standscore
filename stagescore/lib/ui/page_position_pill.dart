@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// How long the position stays up after a turn (Spec 0036).
 const kPagePillDuration = Duration(milliseconds: 1500);
@@ -120,16 +121,16 @@ class _TransientPillState extends State<TransientPill> {
         duration: kPagePillFade,
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: scheme.inverseSurface.withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
                 ),
                 child: Text(
                   widget.text,

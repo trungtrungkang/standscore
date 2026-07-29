@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Share of the screen a settings sheet may take at most (Spec 0035).
 const double kSheetMaxHeightFraction = 0.9;
@@ -22,7 +23,12 @@ class SheetBody extends StatelessWidget {
   const SheetBody({
     super.key,
     required this.children,
-    this.padding = const EdgeInsets.fromLTRB(16, 0, 16, 24),
+    this.padding = const EdgeInsets.fromLTRB(
+      AppSpacing.lg,
+      0,
+      AppSpacing.lg,
+      AppSpacing.xl,
+    ),
   });
 
   final List<Widget> children;

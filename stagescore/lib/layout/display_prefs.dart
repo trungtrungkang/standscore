@@ -18,6 +18,17 @@ class DisplayPrefs {
   static const maxBorderWidth = 8.0;
   static const defaultBorderColorValue = 0xFF424242;
 
+  /// The border colours the Display sheet offers. Content the musician picks,
+  /// not chrome — including the teal one, which is written out here rather than
+  /// borrowed from the brand constant so that retinting the app never moves a
+  /// border a musician already chose (Spec 0044).
+  static const borderColorPresetValues = <int>[
+    defaultBorderColorValue,
+    0xFF000000, // black
+    0xFF0D8B86, // teal
+    0xFFB45309, // amber
+  ];
+
   final bool borderEnabled;
   final double borderWidth;
   final int borderColorValue;

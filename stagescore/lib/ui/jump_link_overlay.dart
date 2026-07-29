@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/jumplink/jump_link.dart';
 import 'package:stagescore/jumplink/jump_link_geometry.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Interactive JumpLink buttons in viewer coordinates (tap / long-press / drag).
 class JumpLinkInteractiveLayer extends StatelessWidget {
@@ -129,10 +130,10 @@ class _DraggableJumpLinkButtonState extends State<_DraggableJumpLinkButton> {
         child: Material(
           color: widget.link.color,
           elevation: _didDrag ? 4 : 1,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               child: Text(
                 '→ ${widget.link.destinationPage}',
                 maxLines: 1,

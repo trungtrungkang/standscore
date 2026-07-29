@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Where the metronome is in the bar, as one dot per beat (Spec 0030).
 ///
@@ -51,7 +52,7 @@ class BeatDots extends StatelessWidget {
           Container(
             width: (equalBeats || i != 0 ? 10 : 12) * scale,
             height: (equalBeats || i != 0 ? 10 : 12) * scale,
-            margin: EdgeInsets.only(left: 4 * scale),
+            margin: EdgeInsets.only(left: AppSpacing.xs * scale),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: activeBeat == i

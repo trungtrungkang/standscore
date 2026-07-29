@@ -17,23 +17,23 @@ import 'package:stagescore/bookmark/bookmark_store.dart';
 import 'package:stagescore/jumplink/jump_link.dart';
 import 'package:stagescore/jumplink/jump_link_geometry.dart';
 import 'package:stagescore/jumplink/jump_link_store.dart';
-import 'package:stagescore/layout/half_page.dart';
-import 'package:stagescore/layout/layout_fit.dart';
 import 'package:stagescore/layout/display_prefs.dart';
 import 'package:stagescore/layout/display_prefs_store.dart';
-import 'package:stagescore/metronome/metronome_engine.dart';
-import 'package:stagescore/metronome/metronome_prefs.dart';
-import 'package:stagescore/metronome/metronome_prefs_store.dart';
+import 'package:stagescore/layout/half_page.dart';
+import 'package:stagescore/layout/layout_fit.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/layout/page_color_filter_prefs_store.dart';
 import 'package:stagescore/layout/page_scale.dart';
-import 'package:stagescore/layout/stage_preset.dart';
 import 'package:stagescore/layout/page_scale_prefs_store.dart';
 import 'package:stagescore/layout/pdf_fit_zoom.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
+import 'package:stagescore/layout/stage_preset.dart';
 import 'package:stagescore/library/library_root.dart';
 import 'package:stagescore/library/score.dart';
+import 'package:stagescore/metronome/metronome_engine.dart';
+import 'package:stagescore/metronome/metronome_prefs.dart';
+import 'package:stagescore/metronome/metronome_prefs_store.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pageorder/page_order_store.dart';
 import 'package:stagescore/pageturn/gesture_map.dart';
@@ -51,6 +51,7 @@ import 'package:stagescore/pdf/pdf_surface.dart';
 import 'package:stagescore/pdf/single_page_slider.dart';
 import 'package:stagescore/setlist/setlist_nav.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/beat_strip.dart';
 import 'package:stagescore/ui/bookmarks_sheet.dart';
 import 'package:stagescore/ui/display_sheet.dart';
@@ -61,8 +62,8 @@ import 'package:stagescore/ui/jump_links_sheet.dart';
 import 'package:stagescore/ui/layout_settings_sheet.dart';
 import 'package:stagescore/ui/metronome_sheet.dart';
 import 'package:stagescore/ui/page_nav_bar.dart';
-import 'package:stagescore/ui/page_position_pill.dart';
 import 'package:stagescore/ui/page_order_editor_screen.dart';
+import 'package:stagescore/ui/page_position_pill.dart';
 import 'package:stagescore/ui/page_scale_sheet.dart';
 import 'package:stagescore/ui/page_turn_interaction_layer.dart';
 import 'package:stagescore/ui/page_turn_settings_sheet.dart';
@@ -708,7 +709,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                ),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -926,7 +932,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   Future<void> _pickColorFilter() async {
     final selected = await showModalBottomSheet<PageColorFilterMode>(
       context: context,
-      showDragHandle: true,
       builder: (context) {
         return SafeArea(
           child: Column(
@@ -1418,9 +1423,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     }
     return InkWell(
       onTap: _prefsReady ? _showSetlistJumpSheet : null,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xs,
+          horizontal: AppSpacing.xs,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

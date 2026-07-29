@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/label/label.dart';
 import 'package:stagescore/label/label_store.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Filter Scores by Labels (Spec 0021).
 Future<void> showLabelFilterSheet({
@@ -15,7 +16,6 @@ Future<void> showLabelFilterSheet({
 
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return StatefulBuilder(
@@ -24,7 +24,12 @@ Future<void> showLabelFilterSheet({
 
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,7 +57,7 @@ Future<void> showLabelFilterSheet({
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   SegmentedButton<LabelFilterMode>(
                     segments: const [
                       ButtonSegment(
@@ -75,7 +80,7 @@ Future<void> showLabelFilterSheet({
                       setModalState(() {});
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   if (localMode == LabelFilterMode.untagged)
                     Text(
                       'Showing Scores with no Labels.',
@@ -132,7 +137,6 @@ Future<void> showScoreLabelsSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return StatefulBuilder(
@@ -147,7 +151,12 @@ Future<void> showScoreLabelsSheet({
 
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -181,7 +190,7 @@ Future<void> showScoreLabelsSheet({
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   if (store.labels.isEmpty)
                     TextButton.icon(
                       onPressed: () async {
@@ -257,7 +266,6 @@ Future<void> showManageLabelsSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return StatefulBuilder(
@@ -269,7 +277,12 @@ Future<void> showManageLabelsSheet({
 
           return SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.xl,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -297,7 +310,7 @@ Future<void> showManageLabelsSheet({
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   if (store.labels.isEmpty)
                     Text(
                       'No Labels yet.',

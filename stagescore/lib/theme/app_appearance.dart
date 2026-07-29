@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// App chrome appearance mode (Spec 0026 / P2.10).
 enum AppThemeMode { system, light, dark }
@@ -48,12 +49,31 @@ class AppAppearance {
   ThemeMode get themeMode => mode.themeMode;
 
   ThemeData themeData(Brightness brightness) {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: brightness,
+    );
     return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: seedColor,
-        brightness: brightness,
-      ),
+      colorScheme: colorScheme,
       useMaterial3: true,
+      // Every settings sheet advertises the same way out (Spec 0044). The flag
+      // lives here rather than at the 19 call sites so a new sheet inherits it.
+      // `clipBehavior` is the other half: without it a scrolling list paints
+      // over Material's rounded top corners.
+      bottomSheetTheme: const BottomSheetThemeData(
+        showDragHandle: true,
+        clipBehavior: Clip.antiAlias,
+      ),
+      // Pinned to the corner scale rather than overridden: these match Material
+      // 3's own chip defaults today, so chips follow the scale if it is ever
+      // retuned and look unchanged until then. Density stays a widget decision
+      // — `ChipThemeData` has no field for it (Spec 0044, câu hỏi G3 số 6).
+      chipTheme: ChipThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+        padding: const EdgeInsets.all(AppSpacing.sm),
+      ),
     );
   }
 

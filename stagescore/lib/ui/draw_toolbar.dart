@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:stagescore/annotation/draw_style.dart';
 import 'package:stagescore/annotation/draw_tool.dart';
 import 'package:stagescore/annotation/stamp.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Callback when the user arms a stamp for the next tap (Spec 0019).
 typedef StampArmedCallback = void Function(StampKind kind, String? text);
 
 /// One-row draw chrome: labeled color + tool + stamp + overflow (Specs 0018/0019).
+/// Width of the colour panel: measured to fit the palette's swatches per row,
+/// not a spacing step. The panel is kept on screen against this plus its own
+/// padding, so both read from here.
+const double _colorPaletteWidth = 196;
+
 class DrawToolbar extends StatelessWidget {
   const DrawToolbar({
     super.key,
@@ -61,9 +67,12 @@ class DrawToolbar extends StatelessWidget {
     final activeColor = style.colorFor(_inkTool);
 
     return Material(
-      color: const Color(0xFF0D9488).withValues(alpha: 0.10),
+      color: scheme.primary.withValues(alpha: 0.10),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.xs,
+        ),
         child: Row(
           children: [
             Builder(
@@ -134,7 +143,7 @@ class DrawToolbar extends StatelessWidget {
                     ? Icons.sticky_note_2_outlined
                     : Icons.touch_app_outlined,
                 size: 22,
-                color: pendingStamp == null ? null : const Color(0xFF0D9488),
+                color: pendingStamp == null ? null : scheme.primary,
               ),
             ),
             _LabeledAction(
@@ -154,17 +163,21 @@ class DrawToolbar extends StatelessWidget {
 
     final kind = await showModalBottomSheet<StampKind>(
       context: context,
-      showDragHandle: true,
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.xl,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text('Stamps', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -239,7 +252,10 @@ class DrawToolbar extends StatelessWidget {
       builder: (context) {
         final size = MediaQuery.sizeOf(context);
         // Place panel just under the color control.
-        final left = anchor.left.clamp(12.0, size.width - 220);
+        final left = anchor.left.clamp(
+          AppSpacing.md,
+          size.width - (_colorPaletteWidth + AppSpacing.md * 2),
+        );
         final top = (size.height - anchor.bottom + 4).clamp(
           48.0,
           size.height - 160,
@@ -252,12 +268,12 @@ class DrawToolbar extends StatelessWidget {
               top: top,
               child: Material(
                 elevation: 8,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 color: Theme.of(context).colorScheme.surface,
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   child: SizedBox(
-                    width: 196,
+                    width: _colorPaletteWidth,
                     child: Wrap(
                       spacing: 10,
                       runSpacing: 10,
@@ -309,7 +325,7 @@ class DrawToolbar extends StatelessWidget {
             child: Row(
               children: [
                 Icon(_icon(t), size: 20),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(child: Text(_label(t))),
                 if (tool == t) const Icon(Icons.check, size: 18),
               ],
@@ -334,7 +350,7 @@ class DrawToolbar extends StatelessWidget {
             child: Row(
               children: [
                 _WidthDot(step: i),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(child: Text(_widthLabel(i))),
                 if (i == current) const Icon(Icons.check, size: 18),
               ],
@@ -357,7 +373,6 @@ class DrawToolbar extends StatelessWidget {
 
     await showModalBottomSheet<void>(
       context: context,
-      showDragHandle: true,
       isScrollControlled: true,
       builder: (context) {
         final maxHeight = MediaQuery.sizeOf(context).height * 0.75;
@@ -379,7 +394,12 @@ class DrawToolbar extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: maxHeight),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -398,12 +418,12 @@ class DrawToolbar extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         'Tool',
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -422,12 +442,12 @@ class DrawToolbar extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         'Color',
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
@@ -467,12 +487,12 @@ class DrawToolbar extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         'Width',
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       LayoutBuilder(
                         builder: (context, constraints) {
                           return FittedBox(
@@ -508,7 +528,7 @@ class DrawToolbar extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Straight line'),
@@ -552,6 +572,11 @@ String _widthLabel(int step) => switch (step) {
 };
 
 /// The active stroke width, drawn at that width (Spec 0035).
+/// Box each width dot sits in: wide enough for the largest dot this row draws
+/// (`8 + step * 5`) and square, so the three dots keep an even rhythm.
+/// A measurement, not a step.
+const double _widthDotExtent = 22;
+
 class _WidthDot extends StatelessWidget {
   const _WidthDot({required this.step, this.color});
 
@@ -562,8 +587,8 @@ class _WidthDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final diameter = 8.0 + step * 5;
     return SizedBox(
-      width: 22,
-      height: 22,
+      width: _widthDotExtent,
+      height: _widthDotExtent,
       child: Center(
         child: Container(
           width: diameter,
@@ -594,9 +619,12 @@ class _LabeledAction extends StatelessWidget {
     final disabled = onTap == null;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -608,6 +636,9 @@ class _LabeledAction extends StatelessWidget {
               ),
               child: child,
             ),
+            // Same measurement as `kQuickBarLabelGap` (Spec 0043): the gap that
+            // still lets icon and label fit one toolbar row. Allowlisted in
+            // `test/design_token_guard_test.dart`.
             const SizedBox(height: 2),
             Text(
               label,

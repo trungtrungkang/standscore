@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/jumplink/jump_link.dart';
 import 'package:stagescore/jumplink/jump_link_store.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/jump_link_edit_sheet.dart';
 
 Future<void> showJumpLinksSheet({
@@ -13,7 +14,6 @@ Future<void> showJumpLinksSheet({
 }) async {
   await showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return _JumpLinksSheetBody(
@@ -147,7 +147,12 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
   Widget _buildEditor() {
     final existing = _editing;
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: JumpLinkEditorForm(
         key: ValueKey(existing?.id ?? 'add'),
         pageCount: widget.pageCount,
@@ -169,7 +174,12 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.sm,
+            AppSpacing.sm,
+          ),
           child: Row(
             children: [
               Expanded(

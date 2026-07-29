@@ -106,6 +106,7 @@ class _PageAnnotationOverlayState extends State<PageAnnotationOverlay> {
             stamps: stamps,
             pageSize: widget.pageRect.size,
             selectedId: widget.selectedStampId,
+            selectionColor: Theme.of(context).colorScheme.primary,
             previewCenters: preview,
           ),
         ),

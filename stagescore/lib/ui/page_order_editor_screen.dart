@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 
 /// Full-screen PageOrder editor (Spec 0011).
@@ -86,7 +87,7 @@ class _PageOrderEditorScreenState extends State<PageOrderEditorScreen> {
       body: _order.length == 0
           ? const Center(child: Text('No pages'))
           : ReorderableListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               itemCount: _order.length,
               onReorderItem: (oldIndex, newIndex) {
                 setState(() => _order = _order.move(oldIndex, newIndex));

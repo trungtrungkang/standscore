@@ -6,6 +6,7 @@ import 'package:stagescore/pageturn/page_turn_amount.dart';
 import 'package:stagescore/pageturn/page_turn_animation.dart';
 import 'package:stagescore/pageturn/page_turn_delay.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 Future<void> showPageTurnSettingsSheet({
   required BuildContext context,
@@ -19,7 +20,6 @@ Future<void> showPageTurnSettingsSheet({
   var current = prefs;
   await showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return StatefulBuilder(
@@ -54,12 +54,17 @@ Future<void> showPageTurnSettingsSheet({
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.sm,
+                      0,
+                      AppSpacing.xs,
+                      0,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.only(left: AppSpacing.sm),
                             child: Text(
                               'Page turn',
                               style: Theme.of(context).textTheme.titleLarge,
@@ -77,19 +82,24 @@ Future<void> showPageTurnSettingsSheet({
                   Flexible(
                     child: ListView(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.md,
+                        AppSpacing.lg,
+                        AppSpacing.xl,
+                      ),
                       children: [
                         Text(
                           'Tap zones',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xs),
                         Text(
                           'In ${layoutMode.label}: '
                           '${navigationHintFor(layoutMode, current)}.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -166,7 +176,7 @@ Future<void> showPageTurnSettingsSheet({
                             'Turn amount',
                             style: Theme.of(context).textTheme.titleSmall,
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Text(
                             layoutMode == PdfLayoutMode.twoPage
                                 ? 'Half advances one page of the spread '
@@ -175,7 +185,7 @@ Future<void> showPageTurnSettingsSheet({
                                       'one. Not the same as the peek layouts.',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
@@ -195,7 +205,7 @@ Future<void> showPageTurnSettingsSheet({
                           'Animation',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -216,7 +226,7 @@ Future<void> showPageTurnSettingsSheet({
                           'Page turn delay',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -230,12 +240,12 @@ Future<void> showPageTurnSettingsSheet({
                           }).toList(),
                         ),
                         if (current.delayPreset != PageTurnDelayPreset.off) ...[
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.md),
                           Text(
                             'Apply to',
                             style: Theme.of(context).textTheme.titleSmall,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
@@ -254,7 +264,7 @@ Future<void> showPageTurnSettingsSheet({
                           'Gestures',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xs),
                         Text(
                           'Edge taps are thin strips at the top and bottom — not the '
                           'same as Top/bottom page-turn zones. At least one must be '
@@ -263,7 +273,7 @@ Future<void> showPageTurnSettingsSheet({
                           'never from a gesture.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         _GestureRow(
                           label: 'Long-press',
                           value: current.gestureMap.longPress,
@@ -290,7 +300,7 @@ Future<void> showPageTurnSettingsSheet({
                           'Pedal / keyboard',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Text(
                           'Bluetooth pedals that send keyboard keys are supported:\n'
                           'Previous — PageUp, ←, ↑, Space\n'
@@ -324,12 +334,12 @@ class _GestureRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.xs),
           Wrap(
             spacing: 8,
             runSpacing: 8,

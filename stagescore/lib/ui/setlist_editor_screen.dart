@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/setlist/setlist.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Create / edit a Setlist (Spec 0012).
 class SetlistEditorScreen extends StatefulWidget {
@@ -85,7 +86,12 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
             child: TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -99,7 +105,7 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
             child: _setlist.scoreIds.isEmpty
                 ? const Center(child: Text('No scores yet — tap Add scores.'))
                 : ReorderableListView.builder(
-                    padding: const EdgeInsets.only(bottom: 88),
+                    padding: const EdgeInsets.only(bottom: kFabScrollClearance),
                     itemCount: _setlist.scoreIds.length,
                     onReorderItem: (oldIndex, newIndex) {
                       setState(
@@ -165,7 +171,12 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.sm,
+            ),
             child: Row(
               children: [
                 Expanded(

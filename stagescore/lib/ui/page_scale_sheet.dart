@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/layout/page_scale.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/sheet_body.dart';
 
 Future<void> showPageScaleSheet({
@@ -11,7 +12,6 @@ Future<void> showPageScaleSheet({
 }) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return _PageScaleSheet(
@@ -70,7 +70,7 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
     return SheetBody(
       children: [
         Text('Page scale', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         // Say what this is before showing knobs: pinch changes the view
         // and forgets; this is remembered (Spec 0036).
         Text(
@@ -78,14 +78,14 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
           'Pinching changes the view for now; this changes it for good.',
           style: theme.textTheme.bodySmall,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           'On this page right now: ${effective.toStringAsFixed(2)}×',
           style: theme.textTheme.bodySmall,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
         Text('Applies to', style: theme.textTheme.labelLarge),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         SegmentedButton<PageScaleScope>(
           segments: [
             for (final scope in PageScaleScope.values)
@@ -96,9 +96,9 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
             _update(_prefs.copyWith(editScope: selected.first));
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Text(_scopeHint(_prefs.editScope), style: theme.textTheme.bodySmall),
-        const SizedBox(height: 20),
+        const SizedBox(height: AppSpacing.lg),
         Row(
           children: [
             Text('Scale', style: theme.textTheme.labelLarge),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:stagescore/pageturn/page_jump.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Height of the bar's content, above any home-indicator inset.
 ///
@@ -78,9 +79,9 @@ class PageNavBar extends StatelessWidget {
           bottom: avoidNotches,
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              4,
+              AppSpacing.xs,
               0,
-              4,
+              AppSpacing.xs,
               bottomGestureGap ? kPageNavBarGestureGap : 0,
             ),
             child: Row(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/metronome_icon.dart';
 import 'package:stagescore/ui/score_menu.dart';
 
@@ -14,7 +15,6 @@ Future<ScoreMenuAction?> showScoreMenu({
 }) {
   return showModalBottomSheet<ScoreMenuAction>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) => _ScoreMenuSheet(groups: groups),
   );
@@ -39,12 +39,17 @@ class _ScoreMenuSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sm,
+                0,
+                AppSpacing.xs,
+                0,
+              ),
               child: Row(
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 8),
+                      padding: const EdgeInsets.only(left: AppSpacing.sm),
                       child: Text('Menu', style: theme.textTheme.titleLarge),
                     ),
                   ),
@@ -59,11 +64,16 @@ class _ScoreMenuSheet extends StatelessWidget {
             Flexible(
               child: ListView(
                 shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 children: [
                   for (final group in groups) ...[
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.md,
+                        AppSpacing.lg,
+                        AppSpacing.xs,
+                      ),
                       child: Text(
                         group.title,
                         style: theme.textTheme.titleSmall?.copyWith(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/jumplink/jump_link.dart';
 import 'package:stagescore/jumplink/jump_link_geometry.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 enum JumpLinkEditAction { save, delete }
 
@@ -32,16 +33,15 @@ Future<JumpLinkEditResult?> showJumpLinkEditor({
 }) async {
   return showModalBottomSheet<JumpLinkEditResult>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return SafeArea(
         child: Padding(
           padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
             bottom: MediaQuery.viewInsetsOf(context).bottom + 24,
-            top: 8,
+            top: AppSpacing.sm,
           ),
           child: JumpLinkEditorForm(
             pageCount: pageCount,
@@ -156,7 +156,7 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
           children: [
             if (widget.leading != null) ...[
               widget.leading!,
-              const SizedBox(width: 4),
+              const SizedBox(width: AppSpacing.xs),
             ],
             Expanded(
               child: Text(
@@ -171,12 +171,12 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           'On page ${widget.originPage} → jump to',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
             IconButton(
@@ -200,9 +200,9 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Text('Color', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: 8,
           children: [
@@ -222,7 +222,7 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
               ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Text('Button size', style: Theme.of(context).textTheme.titleSmall),
         Slider(
           value: _sizeScale,
@@ -232,13 +232,13 @@ class _JumpLinkEditorFormState extends State<JumpLinkEditorForm> {
           label: _sizeScale.toStringAsFixed(1),
           onChanged: (v) => setState(() => _sizeScale = v),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         FilledButton(
           onPressed: _save,
           child: Text(existing == null ? 'Add' : 'Save'),
         ),
         if (existing != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: () => widget.onResult(const JumpLinkEditResult.delete()),
             child: const Text('Delete'),

@@ -5,6 +5,7 @@ import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
 import 'package:stagescore/pageturn/layout_navigation.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
+import 'package:stagescore/theme/app_tokens.dart';
 
 /// Layout picker (Specs 0004 / 0013, rebuilt by 0041).
 ///
@@ -21,7 +22,6 @@ Future<void> showLayoutSettingsSheet({
   var current = prefs;
   await showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
     builder: (context) {
       return StatefulBuilder(
@@ -53,12 +53,17 @@ Future<void> showLayoutSettingsSheet({
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.sm,
+                      0,
+                      AppSpacing.xs,
+                      0,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.only(left: AppSpacing.sm),
                             child: Text(
                               'Layout',
                               style: Theme.of(context).textTheme.titleLarge,
@@ -76,7 +81,7 @@ Future<void> showLayoutSettingsSheet({
                   Flexible(
                     child: ListView(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
                       children: [
                         for (final mode in pickableLayoutModes)
                           _LayoutRow(
@@ -102,7 +107,9 @@ Future<void> showLayoutSettingsSheet({
                         if (half) ...[
                           const Divider(height: 24),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -110,7 +117,7 @@ Future<void> showLayoutSettingsSheet({
                                   'How much of the next page peeks in',
                                   style: Theme.of(context).textTheme.titleSmall,
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: AppSpacing.xs),
                                 Text(
                                   freePeekPercent > 0
                                       ? 'Free up to $freePeekPercent% on this '
@@ -206,7 +213,7 @@ class _LayoutRow extends StatelessWidget {
         children: [
           Flexible(child: Text(mode.label)),
           if (recommended) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             // Advice, never a lock: every mode stays pickable on every screen.
             Text(
               'fits this screen',
@@ -240,7 +247,7 @@ class _PeekSlider extends StatelessWidget {
     final theme = Theme.of(context);
     final costs = ratio > freePeek;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
