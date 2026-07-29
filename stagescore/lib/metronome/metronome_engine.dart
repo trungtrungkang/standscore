@@ -3,9 +3,16 @@ import 'dart:async';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:stagescore/metronome/beat_clock.dart';
 import 'package:stagescore/metronome/click_wav.dart';
 import 'package:stagescore/metronome/metronome_prefs.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
+/// How often the beat is read back from the clock. One frame at 60 fps, so a
+/// dot never lands a frame late. Listeners are notified only when the beat
+/// actually changes, which keeps the notification rate at beats-per-second
+/// rather than 60 Hz (Spec 0030 reopen, decision 4).
+const _beatPollInterval = Duration(milliseconds: 16);
 
 /// Foreground metronome (Spec 0030).
 ///
@@ -13,7 +20,15 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 /// - **Audible clicks** come from a sample-timed looping WAV played by
 ///   [flutter_soloud] (keeps sounding under lock / background with
 ///   `UIBackgroundModes: audio` — Dart [Timer] alone is suspended).
-/// - **Visual beat dots** use an absolute wall-clock [Timer] in the foreground.
+/// - **Visual beat dots read the same clock as the clicks**: the play head of
+///   that loop, mapped to a beat by [beatInBarFromLoopPosition]. Dots cannot
+///   lead or lag the sound by construction, and cannot drift away from it,
+///   because there is no second clock to drift against. See `beat_clock.dart`
+///   for what went wrong when there were two.
+/// - **Mute (visual only)** has no play head to read, so it is the one case
+///   that needs a clock of its own: a monotonic [Stopwatch] feeding the same
+///   mapping. [_silentOffset] carries the play head's last position into it, so
+///   muting mid-bar does not restart the count.
 /// - **Wakelock** while running so the score does not dim/lock mid-practice.
 /// - Exactly one click voice is baked into each beat slot (accent *or* tick).
 class MetronomeEngine extends ChangeNotifier {
@@ -21,14 +36,18 @@ class MetronomeEngine extends ChangeNotifier {
     : _prefs = prefs ?? const MetronomePrefs();
 
   MetronomePrefs _prefs;
-  Timer? _timer;
-  int _absoluteBeat = 0;
+  Timer? _beatPoll;
   int _beatInBar = 0;
   int _loopLoadId = 0;
   bool _running = false;
   bool _ready = false;
   bool _sessionConfigured = false;
-  DateTime? _anchorTime;
+
+  /// Stands in for the play head while muted, and only then.
+  Stopwatch? _silentClock;
+
+  /// Where in the bar [_silentClock] started, so mute keeps the count going.
+  Duration _silentOffset = Duration.zero;
 
   AudioSource? _loopSource;
   SoundHandle? _loopHandle;
@@ -147,8 +166,12 @@ class MetronomeEngine extends ChangeNotifier {
     }
     if (muteChanged) {
       if (_prefs.muted || _prefs.volume <= 0.001) {
+        // Carry the beat over before the play head goes away.
+        _carryPositionToSilentClock();
         await _stopLoopAudio();
       } else {
+        // The new play head starts the bar again, audibly; the dots follow it
+        // there rather than keeping a count of their own.
         await _startLoopAudio();
       }
     }
@@ -164,47 +187,72 @@ class MetronomeEngine extends ChangeNotifier {
       await WakelockPlus.enable();
     } catch (_) {}
 
-    _timer?.cancel();
-    _absoluteBeat = 0;
+    _beatPoll?.cancel();
     _beatInBar = 0;
     _running = true;
-    _anchorTime = DateTime.now();
+    // _startLoopAudio checks _running, so the flag has to be up before the
+    // clock exists. Nothing reads the beat until isRunning is announced.
     notifyListeners();
-    _emitVisualBeat();
-    _armTimer();
+
+    // Audio first, then the clock: the play head *is* the clock, so there is
+    // nothing for the dots to follow until the loop is playing. This ordering
+    // is the fix — anchoring before this line is what put the dots ahead of
+    // the clicks by however long synthesis, loadMem and play() took.
     await _startLoopAudio();
+    if (!_running) return; // stopped while the buffer was being built
+
+    _silentOffset = Duration.zero;
+    _silentClock = Stopwatch()..start();
+    _beatInBar = _readBeat();
+    notifyListeners();
+    _beatPoll = Timer.periodic(_beatPollInterval, (_) => _pollBeat());
   }
 
-  void _armTimer() {
-    _timer?.cancel();
-    if (!_running || _anchorTime == null) return;
-    final interval = MetronomePrefs.beatInterval(_prefs.tempoBpm);
-    final nextIndex = _absoluteBeat + 1;
-    final target = _anchorTime!.add(interval * nextIndex);
-    var delay = target.difference(DateTime.now());
-    if (delay.isNegative) delay = Duration.zero;
-    _timer = Timer(delay, () {
-      if (!_running) return;
-      _absoluteBeat = nextIndex;
-      _emitVisualBeat();
-      _armTimer();
-    });
+  void _pollBeat() {
+    if (!_running) return;
+    final beat = _readBeat();
+    if (beat == _beatInBar) return; // notify on the beat, not on the poll
+    _beatInBar = beat;
+    notifyListeners();
   }
 
-  void _emitVisualBeat() {
-    _beatInBar = MetronomePrefs.beatInBar(
-      absoluteBeat: _absoluteBeat,
+  int _readBeat() {
+    final interval = metronomeAudioBeatInterval(tempoBpm: _prefs.tempoBpm);
+    return beatInBarFromLoopPosition(
+      position: _clockPosition(),
+      beatInterval: interval,
       beatsPerBar: _prefs.beatsPerBar,
     );
-    notifyListeners();
+  }
+
+  /// The play head when the clicks are audible; the silent stand-in when not.
+  Duration _clockPosition() {
+    final handle = _loopHandle;
+    if (handle != null) {
+      try {
+        return SoLoud.instance.getPosition(handle);
+      } catch (_) {
+        // Engine torn down under us — fall through to the silent clock.
+      }
+    }
+    return (_silentClock?.elapsed ?? Duration.zero) + _silentOffset;
+  }
+
+  /// Hands the play head's position to the silent clock, so losing the audio
+  /// (mute) continues the bar instead of restarting it.
+  void _carryPositionToSilentClock() {
+    final position = _clockPosition();
+    _silentOffset = position;
+    _silentClock = Stopwatch()..start();
   }
 
   Future<void> stop() async {
-    _timer?.cancel();
-    _timer = null;
+    _beatPoll?.cancel();
+    _beatPoll = null;
     _running = false;
     _beatInBar = 0;
-    _anchorTime = null;
+    _silentClock = null;
+    _silentOffset = Duration.zero;
     await _stopLoopAudio();
     try {
       await WakelockPlus.disable();
@@ -222,7 +270,7 @@ class MetronomeEngine extends ChangeNotifier {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _beatPoll?.cancel();
     unawaited(_stopLoopAudio());
     unawaited(WakelockPlus.disable());
     _ready = false;

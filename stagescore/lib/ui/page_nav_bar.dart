@@ -26,6 +26,8 @@ class PageNavBar extends StatelessWidget {
     required this.onJumpToPage,
     this.onPrevPage,
     this.onNextPage,
+    this.trailing = const <Widget>[],
+    this.bottomGestureGap = true,
     this.avoidNotches = true,
   });
 
@@ -34,6 +36,22 @@ class PageNavBar extends StatelessWidget {
   final ValueChanged<int> onJumpToPage;
   final VoidCallback? onPrevPage;
   final VoidCallback? onNextPage;
+
+  /// Extra controls riding in this row, right of the next-page chevron.
+  ///
+  /// A screen too short to afford a second row of bottom chrome puts the
+  /// ScoreMenuQuickBar's shortcuts here instead (Spec 0043 revision 3), which
+  /// is only affordable because a screen that short is a wide one: a phone in
+  /// landscape still leaves the scrubber 508 pt.
+  final List<Widget> trailing;
+
+  /// Whether to keep [kPageNavBarGestureGap] below the scrubber.
+  ///
+  /// The gap exists because a horizontal drag flush on the OS's own bottom
+  /// strip switches apps instead of moving the scrubber. When another bar sits
+  /// below this one it is that bar's edge the OS owns, so the gap here is dead
+  /// space in the middle of the chrome — 20 pt of a landscape phone's 393.
+  final bool bottomGestureGap;
 
   /// When false, sit edge-to-edge over the home indicator (Spec 0032).
   final bool avoidNotches;
@@ -59,11 +77,11 @@ class PageNavBar extends StatelessWidget {
           right: avoidNotches,
           bottom: avoidNotches,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               4,
               0,
               4,
-              kPageNavBarGestureGap,
+              bottomGestureGap ? kPageNavBarGestureGap : 0,
             ),
             child: Row(
               children: [
@@ -112,6 +130,7 @@ class PageNavBar extends StatelessWidget {
                         }
                       : null,
                 ),
+                ...trailing,
               ],
             ),
           ),

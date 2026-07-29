@@ -2,43 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stagescore/ui/page_nav_bar.dart';
 import 'package:stagescore/ui/pdf_mode_screen.dart';
+import 'package:stagescore/ui/quick_bar_fit.dart';
+import 'package:stagescore/ui/score_menu_quick_bar.dart';
 
 /// The PdfMode Scaffold shape from Spec 0034. The real screen cannot be pumped
 /// (pdfrx needs the native viewer), so the chrome composition is characterised
 /// here: the viewer must keep the same size whether chrome is shown or hidden.
+void _noop() {}
+
 Widget _shell({
   required bool performanceChrome,
   required bool chromeShown,
   VoidCallback? onScoreTap,
   bool drawToolbar = false,
+  EdgeInsets insets = const EdgeInsets.only(top: 47, bottom: 34),
 }) {
   final appBar = AppBar(
     toolbarHeight: kPdfAppBarHeight,
     title: const Text('Score'),
   );
-  final pageNav = PageNavBar(
-    pageNumber: 1,
-    pageCount: 56,
-    onJumpToPage: (_) {},
-  );
-  Widget fade(Widget child) => IgnorePointer(
-    ignoring: !chromeShown,
-    child: AnimatedOpacity(
-      opacity: chromeShown ? 1 : 0,
-      duration: const Duration(milliseconds: 180),
-      child: child,
-    ),
-  );
   return MaterialApp(
     builder: (context, child) => MediaQuery(
       // Notch + home indicator, as on the iPhone this Spec was demoed on.
-      data: MediaQuery.of(
-        context,
-      ).copyWith(padding: const EdgeInsets.only(top: 47, bottom: 34)),
+      data: MediaQuery.of(context).copyWith(padding: insets),
       child: child!,
     ),
     home: Builder(
       builder: (context) {
+        // Mirrors PdfModeScreen.build: the shortcut row rides in the scrubber's
+        // own row on a screen too short to stack two (Spec 0043 revision 3).
+        final fit = QuickBarFit(
+          screenSize: MediaQuery.sizeOf(context),
+          slotCount: ScoreMenuQuickBar.slotCount,
+          bottomInset: MediaQuery.paddingOf(context).bottom,
+        );
+        final merged = fit.mergeIntoPageNav;
+        final quickBar = ScoreMenuQuickBar(
+          metronomeRunning: false,
+          metronomeAccent: false,
+          onOpenMetronome: _noop,
+          drawEnabled: false,
+          onToggleDraw: _noop,
+          onOpenBookmarks: _noop,
+          fit: fit,
+          merged: merged,
+        );
+        final pageNav = PageNavBar(
+          pageNumber: 1,
+          pageCount: 56,
+          onJumpToPage: (_) {},
+          trailing: merged ? [quickBar] : const [],
+          // Whichever bar is bottom-most owns the inset and the gesture gap.
+          bottomGestureGap: merged,
+          avoidNotches: merged,
+        );
+        final bottomChrome = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [pageNav, if (!merged) quickBar],
+        );
+        Widget fade(Widget child) => IgnorePointer(
+          ignoring: !chromeShown,
+          child: AnimatedOpacity(
+            opacity: chromeShown ? 1 : 0,
+            duration: const Duration(milliseconds: 180),
+            child: child,
+          ),
+        );
         final body = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -61,14 +90,19 @@ Widget _shell({
         // comment on PdfModeScreen.build.
         return Scaffold(
           appBar: performanceChrome ? null : appBar,
-          bottomNavigationBar: performanceChrome ? null : pageNav,
+          bottomNavigationBar: performanceChrome ? null : bottomChrome,
           body: Stack(
             fit: StackFit.expand,
             children: [
               body,
               if (performanceChrome) ...[
                 Positioned(top: 0, left: 0, right: 0, child: fade(appBar)),
-                Positioned(bottom: 0, left: 0, right: 0, child: fade(pageNav)),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: fade(bottomChrome),
+                ),
               ],
             ],
           ),
@@ -159,7 +193,13 @@ void main() {
 
     final screen = tester.getSize(find.byType(MaterialApp));
     final slider = tester.getRect(find.byType(Slider));
-    expect(screen.height - slider.bottom, 34 + kPageNavBarGestureGap);
+    // Stacked, the quick-bar below it is the bar the OS's own strip touches, so
+    // it holds the gesture gap and the inset — the PageNavBar's own gap would
+    // be dead space in the middle of the chrome (0043 revision 3).
+    expect(
+      screen.height - slider.bottom,
+      kQuickBarHeight + kQuickBarGestureGap + 34,
+    );
   });
 
   testWidgets('the AppBar is taller than the PageNavBar', (tester) async {
@@ -168,9 +208,10 @@ void main() {
 
     final header = tester.getSize(find.byType(AppBar)).height;
     final footer = tester.getSize(find.byType(PageNavBar)).height;
-    // Both carry their own device inset; compare the content bands.
+    // The AppBar still carries the notch inset; the PageNavBar carries neither
+    // the home-indicator inset nor a gesture gap while something sits below it.
     expect(header - 47, kPdfAppBarHeight);
-    expect(footer - 34, kPageNavBarHeight + kPageNavBarGestureGap);
+    expect(footer, kPageNavBarHeight);
     expect(kPdfAppBarHeight, greaterThan(kPageNavBarHeight));
   });
 
@@ -242,8 +283,46 @@ void main() {
     final screen = tester.getSize(find.byType(MaterialApp));
     final body = tester.getRect(find.byType(_ViewerStub));
     final nav = tester.getRect(find.byType(PageNavBar));
+    final quickBar = tester.getRect(find.byType(ScoreMenuQuickBar));
     expect(body.top, greaterThan(0), reason: 'below the AppBar');
     expect(body.bottom, nav.top, reason: 'above the PageNavBar');
-    expect(nav.bottom, screen.height);
+    expect(nav.bottom, quickBar.top, reason: 'quick-bar sits right under it');
+    expect(quickBar.bottom, screen.height);
+  });
+
+  testWidgets('a phone in landscape spends one row of chrome, not two', (
+    tester,
+  ) async {
+    // Stacked here, the bottom chrome took 149 pt of a 393 pt screen and the
+    // Score was left 180 pt — over half the height gone to chrome once the
+    // AppBar was counted (Spec 0043 revision 3).
+    tester.view.physicalSize = const Size(852, 393);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _shell(
+        performanceChrome: false,
+        chromeShown: true,
+        insets: const EdgeInsets.only(left: 59, right: 59, bottom: 21),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final nav = tester.getRect(find.byType(PageNavBar));
+    final quickBar = tester.getRect(find.byType(ScoreMenuQuickBar));
+    final viewer = tester.getSize(find.byType(_ViewerStub));
+    expect(
+      quickBar.top,
+      greaterThanOrEqualTo(nav.top),
+      reason: 'the shortcuts ride inside the scrubber row here',
+    );
+    expect(quickBar.bottom, lessThanOrEqualTo(nav.bottom));
+    final screen = tester.getSize(find.byType(MaterialApp));
+    expect(
+      viewer.height,
+      greaterThan(screen.height * 0.6),
+      reason: 'stacked, the Score was left 180 pt of this 393',
+    );
   });
 }

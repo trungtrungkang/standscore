@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/layout/page_scale.dart';
+import 'package:stagescore/ui/sheet_body.dart';
 
 Future<void> showPageScaleSheet({
   required BuildContext context,
@@ -66,83 +67,73 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
       sourcePage: widget.sourcePage,
     );
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return SheetBody(
+      children: [
+        Text('Page scale', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 4),
+        // Say what this is before showing knobs: pinch changes the view
+        // and forgets; this is remembered (Spec 0036).
+        Text(
+          'How big the music is drawn, remembered between sessions. '
+          'Pinching changes the view for now; this changes it for good.',
+          style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'On this page right now: ${effective.toStringAsFixed(2)}×',
+          style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 16),
+        Text('Applies to', style: theme.textTheme.labelLarge),
+        const SizedBox(height: 8),
+        SegmentedButton<PageScaleScope>(
+          segments: [
+            for (final scope in PageScaleScope.values)
+              ButtonSegment(value: scope, label: Text(scope.label)),
+          ],
+          selected: {_prefs.editScope},
+          onSelectionChanged: (selected) {
+            _update(_prefs.copyWith(editScope: selected.first));
+          },
+        ),
+        const SizedBox(height: 8),
+        Text(_scopeHint(_prefs.editScope), style: theme.textTheme.bodySmall),
+        const SizedBox(height: 20),
+        Row(
           children: [
-            Text('Page scale', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            // Say what this is before showing knobs: pinch changes the view
-            // and forgets; this is remembered (Spec 0036).
-            Text(
-              'How big the music is drawn, remembered between sessions. '
-              'Pinching changes the view for now; this changes it for good.',
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'On this page right now: ${effective.toStringAsFixed(2)}×',
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 16),
-            Text('Applies to', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 8),
-            SegmentedButton<PageScaleScope>(
-              segments: [
-                for (final scope in PageScaleScope.values)
-                  ButtonSegment(value: scope, label: Text(scope.label)),
-              ],
-              selected: {_prefs.editScope},
-              onSelectionChanged: (selected) {
-                _update(_prefs.copyWith(editScope: selected.first));
-              },
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _scopeHint(_prefs.editScope),
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Text('Scale', style: theme.textTheme.labelLarge),
-                const Spacer(),
-                Text('${editScale.toStringAsFixed(2)}×'),
-              ],
-            ),
-            Slider(
-              value: editScale,
-              min: PageScalePrefs.minScale,
-              max: PageScalePrefs.maxScale,
-              divisions: 20,
-              label: '${editScale.toStringAsFixed(2)}×',
-              onChanged: (value) {
-                _update(
-                  _prefs.withEditedScale(
-                    scoreId: widget.scoreId,
-                    sourcePage: widget.sourcePage,
-                    scale: value,
-                  ),
-                );
-              },
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              // The intent, not the mechanism — the mechanism is the subtitle.
-              title: const Text('Keep this scale'),
-              subtitle: const Text(
-                'Pinch is off, so a stray touch mid-piece cannot move the '
-                'music',
-              ),
-              value: _prefs.locked,
-              onChanged: (value) => _update(_prefs.copyWith(locked: value)),
-            ),
+            Text('Scale', style: theme.textTheme.labelLarge),
+            const Spacer(),
+            Text('${editScale.toStringAsFixed(2)}×'),
           ],
         ),
-      ),
+        Slider(
+          value: editScale,
+          min: PageScalePrefs.minScale,
+          max: PageScalePrefs.maxScale,
+          divisions: 20,
+          label: '${editScale.toStringAsFixed(2)}×',
+          onChanged: (value) {
+            _update(
+              _prefs.withEditedScale(
+                scoreId: widget.scoreId,
+                sourcePage: widget.sourcePage,
+                scale: value,
+              ),
+            );
+          },
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          // The intent, not the mechanism — the mechanism is the subtitle.
+          title: const Text('Keep this scale'),
+          subtitle: const Text(
+            'Pinch is off, so a stray touch mid-piece cannot move the '
+            'music',
+          ),
+          value: _prefs.locked,
+          onChanged: (value) => _update(_prefs.copyWith(locked: value)),
+        ),
+      ],
     );
   }
 }

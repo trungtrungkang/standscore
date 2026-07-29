@@ -5,7 +5,9 @@
 **Basis:** Quality / UX review after ScorePDF PdfMode rows through P2.15; Phase A (0033 + 0030) done  
 
 **Goal:** Make PdfMode honestly gig-ready before opening H3+ (ADR 0008), without inventing a second product.  
-**Sequencing locked:** **A1 (0033) → A2 (0030) → B → C → D**.
+**Sequencing locked:** **A1 (0033) → A2 (0030) → B → C ∥ E → D**.
+
+**Phase E được thêm ngày 2026-07-28** (trạng thái: **proposed**, chưa được accept như A–D) — xem bên dưới. Phase A–D giữ nguyên `accepted` như bản gốc (tiếng Anh, không dịch hồi tố theo ADR 0015 — Phase A–D được viết trước ADR đó). Phase E được viết bằng tiếng Việt vì được soạn sau khi ADR 0015 accepted.
 
 ---
 
@@ -83,6 +85,31 @@ If **hold** → more Phase B/C only.
 
 ---
 
+## Phase E — Nhân dạng thị giác & IA panel đọc (ScorePDF benchmark v2)
+
+**Status:** proposed (drafted 2026-07-28, chưa có slice nào được G3-accept)
+**Căn cứ:** Orchestrator review — "StageScore vẫn cảm thấy basic so với ScorePDF" — đối chiếu với ảnh chụp thật từ máy màn hình Home và ScoreDetail của ScorePDF (không phải ảnh marketing App Store, thứ hoá ra lại là một drawer phụ chứ không phải IA chính) cộng một đợt audit code `lib/ui/*`.
+**Phát hiện định hình cả phase:** checklist parity P0–P2 vẫn `done` dưới đợt audit — ScorePDF khoá Label / Sort / Search / Metronome sau một gói Pro trả phí, trong khi StageScore cho miễn phí. Vậy khoảng cách nằm ở **cách trình bày và kiến trúc thông tin, không phải năng lực**. Hai khoảng cách cụ thể, có bằng chứng: (1) mọi công cụ PdfMode trừ Draw đều nằm sau một icon `⋯` **ScoreMenu** duy nhất (`score_menu.dart:74-143`), trong khi ScoreDetail của ScorePDF giữ một **tab-strip có nhãn cố định ở đáy** (Bookmark · Page · Gesture · Tools · Annotation) luôn hiển thị ngay dưới thanh trượt trang; (2) các sheet cài đặt của StageScore hiện ra ở năm kiểu trọng lượng thị giác khác nhau, không có lớp design-token dùng chung, trong khi ScorePDF dùng lại một hàng icon+tiêu đề+mô tả phụ+switch cho mọi nơi.
+
+**Đánh số:** 0037–0039 vẫn dành riêng cho Phase C; 0040–0042 đã `done`. Phase E lấy khối số trống kế tiếp, **0043–0049**, cộng dùng lại **0039** (xếp lại thứ tự, không đổi số) cho onboarding.
+
+**Thứ tự chạy:** song song an toàn với Phase C — không đụng chạm file của nhau. E1 chạy trước vì vừa là chiến thắng cấu trúc rẻ nhất vừa là điều Orchestrator chỉ ra hai lần; E2 (token) chạy thứ hai vì E3–E7 đều hiển thị đẹp hơn một khi nó tồn tại.
+
+| Thứ tự | Việc | Parity / Spec | Kết quả |
+|------:|------|----------------|---------|
+| E1 | **ScoreMenuQuickBar icon-only dưới PageNavBar, `⋯` giữ nguyên:** bản đầu định thay hẳn `⋯` bằng một tab-strip có nhãn cho cả bốn nhóm (**Go to · Marks · View · Playing**) — đảo lại cùng ngày vì rủi ro i18n (nhãn cố định trong hàng bốn tab vỡ layout khi dịch). Revision 1 rút về chỉ một icon-tắt View không nhãn trên AppBar. Revision 2 (hình dạng cuối) đưa tab-strip trở lại đúng vị trí ban đầu — ngay dưới `PageNavBar` — nhưng mọi mục là **icon thuần, không chữ**: Metronome (khi chạy), Draw, Bookmarks, Layout, View. `⋯` không đổi, vẫn mở đủ bốn nhóm/12 action, mỗi action giờ có icon riêng đứng trước tên | Mở lại lựa chọn IA của 0035 — Spec **0043** | Thứ Orchestrator hỏi ba lần, giải quyết mà không thêm rủi ro i18n mới |
+| E2 | **Design token & component theme:** một thang khoảng cách (4/8/12/16/24 nội tuyến hôm nay trở thành hằng số có tên), một thang bo góc/đổ bóng, `PopupMenuThemeData` / `ChipThemeData` / `BottomSheetThemeData` để mọi sheet và menu dùng chung một "chất liệu" bo góc, đổ bóng; sửa lệch màu brand teal (`draw_toolbar.dart:63-65` dùng `0xFF0D9488`, theme dùng `0xFF0D8B86`) | Polish, không có parity ID — Spec **0044** | Mọi slice E sau này thừa hưởng một ngôn ngữ thị giác thay vì thêm kiểu thứ sáu |
+| E3 | **Nội dung tab dim-scrim:** nội dung Bookmarks / Jump Links / hàng đợi Setlist của tab **Go to** hiển thị trên nền bản nhạc bị làm mờ nhưng vẫn thấy được, thay cho sheet cố định 55% chiều cao, che kín hôm nay | Mở lại cách trình bày của 0010 / 0012 / 0016 — Spec **0045** | Nhạc công giữ được ngữ cảnh không gian ("mình đang ở đâu") khi tra cứu, khớp drawer của ScorePDF |
+| E4 | **Gọn header Library:** gộp ba hàng riêng biệt hôm nay (logo AppBar, `SegmentedButton`, ô tìm kiếm) thành hai — nav/search/view-toggle, rồi filter-chip/sort/hướng sắp xếp — khớp mật độ Home screen thật (không phải marketing) của ScorePDF. **Cắt khỏi phạm vi:** grid thumbnail — ảnh Home thật của ScorePDF cho thấy hàng chỉ có title, không có bằng chứng cho ý này | Chỉ đổi cách trình bày — Spec **0046** | Header ít hàng hơn, gọn hơn; nội dung hàng vốn đã dày hơn của StageScore (thumbnail, ngày, số trang, label) được giữ nguyên, không bị cắt bớt |
+| E5 | **Một khuôn settings-sheet dùng chung:** một `SettingsRow` chung (icon + tiêu đề + mô tả phụ + control bên phải) áp lại cho Display, Page turn, Color filter, Metronome, Page scale, và Layout, thay năm kiểu chrome sheet khác nhau hôm nay | Mở lại cách trình bày của 0025 / 0026 / 0030 / 0031 / 0032 / 0036 — Spec **0047** | Mọi đích cài đặt đọc giống nhau; mô tả phụ đồng thời là copy onboarding thụ động cho E8 |
+| E6 | **PageOrder dạng lưới không gian:** thay danh sách kéo-thả toàn `Scaffold` bằng lưới 2 cột các thẻ số trang (badge bookmark trên thẻ), và một hộp thoại Single/Multiple gọn để thêm trang | Mở lại **P1.6** (0011) — Spec **0048** | Sắp trang cho repeat/D.S. al Coda đọc như đang lật một xấp trang thật |
+| E7 | **Toolbar vẽ gọn:** bỏ nền tint (sửa xong khi màu brand của E2 đúng), một hàng icon phẳng, gộp hai nơi chọn width/màu (hàng vs "More…") thành một | Chỉ đổi cách trình bày trên **P2.1–P2.3** — Spec **0049** | Toolbar bớt "ồn" giữa lúc chơi |
+| E8 | **Đẩy sớm onboarding:** chạy Spec đã dành sẵn **0039** sau E5, vì copy mô tả phụ của E5 giảm một nửa công viết copy onboarding | Parity **Q7** — Spec **0039** (dùng lại) | Không viết copy coach-mark hai lần |
+
+**Exit E:** Orchestrator nhìn StageScore và ScorePDF cạnh nhau, không còn đọc StageScore là "một app Material chưa hoàn thiện" — có cấu trúc phân loại công cụ nhìn thấy được trong PdfMode, một ngữ pháp sheet nhất quán, và một header Library gọn như của ScorePDF.
+
+---
+
 ## Explicitly out of this roadmap
 
 | Item | Where it lives |
@@ -96,9 +123,14 @@ If **hold** → more Phase B/C only.
 
 ## Recommended next actions (Orchestrator)
 
-1. Accept this roadmap (or cut B/C items).  
-2. **G3 accept 0030** (metronome) **or** prioritize **0033** (zoom honesty) first — recommend **0033 then 0030** if stage trust matters more than practice click.  
-3. Agent drafts Spec **0033** when A1 is chosen; build only after G3.
+**Phase A–D:** đã xong / đã qua gate như mô tả ở trên; không cần hành động gì thêm.
+
+**Phase E (mới, 2026-07-28):**
+
+1. Accept Phase E (hoặc cắt/xếp lại thứ tự slice) — mọi thứ ở trên đang `proposed`.
+2. **Spec 0043 `done`** — G4 pass 2026-07-29 trên SM X210. Hình dạng cuối là Revision 3, sau ba lần đảo trong một ngày: `⋯` giữ nguyên với icon trên từng dòng; `ScoreMenuQuickBar` giữ đúng ba lối tắt theo luật "tay đang trên nhạc cụ" (Bookmarks, Draw, Metronome), và hình dạng của hàng đó do `QuickBarFit` **đo** chứ không do bảng breakpoint.
+3. Sau đó tới **0044** (design token) trước khi chạm chi tiết thị giác của E3–E7, vì chúng đều hiển thị đẹp hơn một khi token tồn tại.
+4. Chỉ build sau khi mỗi Spec qua G3.
 
 ---
 
@@ -106,7 +138,7 @@ If **hold** → more Phase B/C only.
 
 | Doc | Role |
 |-----|------|
-| [SCOREPDF-PARITY.md](./SCOREPDF-PARITY.md) | Checklist + polish appendix |
+| [SCOREPDF-PARITY.md](./SCOREPDF-PARITY.md) | Checklist + polish appendix (nay có thêm Q10–Q16 cho Phase E) |
 | [RELEASE-CHECKLIST.md](./RELEASE-CHECKLIST.md) | What stands between the build and a store submission — a separate track from this roadmap, opened when `1.0.0+1` was tagged |
 | [DECISIONS-LOG.md](./DECISIONS-LOG.md) | Soft choices / weekly notes |
-| Specs `0030`, then `0033+` | Executable slices |
+| Specs `0043`–`0049`, rồi `0039` | Các slice thực thi của Phase E |

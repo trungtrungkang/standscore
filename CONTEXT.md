@@ -50,7 +50,7 @@ Một trạng thái xem của PdfMode, trong đó chrome của app bị ẩn cho
 _Avoid_: Immersive mode, fullscreen (system-level), presentation mode
 
 **ScoreMenu**:
-Điểm vào được gom nhóm cho mọi thứ PdfMode có thể làm với Score đang xem, mở từ dấu ⋯ trên AppBar hoặc từ một GestureMap.
+Điểm vào được gom nhóm cho mọi thứ PdfMode có thể làm với Score đang xem, mở từ dấu ⋯ trên AppBar hoặc từ một GestureMap. Ngoài `⋯`, một **ScoreMenuQuickBar** nằm trong chrome đáy khi chrome hiện, giữ lối tắt cho đúng ba action mà nhạc công cần *khi tay đang trên nhạc cụ*: Bookmarks, Draw, Metronome. Mỗi lối tắt gọi thẳng hành động đã có trong `⋯`, không phải một lối vào nội dung mới; mọi thứ khác (kể cả Layout và nhóm View) chỉ có trong `⋯`, vì chúng là việc làm lúc dựng bài chứ không phải lúc đang chơi. Hình dạng của hàng đó không cố định: nó xếp chồng dưới PageNavBar khi màn hình đủ cao, gộp vào chính hàng thanh trượt khi không, và chỉ vẽ nhãn chữ khi chữ đo được là vừa — xem **QuickBarFit**.
 _Avoid_: Overflow menu, kebab menu, settings (it holds actions as well as settings)
 
 **StagePreset**:
@@ -59,6 +59,10 @@ Một entry trong ScoreMenu, đưa app vào trạng thái sẵn sàng biểu di�
 **LayoutFit**:
 Những gì viewport hiện tại cho phép một Score: liệu có vừa hai trang cạnh nhau, còn dư bao nhiêu để hé trang kế, và layout nào phù hợp với màn hình. Được tính từ viewport và tỷ lệ trang ở mỗi lần build, không bao giờ lưu lại.
 _Avoid_: Auto layout (that is the user-facing mode that reads this), fit zoom (that is `pdfFitZoom`, the scale), responsive layout
+
+**QuickBarFit**:
+Những gì màn hình hiện tại cho phép chrome đáy: xếp chồng được hai hàng hay phải gộp lối tắt vào hàng thanh trượt, một slot lối tắt rộng bao nhiêu, và nhãn chữ có vừa dưới icon hay không. Cùng ý với LayoutFit nhưng hỏi cho chrome thay vì cho Score, và cũng không bao giờ lưu lại — điện thoại nằm ngang và tablet trả lời khác nhau, nên câu trả lời thuộc về từng lần build.
+_Avoid_: breakpoint, responsive rule (there is no threshold table — it is measured), tab strip (that was the shape Spec 0043 tried twice and dropped)
 
 **PageTurn**:
 Việc đưa khung xem biểu diễn tiến lên hay lùi lại theo luật layout và luật cử chỉ (bao gồm cả tương đương từ pedal và bàn phím).

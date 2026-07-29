@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/layout/display_prefs.dart';
+import 'package:stagescore/ui/sheet_body.dart';
 
 const _borderPresets = <Color>[
   Color(DisplayPrefs.defaultBorderColorValue),
@@ -125,82 +126,75 @@ class _DisplaySheetState extends State<_DisplaySheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Display', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Performance mode'),
-              subtitle: Text(widget.performanceModeHint),
-              isThreeLine: true,
-              value: _prefs.performanceMode,
-              onChanged: (v) => _update(_prefs.copyWith(performanceMode: v)),
-            ),
-            const Divider(),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Page border'),
-              value: _prefs.borderEnabled,
-              onChanged: (v) => _update(_prefs.copyWith(borderEnabled: v)),
-            ),
-            if (_prefs.borderEnabled) ...[
-              Text(
-                'Thickness ${_prefs.borderWidth.toStringAsFixed(1)}',
-                style: theme.textTheme.bodySmall,
-              ),
-              Slider(
-                value: _prefs.borderWidth,
-                min: DisplayPrefs.minBorderWidth,
-                max: DisplayPrefs.maxBorderWidth,
-                onChanged: (v) => _update(_prefs.copyWith(borderWidth: v)),
-              ),
-              Text('Color', style: theme.textTheme.bodySmall),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final color in _borderPresets)
-                    _BorderSwatch(
-                      color: color,
-                      selected: _prefs.borderColorValue == color.toARGB32(),
-                      onTap: () => _update(
-                        _prefs.copyWith(borderColorValue: color.toARGB32()),
-                      ),
-                    ),
-                  ActionChip(
-                    avatar: const Icon(Icons.palette_outlined, size: 18),
-                    label: const Text('Custom'),
-                    onPressed: _pickCustomColor,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-            ],
-            const Divider(),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Show status bar'),
-              subtitle: const Text('Clock and system icons at the top'),
-              value: _prefs.showStatusBar,
-              onChanged: (v) => _update(_prefs.copyWith(showStatusBar: v)),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Avoid notches and bars'),
-              subtitle: const Text('Keep the Score clear of cutouts'),
-              value: _prefs.avoidNotches,
-              onChanged: (v) => _update(_prefs.copyWith(avoidNotches: v)),
-            ),
-          ],
+    return SheetBody(
+      children: [
+        Text('Display', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Performance mode'),
+          subtitle: Text(widget.performanceModeHint),
+          isThreeLine: true,
+          value: _prefs.performanceMode,
+          onChanged: (v) => _update(_prefs.copyWith(performanceMode: v)),
         ),
-      ),
+        const Divider(),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Page border'),
+          value: _prefs.borderEnabled,
+          onChanged: (v) => _update(_prefs.copyWith(borderEnabled: v)),
+        ),
+        if (_prefs.borderEnabled) ...[
+          Text(
+            'Thickness ${_prefs.borderWidth.toStringAsFixed(1)}',
+            style: theme.textTheme.bodySmall,
+          ),
+          Slider(
+            value: _prefs.borderWidth,
+            min: DisplayPrefs.minBorderWidth,
+            max: DisplayPrefs.maxBorderWidth,
+            onChanged: (v) => _update(_prefs.copyWith(borderWidth: v)),
+          ),
+          Text('Color', style: theme.textTheme.bodySmall),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final color in _borderPresets)
+                _BorderSwatch(
+                  color: color,
+                  selected: _prefs.borderColorValue == color.toARGB32(),
+                  onTap: () => _update(
+                    _prefs.copyWith(borderColorValue: color.toARGB32()),
+                  ),
+                ),
+              ActionChip(
+                avatar: const Icon(Icons.palette_outlined, size: 18),
+                label: const Text('Custom'),
+                onPressed: _pickCustomColor,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
+        const Divider(),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Show status bar'),
+          subtitle: const Text('Clock and system icons at the top'),
+          value: _prefs.showStatusBar,
+          onChanged: (v) => _update(_prefs.copyWith(showStatusBar: v)),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Avoid notches and bars'),
+          subtitle: const Text('Keep the Score clear of cutouts'),
+          value: _prefs.avoidNotches,
+          onChanged: (v) => _update(_prefs.copyWith(avoidNotches: v)),
+        ),
+      ],
     );
   }
 }

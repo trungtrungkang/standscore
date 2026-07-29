@@ -51,6 +51,7 @@ import 'package:stagescore/pdf/pdf_surface.dart';
 import 'package:stagescore/pdf/single_page_slider.dart';
 import 'package:stagescore/setlist/setlist_nav.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
+import 'package:stagescore/ui/beat_strip.dart';
 import 'package:stagescore/ui/bookmarks_sheet.dart';
 import 'package:stagescore/ui/display_sheet.dart';
 import 'package:stagescore/ui/draw_toolbar.dart';
@@ -58,8 +59,6 @@ import 'package:stagescore/ui/jump_link_edit_sheet.dart';
 import 'package:stagescore/ui/jump_link_overlay.dart';
 import 'package:stagescore/ui/jump_links_sheet.dart';
 import 'package:stagescore/ui/layout_settings_sheet.dart';
-import 'package:stagescore/ui/draw_icon.dart';
-import 'package:stagescore/ui/metronome_icon.dart';
 import 'package:stagescore/ui/metronome_sheet.dart';
 import 'package:stagescore/ui/page_nav_bar.dart';
 import 'package:stagescore/ui/page_position_pill.dart';
@@ -68,7 +67,9 @@ import 'package:stagescore/ui/page_scale_sheet.dart';
 import 'package:stagescore/ui/page_turn_interaction_layer.dart';
 import 'package:stagescore/ui/page_turn_settings_sheet.dart';
 import 'package:stagescore/ui/performance_chrome.dart';
+import 'package:stagescore/ui/quick_bar_fit.dart';
 import 'package:stagescore/ui/score_menu.dart';
+import 'package:stagescore/ui/score_menu_quick_bar.dart';
 import 'package:stagescore/ui/score_menu_sheet.dart';
 import 'package:stagescore/ui/undo_snack_bar.dart';
 
@@ -118,6 +119,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   DisplayPrefsStore? _displayStore;
   MetronomePrefsStore? _metronomeStore;
   final MetronomeEngine _metronome = MetronomeEngine();
+
+  /// Mirror of [MetronomeEngine.isRunning], so a beat can be told apart from a
+  /// start or a stop — see [_onMetronomeChanged].
+  bool _metronomeRunning = false;
   BookmarkStore? _bookmarkStore;
   JumpLinkStore? _jumpLinkStore;
   PageOrderStore? _pageOrderStore;
@@ -177,8 +182,17 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _loadPrefs();
   }
 
+  /// Only a start or a stop reaches the screen.
+  ///
+  /// This used to be a bare `setState`, which rebuilt the whole screen — PDF
+  /// viewer included — on every beat: over three times a second at 200 BPM,
+  /// while the musician is playing. What actually changes per beat is the
+  /// metronome glyph's tint and the beat strip, and each of those listens to
+  /// the engine itself (Spec 0030 reopen, decision 4).
   void _onMetronomeChanged() {
-    if (mounted) setState(() {});
+    final running = _metronome.isRunning;
+    if (!mounted || running == _metronomeRunning) return;
+    setState(() => _metronomeRunning = running);
   }
 
   @override
@@ -740,27 +754,46 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     await _switchToPiece(chosen, page: 1);
   }
 
+  /// The four ScoreMenu groups 0035 built, rebuilt fresh on every open so the
+  /// sheet always shows current state (Layout, Color filter, Page scale…).
+  List<ScoreMenuGroup> _scoreMenuGroups() => buildScoreMenu(
+    layoutMode: _layoutPrefs.mode,
+    resolvedLayout: _layoutMode,
+    colorFilter: _colorFilterMode,
+    zoomLocked: _pageScalePrefs.locked,
+    annotationsVisible: _annotationsVisible,
+    exporting: _exporting,
+    metronomeRunning: _metronome.isRunning,
+    stagePreset: StagePreset.directionFor(
+      display: _displayPrefs,
+      scale: _pageScalePrefs,
+    ),
+  );
+
+  /// Opens the full ScoreMenu — all four groups, exactly as 0035 built it.
+  ///
+  /// Spec 0043 replaced this `⋯` with an always-visible tab-strip, then the
+  /// Orchestrator reversed that call the same day it was built: a fixed
+  /// tab-strip's labels are sized for English, and a longer translation on a
+  /// row that must fit four tabs on the narrowest supported phone is a
+  /// layout that breaks the day the app is localised, not a hypothetical.
+  /// `⋯` is back to holding everything, unconditionally.
   Future<void> _openScoreMenu() async {
     final action = await showScoreMenu(
       context: context,
-      groups: buildScoreMenu(
-        layoutMode: _layoutPrefs.mode,
-        resolvedLayout: _layoutMode,
-        colorFilter: _colorFilterMode,
-        zoomLocked: _pageScalePrefs.locked,
-        annotationsVisible: _annotationsVisible,
-        exporting: _exporting,
-        metronomeRunning: _metronome.isRunning,
-        stagePreset: StagePreset.directionFor(
-          display: _displayPrefs,
-          scale: _pageScalePrefs,
-        ),
-      ),
+      groups: _scoreMenuGroups(),
     );
     if (!mounted) return;
     // Reading the menu counts as interaction, whether or not it led anywhere.
     _chrome.keepAlive();
     if (action != null) _onScoreMenuSelected(action);
+  }
+
+  /// Same dispatch as picking the action out of a sheet, for a tap that
+  /// skipped the sheet entirely (Spec 0043's ScoreMenuQuickBar).
+  void _onQuickBarSelected(ScoreMenuAction action) {
+    _chrome.keepAlive();
+    _onScoreMenuSelected(action);
   }
 
   void _onScoreMenuSelected(ScoreMenuAction action) {
@@ -1471,43 +1504,53 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       toolbarHeight: kPdfAppBarHeight,
       title: _buildTitle(),
       actions: [
-        // Primary: Draw. Draw-mode history lives on the DrawToolbar (0035),
-        // everything else → ⋯
-        ExcludeFocus(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_metronome.isRunning)
-                IconButton(
-                  tooltip: 'Metronome (running)',
-                  onPressed: _prefsReady ? _openMetronome : null,
-                  icon: MetronomeIcon(
-                    color: _metronome.isAccent
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
-                  ),
-                ),
-              IconButton(
-                tooltip: _drawEnabled ? 'Exit draw' : 'Draw',
-                onPressed: () => _setDrawEnabled(!_drawEnabled),
-                icon: DrawIcon(
-                  color: _drawEnabled
-                      ? Theme.of(context).colorScheme.primary
-                      : null,
-                ),
-              ),
-              IconButton(
-                tooltip: 'More',
-                onPressed: _prefsReady ? _openScoreMenu : null,
-                icon: const Icon(Icons.more_vert),
-              ),
-            ],
-          ),
+        // Draw, Metronome and Bookmarks moved down to the ScoreMenuQuickBar in
+        // the bottom chrome (Spec 0043): they are the actions wanted mid-piece,
+        // and they read fine there without an AppBar row fighting the title for
+        // space. `⋯` is the one action still worth keeping up here — it is
+        // reached the same way whether the chrome is fading in or settled.
+        IconButton(
+          tooltip: 'More',
+          onPressed: _prefsReady ? _openScoreMenu : null,
+          icon: const Icon(Icons.more_vert),
         ),
       ],
     );
 
-    final pageNav = _prefsReady && _pageCount > 0
+    // How the shortcut row fits *this* screen, rather than one shape for every
+    // device (Spec 0043 revision 3): stacked under the scrubber where there is
+    // height for it, inside the scrubber's own row where there is not.
+    final quickBarFit = QuickBarFit(
+      screenSize: MediaQuery.sizeOf(context),
+      slotCount: ScoreMenuQuickBar.slotCount,
+      bottomInset: _displayPrefs.avoidNotches
+          ? MediaQuery.paddingOf(context).bottom
+          : 0,
+    );
+    final hasPageNav = _prefsReady && _pageCount > 0;
+    final mergeQuickBar = hasPageNav && quickBarFit.mergeIntoPageNav;
+
+    // Only this subtree follows the beat, so the tint can pulse without the
+    // viewer above it rebuilding with it.
+    final quickBar = ListenableBuilder(
+      listenable: _metronome,
+      builder: (context, _) => ScoreMenuQuickBar(
+        metronomeRunning: _metronome.isRunning,
+        metronomeAccent: _metronome.isAccent,
+        onOpenMetronome: _openMetronome,
+        drawEnabled: _drawEnabled,
+        onToggleDraw: () => _setDrawEnabled(!_drawEnabled),
+        onOpenBookmarks: () => _onQuickBarSelected(ScoreMenuAction.bookmarks),
+        fit: quickBarFit,
+        merged: mergeQuickBar,
+        // Greys out rather than disappearing while the Score's prefs load, the
+        // same way `⋯` above does.
+        enabled: _prefsReady,
+        avoidNotches: _displayPrefs.avoidNotches,
+      ),
+    );
+
+    final pageNav = hasPageNav
         ? PageNavBar(
             pageNumber: _pageNumber,
             pageCount: _pageCount,
@@ -1528,9 +1571,23 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                 _chrome.keepAlive();
               }
             },
-            avoidNotches: _displayPrefs.avoidNotches,
+            // Whichever bar is bottom-most owns the home-indicator inset and
+            // the gesture gap; stacked, that is the quick-bar below (0032).
+            trailing: mergeQuickBar ? [quickBar] : const [],
+            bottomGestureGap: mergeQuickBar,
+            avoidNotches: mergeQuickBar && _displayPrefs.avoidNotches,
           )
         : null;
+
+    // One visual block of bottom chrome, whether it sits in the Scaffold's own
+    // slot or floats as an overlay. The quick-bar is in it even when there is
+    // no scrubber yet: Draw is not in `⋯` (0035 decision 6), so tying the bar's
+    // life to the page count is what would take Draw away entirely — and every
+    // Setlist piece change, which clears `_prefsReady`, moved the chrome.
+    final bottomChrome = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [?pageNav, if (!mergeQuickBar) quickBar],
+    );
 
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1598,11 +1655,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     // padded out by the height of an AppBar the musician cannot even see.
     return Scaffold(
       appBar: performanceChrome ? null : appBar,
-      bottomNavigationBar: performanceChrome ? null : pageNav,
+      bottomNavigationBar: performanceChrome ? null : bottomChrome,
       body: Stack(
         fit: StackFit.expand,
         children: [
           withNotice,
+          // Always in the Stack, shown by its own rule: a child that comes and
+          // goes is a child the viewer beside it can be rebuilt by.
+          BeatStrip(engine: _metronome, chromeShown: chromeShown),
           if (performanceChrome) ...[
             if (_pageCount > 0)
               Positioned(
@@ -1620,13 +1680,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               right: 0,
               child: _fadingChrome(appBar, shown: chromeShown),
             ),
-            if (pageNav != null)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: _fadingChrome(pageNav, shown: chromeShown),
-              ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _fadingChrome(bottomChrome, shown: chromeShown),
+            ),
           ],
         ],
       ),

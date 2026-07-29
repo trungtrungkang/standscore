@@ -172,6 +172,7 @@ No story points. Backlog = ordered list of Feature Specs (`proposed` → `accept
 - [ ] Acceptance criteria testable
 - [ ] Domain terms match `CONTEXT.md`
 - [ ] Dependent ADRs accepted (or Spec is a Spike)
+- [ ] **Spec is written in Vietnamese (ADR 0015)** — domain terms, identifiers, file paths and code symbols stay in English; Specs `0001`–`0042` are grandfathered and not retranslated
 - [ ] Human G3 accepted
 
 ## Definition of Done (Build → Done)

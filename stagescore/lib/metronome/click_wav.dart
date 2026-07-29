@@ -23,23 +23,55 @@ Uint8List synthesizeClickWav({
   return _wrapWav(pcm: pcm, sampleRate: sampleRate);
 }
 
-/// One-bar (or one-beat) loop with clicks at exact sample offsets.
+/// Samples between click onsets in the generated loop.
+int metronomeSamplesPerBeat({
+  required int tempoBpm,
+  int sampleRate = metronomeSampleRate,
+}) {
+  final bpm = tempoBpm.clamp(1, 400);
+  final microsPerBeat = (60000000 / bpm).round();
+  return ((sampleRate * microsPerBeat) / 1000000).round().clamp(
+    1,
+    sampleRate * 10,
+  );
+}
+
+/// The beat length of the buffer that actually plays, which is the nominal
+/// tempo interval rounded to a whole number of samples.
+///
+/// The beat clock reads this rather than [MetronomePrefs.beatInterval]: the
+/// difference is under 10 µs per beat, but a play head that accumulates across
+/// loop repeats would turn that into visible drift over a long practice.
+Duration metronomeAudioBeatInterval({
+  required int tempoBpm,
+  int sampleRate = metronomeSampleRate,
+}) {
+  final samples = metronomeSamplesPerBeat(
+    tempoBpm: tempoBpm,
+    sampleRate: sampleRate,
+  );
+  return Duration(microseconds: (samples * 1000000 / sampleRate).round());
+}
+
+/// One-bar loop with clicks at exact sample offsets.
 ///
 /// Audioplayers seek/resume per beat jitters on iOS; looping a pre-timed
 /// buffer keeps audible intervals sample-accurate.
+///
+/// The loop spans the whole bar even with the accent off, where every click is
+/// identical and one beat would sound the same. That keeps the play head a
+/// position *within the bar* for every meter, so the beat clock has one mapping
+/// to maintain instead of one per mode.
 Uint8List synthesizeMetronomeLoopWav({
   required int tempoBpm,
   required int beatsPerBar,
   required bool accentEnabled,
   int sampleRate = metronomeSampleRate,
 }) {
-  final bpm = tempoBpm.clamp(1, 400);
-  final beats = accentEnabled ? beatsPerBar.clamp(1, 24) : 1;
-  // Match MetronomePrefs.beatInterval so visual dots stay phase-locked.
-  final microsPerBeat = (60000000 / bpm).round();
-  final samplesPerBeat = ((sampleRate * microsPerBeat) / 1000000).round().clamp(
-    1,
-    sampleRate * 10,
+  final beats = beatsPerBar.clamp(1, 24);
+  final samplesPerBeat = metronomeSamplesPerBeat(
+    tempoBpm: tempoBpm,
+    sampleRate: sampleRate,
   );
   final totalSamples = samplesPerBeat * beats;
   final pcm = Float64List(totalSamples); // accumulate then quantize

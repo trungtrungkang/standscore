@@ -127,6 +127,21 @@ void main() {
         'Metronome (running)…',
       );
     });
+
+    test('the annotations icon reads as current state, not the tap ahead', () {
+      expect(
+        entryFor(menu(), ScoreMenuAction.toggleAnnotations).icon,
+        kAnnotationsVisibleIcon,
+        reason: 'default is visible, label offers to hide them',
+      );
+      expect(
+        entryFor(
+          menu(annotationsVisible: false),
+          ScoreMenuAction.toggleAnnotations,
+        ).icon,
+        kAnnotationsHiddenIcon,
+      );
+    });
   });
 
   group('showScoreMenu', () {

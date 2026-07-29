@@ -26,6 +26,7 @@ class MetronomePrefs {
     this.volume = defaultVolume,
     this.muted = false,
     this.accentEnabled = true,
+    this.showBeatsOnScore = true,
   });
 
   static const minTempo = 40;
@@ -68,6 +69,14 @@ class MetronomePrefs {
   /// When false, every click is equal (no strong/weak beat).
   final bool accentEnabled;
 
+  /// Whether a running metronome keeps a beat strip on the Score once the
+  /// chrome has hidden itself (Spec 0030, reopened after G4).
+  ///
+  /// Defaults on: the strip only exists while the metronome runs, and starting
+  /// it is a deliberate act. It also gives "Mute (visual only)" something to
+  /// show — muted, the metronome had no output at all once the chrome went.
+  final bool showBeatsOnScore;
+
   static int clampTempo(int value) => value.clamp(minTempo, maxTempo);
 
   static int clampBeatsPerBar(int value) =>
@@ -107,6 +116,7 @@ class MetronomePrefs {
     double? volume,
     bool? muted,
     bool? accentEnabled,
+    bool? showBeatsOnScore,
   }) {
     return MetronomePrefs(
       tempoBpm: tempoBpm != null ? clampTempo(tempoBpm) : this.tempoBpm,
@@ -117,6 +127,7 @@ class MetronomePrefs {
       volume: volume != null ? clampVolume(volume) : this.volume,
       muted: muted ?? this.muted,
       accentEnabled: accentEnabled ?? this.accentEnabled,
+      showBeatsOnScore: showBeatsOnScore ?? this.showBeatsOnScore,
     );
   }
 
@@ -136,6 +147,7 @@ class MetronomePrefs {
     'volume': volume,
     'muted': muted,
     'accentEnabled': accentEnabled,
+    'showBeatsOnScore': showBeatsOnScore,
   };
 
   factory MetronomePrefs.fromJson(Map<String, dynamic> json) {
@@ -152,6 +164,9 @@ class MetronomePrefs {
       ),
       muted: json['muted'] as bool? ?? false,
       accentEnabled: json['accentEnabled'] as bool? ?? true,
+      // Installs whose prefs predate the key get the strip too, same as 0034
+      // did for PerformanceMode: it is the behaviour we would have shipped.
+      showBeatsOnScore: json['showBeatsOnScore'] as bool? ?? true,
     );
   }
 
@@ -163,7 +178,8 @@ class MetronomePrefs {
         other.beatUnit == beatUnit &&
         other.volume == volume &&
         other.muted == muted &&
-        other.accentEnabled == accentEnabled;
+        other.accentEnabled == accentEnabled &&
+        other.showBeatsOnScore == showBeatsOnScore;
   }
 
   @override
@@ -174,5 +190,6 @@ class MetronomePrefs {
     volume,
     muted,
     accentEnabled,
+    showBeatsOnScore,
   );
 }

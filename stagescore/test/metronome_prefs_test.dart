@@ -42,6 +42,7 @@ void main() {
       volume: 0.45,
       muted: true,
       accentEnabled: false,
+      showBeatsOnScore: false,
     );
     await MetronomePrefsStore(root: root).save(prefs);
     expect(await MetronomePrefsStore(root: root).load(), prefs);
@@ -57,6 +58,21 @@ void main() {
     });
     expect(prefs.beatUnit, 4);
     expect(prefs.meterLabel, '3/4');
+  });
+
+  test('the beat strip is on unless turned off, including on old installs', () {
+    // The strip only appears while the metronome runs, and it is what gives
+    // "Mute (visual only)" something to show once the chrome hides — so prefs
+    // written before the key existed get it too (Spec 0030 reopen).
+    expect(const MetronomePrefs().showBeatsOnScore, isTrue);
+    expect(MetronomePrefs.fromJson({'tempoBpm': 100}).showBeatsOnScore, isTrue);
+    expect(
+      MetronomePrefs.fromJson({
+        'tempoBpm': 100,
+        'showBeatsOnScore': false,
+      }).showBeatsOnScore,
+      isFalse,
+    );
   });
 
   test('equal meter disables accent label', () {

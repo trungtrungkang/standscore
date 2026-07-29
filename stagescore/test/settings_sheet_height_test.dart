@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/layout/display_prefs.dart';
+import 'package:stagescore/layout/page_scale.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
+import 'package:stagescore/metronome/metronome_engine.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
+import 'package:stagescore/ui/display_sheet.dart';
 import 'package:stagescore/ui/layout_settings_sheet.dart';
+import 'package:stagescore/ui/metronome_sheet.dart';
+import 'package:stagescore/ui/page_scale_sheet.dart';
 import 'package:stagescore/ui/page_turn_settings_sheet.dart';
 
 /// Settings sheets end where their content ends. Pinned to a fraction of the
@@ -84,5 +90,113 @@ void main() {
     );
     final screen = tester.getSize(find.byType(MaterialApp)).height;
     expect(height, lessThanOrEqualTo(screen));
+  });
+
+  group('on a phone in landscape', () {
+    // Reported from a device: the Metronome sheet overflowed by 144 pt in
+    // landscape and its Start button could not be reached. A sheet that is
+    // sized by its content has to *scroll* on a screen shorter than its
+    // content, which is a different property from not being pinned to a
+    // fraction of the screen — the tests above only checked the second one.
+    Future<void> openSheet(
+      WidgetTester tester,
+      Future<void> Function(BuildContext context) open,
+    ) async {
+      tester.view.physicalSize = const Size(852, 393);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => open(context),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'a sheet taller than the screen must scroll, not overflow',
+      );
+      final sheet = tester.getSize(find.byType(BottomSheet));
+      expect(sheet.height, lessThanOrEqualTo(393));
+    }
+
+    testWidgets('the Metronome sheet scrolls to its Start button', (
+      tester,
+    ) async {
+      // Not disposed on purpose: MetronomeEngine.dispose releases a wakelock
+      // through a platform channel that does not exist in a widget test, and
+      // an engine that never started holds no timer to leak.
+      final engine = MetronomeEngine();
+      await openSheet(
+        tester,
+        (context) => showMetronomeSheet(
+          context: context,
+          engine: engine,
+          onPrefsChanged: (_) {},
+        ),
+      );
+
+      await tester.scrollUntilVisible(find.text('Start'), 60);
+      expect(find.text('Start'), findsOneWidget);
+    });
+
+    // One sheet per test: a second sheet opened over the first sits on a
+    // barrier that swallows the tap that would open it.
+    testWidgets('the Layout sheet fits too', (tester) async {
+      await openSheet(
+        tester,
+        (context) => showLayoutSettingsSheet(
+          context: context,
+          prefs: const PdfLayoutPrefs(),
+          pageTurnPrefs: const PageTurnPrefs(),
+          onChanged: (_) {},
+        ),
+      );
+    });
+
+    testWidgets('the Page turn sheet fits too', (tester) async {
+      await openSheet(
+        tester,
+        (context) => showPageTurnSettingsSheet(
+          context: context,
+          prefs: const PageTurnPrefs(),
+          onChanged: (_) {},
+        ),
+      );
+    });
+
+    testWidgets('the Display sheet fits too', (tester) async {
+      await openSheet(
+        tester,
+        (context) => showDisplaySheet(
+          context: context,
+          prefs: const DisplayPrefs(),
+          onChanged: (_) {},
+          performanceModeHint: 'Swipe from the top edge',
+        ),
+      );
+    });
+
+    testWidgets('the Page scale sheet fits too', (tester) async {
+      await openSheet(
+        tester,
+        (context) => showPageScaleSheet(
+          context: context,
+          prefs: const PageScalePrefs(),
+          scoreId: 'score-1',
+          sourcePage: 1,
+          onChanged: (_) {},
+        ),
+      );
+    });
   });
 }

@@ -77,6 +77,13 @@ Tracked in [IMPROVEMENT-ROADMAP.md](./IMPROVEMENT-ROADMAP.md). Do not treat as b
 | Q7 | First-run / coach tips | C3 |
 | Q8 | Library Score row (rename, thumbnail, recency, filter state) | C4 — done (0040) |
 | Q9 | Layout modes: honest names, Auto by screen, per-layout turn gesture | unsequenced — done (0041) |
+| Q10 | ScoreMenuQuickBar giữ ba lối tắt theo luật "tay đang trên nhạc cụ" (Bookmarks, Draw, Metronome — Metronome **luôn hiện**, trạng thái nói bằng tint); hình dạng hàng do `QuickBarFit` đo, nhãn chữ chỉ vẽ khi đo thấy vừa; `⋯` ScoreMenu giữ nguyên, mỗi mục có icon riêng. Layout và View chỉ có trong `⋯`. (Tab-strip có nhãn bị đảo lại hai lần — xem Spec 0043 Revision 3) | E1 — done (0043) |
+| Q11 | Design token & component theme (thang spacing/radius/elevation; nhất quán màu brand) | E2 — proposed (0044) |
+| Q12 | Nội dung tab dạng dim-scrim (Bookmarks / Jump Links / hàng đợi Setlist trên nền Score vẫn thấy được) | E3 — proposed (0045) |
+| Q13 | Gọn header Library (header 2 hàng, khớp mật độ thật của ScorePDF) | E4 — proposed (0046) |
+| Q14 | Một khuôn settings-sheet dùng chung (hàng icon+tiêu đề+mô tả phụ+control chung) | E5 — proposed (0047) |
+| Q15 | PageOrder dạng lưới không gian (thẻ số trang, không phải danh sách tuyến tính) | E6 — proposed (0048) |
+| Q16 | Toolbar vẽ gọn (bỏ tint, một hàng icon phẳng) | E7 — proposed (0049) |
 
 ---
 

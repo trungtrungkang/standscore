@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/ui/metronome_icon.dart';
 import 'package:stagescore/ui/score_menu.dart';
 
 /// Opens the ScoreMenu and resolves to the chosen action, or null if the
@@ -72,6 +73,13 @@ class _ScoreMenuSheet extends StatelessWidget {
                     ),
                     for (final entry in group.entries)
                       ListTile(
+                        // Metronome keeps the app's own glyph here — the same
+                        // one the quick-bar draws — rather than the generic
+                        // Material stand-in `entry.icon` carries for it,
+                        // which read as unrelated next to the real thing.
+                        leading: entry.action == ScoreMenuAction.metronome
+                            ? const MetronomeIcon()
+                            : Icon(entry.icon),
                         title: Text(entry.label),
                         trailing: entry.value == null
                             ? null

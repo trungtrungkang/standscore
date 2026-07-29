@@ -20,14 +20,47 @@ void main() {
     expect(String.fromCharCodes(wav.sublist(0, 4)), 'RIFF');
   });
 
-  test('equal meter loop is one beat long', () {
+  test('equal meter loop still spans the bar', () {
+    // It used to be one beat long, which sounds identical but made the play
+    // head a position within a *beat* rather than within the bar — so the beat
+    // clock needed a second mapping for this mode. Spending the extra samples
+    // buys one mapping for every meter (Spec 0030, second reopen).
     final wav = synthesizeMetronomeLoopWav(
       tempoBpm: 120,
       beatsPerBar: 4,
       accentEnabled: false,
     );
     final samples = (wav.length - 44) ~/ 2;
-    expect(samples, metronomeSampleRate ~/ 2); // 0.5s at 120 BPM
+    expect(samples, metronomeSampleRate * 2); // 4 beats × 0.5s at 120 BPM
+  });
+
+  test('equal meter clicks are all the same, unlike an accented bar', () {
+    int onsetPeak(Uint8List wav, int beat, int samplesPerBeat) {
+      final pcm = ByteData.sublistView(wav, 44);
+      var peak = 0;
+      for (var i = 0; i < 400; i++) {
+        final idx = (beat * samplesPerBeat + i) * 2;
+        if (idx + 1 >= pcm.lengthInBytes) break;
+        final s = pcm.getInt16(idx, Endian.little).abs();
+        if (s > peak) peak = s;
+      }
+      return peak;
+    }
+
+    const bpm = 120;
+    final samplesPerBeat = metronomeSamplesPerBeat(tempoBpm: bpm);
+    final equal = synthesizeMetronomeLoopWav(
+      tempoBpm: bpm,
+      beatsPerBar: 4,
+      accentEnabled: false,
+    );
+    for (var beat = 1; beat < 4; beat++) {
+      expect(
+        onsetPeak(equal, beat, samplesPerBeat),
+        onsetPeak(equal, 0, samplesPerBeat),
+        reason: 'beat $beat should be indistinguishable from the first',
+      );
+    }
   });
 
   test('loop contains energy near beat starts', () {
