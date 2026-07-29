@@ -308,7 +308,32 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final root = _libraryRoot;
     if (root == null) return;
     final messenger = ScaffoldMessenger.of(context);
-    _showBusyDialog('Creating backup…');
+
+    // Confirm before paying the cost of zipping the whole library — tapping
+    // the menu item to explore should not start a multi-minute job (Spec 0050).
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create backup?'),
+        content: const Text(
+          'This zips every Score, annotation, Label, Setlist, and preference '
+          'into one file you can share or save. A large library can take a '
+          'while.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Create backup'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
     try {
       final exports = Directory(
         p.join((await getApplicationDocumentsDirectory()).path, 'exports'),
@@ -321,8 +346,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
           .split('.')
           .first;
       final zip = File(p.join(exports.path, 'StageScore-backup-$stamp.zip'));
-      await const LibraryBackup().createBackup(libraryRoot: root, zipFile: zip);
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      final cancelled = await _runBackupJob(
+        title: 'Creating backup…',
+        run: (onProgress, cancelToken) => const LibraryBackup().createBackup(
+          libraryRoot: root,
+          zipFile: zip,
+          onProgress: onProgress,
+          cancelToken: cancelToken,
+        ),
+      );
+      if (cancelled || !mounted) return;
       try {
         await SharePlus.instance.share(
           ShareParams(
@@ -341,8 +374,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       messenger.showSnackBar(
         const SnackBar(content: Text('Backup ready — share sheet opened')),
       );
+    } on LibraryBackupCancelledException {
+      // Dialog already closed; nothing to report.
     } catch (e) {
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text('Backup failed: $e')));
     }
@@ -384,12 +418,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
     if (confirmed != true) return;
 
-    _showBusyDialog('Restoring backup…');
     try {
-      await const LibraryBackup().restoreBackup(
-        zipFile: File(path),
-        libraryRoot: root,
+      final cancelled = await _runBackupJob(
+        title: 'Restoring backup…',
+        run: (onProgress, cancelToken) => const LibraryBackup().restoreBackup(
+          zipFile: File(path),
+          libraryRoot: root,
+          onProgress: onProgress,
+          cancelToken: cancelToken,
+        ),
       );
+      if (cancelled || !mounted) return;
       final sortPrefs = LibrarySortPrefsStore(root: root);
       final sortMode = await sortPrefs.load();
       if (!mounted) return;
@@ -403,39 +442,90 @@ class _LibraryScreenState extends State<LibraryScreen> {
       });
       await _reload();
       widget.onLibraryRestored?.call();
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (!mounted) return;
       messenger.showSnackBar(
         const SnackBar(content: Text('Library restored from backup')),
       );
+    } on LibraryBackupCancelledException {
+      // Dialog already closed; library left intact.
     } on LibraryBackupException catch (e) {
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
-      if (mounted) Navigator.of(context, rootNavigator: true).pop();
       if (!mounted) return;
       messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
     }
   }
 
-  void _showBusyDialog(String message) {
+  /// Determinate progress + Cancel for backup/restore (Spec 0050).
+  ///
+  /// Returns `true` when the musician cancelled. Throws on failure after the
+  /// dialog is dismissed.
+  Future<bool> _runBackupJob({
+    required String title,
+    required Future<void> Function(
+      void Function(BackupProgress progress) onProgress,
+      LibraryBackupCancelToken cancelToken,
+    )
+    run,
+  }) async {
+    final cancelToken = LibraryBackupCancelToken();
+    final progress = ValueNotifier<BackupProgress>(
+      const BackupProgress(fraction: 0),
+    );
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => PopScope(
         canPop: false,
-        child: AlertDialog(
-          content: Row(
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(child: Text(message)),
-            ],
-          ),
+        child: ValueListenableBuilder<BackupProgress>(
+          valueListenable: progress,
+          builder: (context, value, _) {
+            final percent = (value.fraction * 100).clamp(0, 100).round();
+            return AlertDialog(
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  LinearProgressIndicator(value: value.fraction),
+                  const SizedBox(height: AppSpacing.md),
+                  Text('$percent%'),
+                  if (value.label != null) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(value.label!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                ],
+              ),
+              actions: [
+                if (value.canCancel)
+                  TextButton(
+                    onPressed: cancelToken.cancel,
+                    child: const Text('Cancel'),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
+
+    try {
+      await run((p) {
+        progress.value = p;
+      }, cancelToken);
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      return false;
+    } on LibraryBackupCancelledException {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      return true;
+    } catch (_) {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      rethrow;
+    } finally {
+      progress.dispose();
+    }
   }
 
   bool get _filterActive =>

@@ -54,7 +54,7 @@ Status legend: `todo` | `specced` | `done` | `reopen` | `wont` (explicit cut)
 | P2.8 | Replace PDF (keep or reset overlays) | done (0024) |
 | P2.9 | Color filter (sepia / green / invert) | done (0025) |
 | P2.10 | Dark mode + theme color | done (0026) |
-| P2.11 | Backup / restore (ZIP) | done (0027) |
+| P2.11 | Backup / restore (ZIP) | done (0027; 0050 — không đơ UI) |
 | P2.12 | Share-in PDF from other apps | done (0029) |
 | P2.13 | Metronome (tempo, meter, volume) — PDF-phase ok without SmartMode | done (0030) |
 | P2.14 | DPI / page scaling / zoom lock (fixed, per score, per page) | done (0031 — scale+lock; **DPI deferred**) |

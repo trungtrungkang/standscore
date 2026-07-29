@@ -1,14 +1,14 @@
 # 0050 — Sao lưu không làm đơ app: nén đúng thứ, chạy đúng chỗ, và nói còn bao lâu
 
-- **Status:** proposed
+- **Status:** done
 - **Type:** feature
 - **Horizon:** H2
 - **Owner (human):** Orchestrator
 - **Depends on ADRs:** 0005 (Flutter shell), 0008 (slice này không đụng SmartMode/OMR), 0015 (ngôn ngữ tài liệu), 0016 (mô hình đọc/ghi)
 - **Depends on Specs:** 0027 (done — sở hữu `LibraryBackup`, `formatId` và ngữ nghĩa restore thay-thế); 0002 / 0040 (done — sở hữu cây thư mục library và cache thumbnail); 0029 (done — share sheet nhận file ZIP)
 - **Parity IDs:** P2.11 (backup / restore)
-- **G3:** pending — tám câu ở mục "Câu hỏi G3", mỗi câu có khuyến nghị kèm bằng chứng đọc từ source
-- **G4:** pending
+- **G3:** accepted 2026-07-29 — cả tám khuyến nghị như bản nháp
+- **G4:** accepted 2026-07-29 — pass trên thiết bị thật; thêm confirm trước khi zip (cùng ngày)
 
 ## Vấn đề (Problem)
 
@@ -87,22 +87,24 @@ Thuật ngữ đã có mà Spec này dùng: **Score**, **Setlist**, **Label**, *
 
 ## Tiêu chí chấp nhận (Acceptance criteria)
 
-- [ ] Bấm Backup với thư viện thật: **vòng xoay không ngừng xoay**, app còn cuộn được, thanh tiến trình chạy và có phần trăm
-- [ ] Trong archive mới: mọi entry `.pdf` và `.png` là `CompressionType.none`, mọi entry `.json` là `deflate`
-- [ ] Backup rồi restore vẫn ra **đúng byte cũ** cho PDF và cho annotation JSON (test 0027 hiện có vẫn xanh, không sửa)
-- [ ] Một ZIP **deflate cũ** (dựng trong test, hoặc một file backup thật lấy trước bản này) restore được bình thường
-- [ ] Bấm Cancel giữa lúc backup: không có file `.zip` nào ở `<documents>/exports/`, cũng không có `.part` sót lại
-- [ ] Bấm Cancel giữa lúc restore: library **nguyên vẹn như trước** — không mất Score nào, không còn thư mục `.standscore_aside_*` hay `.standscore_restore_*`
-- [ ] Restore có tiến trình chạy, và hộp thoại xác nhận "Replace all" giữ nguyên chữ như hôm nay
-- [ ] `formatVersion` vẫn là 1; `formatId` và `markerFileName` không đổi một ký tự
-- [ ] Không thêm dependency; `flutter analyze` sạch; toàn bộ test xanh
-- [ ] Kích thước file backup không tăng quá **10%** so với bản cũ trên cùng một thư viện (nếu tăng hơn, luật nén theo loại file đã sai chỗ nào đó)
+- [x] Bấm Backup với thư viện thật: **vòng xoay không ngừng xoay**, app còn cuộn được, thanh tiến trình chạy và có phần trăm
+- [x] Trong archive mới: mọi entry `.pdf` và `.png` là `CompressionType.none`, mọi entry `.json` là `deflate`
+- [x] Backup rồi restore vẫn ra **đúng byte cũ** cho PDF và cho annotation JSON (test 0027 hiện có vẫn xanh, không sửa)
+- [x] Một ZIP **deflate cũ** (dựng trong test, hoặc một file backup thật lấy trước bản này) restore được bình thường
+- [x] Bấm Cancel giữa lúc backup: không có file `.zip` nào ở `<documents>/exports/`, cũng không có `.part` sót lại
+- [x] Bấm Cancel giữa lúc restore: library **nguyên vẹn như trước** — không mất Score nào, không còn thư mục `.standscore_aside_*` hay `.standscore_restore_*`
+- [x] Restore có tiến trình chạy, và hộp thoại xác nhận "Replace all" giữ nguyên chữ như hôm nay
+- [x] `formatVersion` vẫn là 1; `formatId` và `markerFileName` không đổi một ký tự
+- [x] Không thêm dependency; `flutter analyze` sạch; toàn bộ test xanh
+- [x] Kích thước file backup không tăng quá **10%** so với bản cũ trên cùng một thư viện (nếu tăng hơn, luật nén theo loại file đã sai chỗ nào đó)
 
 ## Ghi chú UX (UX notes)
 
 **Nhạc công nên thấy khác:** một thanh tiến trình có phần trăm và tên Score đang xử lý, một nút Cancel, và app không đứng. Sao lưu một thư viện lớn vẫn lâu — slice này không hứa nhanh tức thì, nó hứa **app còn sống và nói cho bạn biết còn bao lâu**.
 
 **Nhạc công không nên thấy khác:** đích lưu và share sheet y như cũ; chữ trong hộp thoại xác nhận restore y như cũ (nó đang đúng và đang đáng sợ vừa đủ); file backup cũ vẫn dùng được; không có lựa chọn mới nào xuất hiện trong màn hình Backup — **chọn lọc là slice sau**, và nếu nó xuất hiện ở đây thì Spec đã bị nong ra.
+
+**Cập nhật sau G3 (cùng ngày build):** Backup cũng có hộp thoại xác nhận trước khi bắt đầu nén — cùng idiom với Restore. Lý do: bấm menu để khám phá không được tạo một ZIP toàn library; với thư viện lớn đó là chi phí thật, không phải thao tác nhẹ.
 
 ## Ràng buộc kỹ thuật (Technical constraints)
 
