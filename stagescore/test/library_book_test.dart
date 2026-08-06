@@ -81,7 +81,36 @@ void main() {
     expect(find.widgetWithText(ListTile, 'Misty'), findsOneWidget);
   });
 
-  testWidgets('tapping the root opens Pieces; Open full score is on the menu', (
+  testWidgets(
+    'tapping the root opens Pieces; Pieces… and Open full score are on the menu',
+    (tester) async {
+      await io(tester, () async {
+        final book = await importPdf('Chopin Etudes.pdf');
+        await library.splitScore(
+          scoreId: book.id,
+          marks: const [
+            (startPage: 1, title: 'Op. 10 No. 1'),
+            (startPage: 5, title: 'Op. 10 No. 2'),
+          ],
+        );
+      });
+      await pumpLibrary(tester);
+
+      await tester.tap(find.widgetWithText(ListTile, 'Chopin Etudes'));
+      await settle(tester);
+      expect(find.byType(PiecesScreen), findsOneWidget);
+      expect(find.text('Op. 10 No. 1'), findsOneWidget);
+      expect(find.text('Open full score'), findsOneWidget);
+
+      await tester.pageBack();
+      await settle(tester);
+      await openRowMenu(tester, 'Chopin Etudes');
+      expect(find.text('Pieces…'), findsOneWidget);
+      expect(find.text('Open full score'), findsOneWidget);
+    },
+  );
+
+  testWidgets('"…" → Pieces… reaches the same drill-in as tapping the row', (
     tester,
   ) async {
     await io(tester, () async {
@@ -96,16 +125,12 @@ void main() {
     });
     await pumpLibrary(tester);
 
-    await tester.tap(find.widgetWithText(ListTile, 'Chopin Etudes'));
+    await openRowMenu(tester, 'Chopin Etudes');
+    await tester.tap(find.text('Pieces…'));
     await settle(tester);
+
     expect(find.byType(PiecesScreen), findsOneWidget);
     expect(find.text('Op. 10 No. 1'), findsOneWidget);
-    expect(find.text('Open full score'), findsOneWidget);
-
-    await tester.pageBack();
-    await settle(tester);
-    await openRowMenu(tester, 'Chopin Etudes');
-    expect(find.text('Open full score'), findsOneWidget);
   });
 
   testWidgets('renaming the root renames the Library row', (tester) async {

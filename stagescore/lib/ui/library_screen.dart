@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -9,7 +10,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_handler/share_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:stagescore/bookmark/bookmark_store.dart';
 import 'package:stagescore/brand/brand.dart';
+import 'package:stagescore/jumplink/jump_link_store.dart';
 import 'package:stagescore/label/label.dart';
 import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/library/library_backup.dart';
@@ -20,6 +23,7 @@ import 'package:stagescore/library/library_sort_prefs_store.dart';
 import 'package:stagescore/library/library_visibility.dart';
 import 'package:stagescore/library/outline_split.dart';
 import 'package:stagescore/library/page_extent.dart';
+import 'package:stagescore/library/piece_resplit.dart';
 import 'package:stagescore/library/relative_day.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
@@ -961,6 +965,160 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  /// Redefine where a root's pieces begin ("Edit pieces", Spec 0055 follow-up).
+  ///
+  /// Unlike [_splitScore] on a root with no children yet, this reopens the
+  /// whole document with today's boundaries already checked, and — via
+  /// [ScoreLibrary.editPieces] — keeps a piece's id (and its annotations,
+  /// bookmarks, jump links, Labels and Setlist membership) wherever its exact
+  /// page range survives. A piece with no surviving range is deleted; the
+  /// musician is warned first if that piece is not empty.
+  Future<void> _editPieces(Score root) async {
+    final library = _library;
+    final libraryRoot = _libraryRoot;
+    if (library == null || libraryRoot == null) return;
+    final document = library.documentFor(root);
+    final pageCount = document?.pageCount;
+    final pdf = library.absoluteFileOrNull(root);
+    if (document == null || pageCount == null || pdf == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Still reading this PDF — try again in a moment.'),
+        ),
+      );
+      return;
+    }
+    final bounds = PageExtent.whole(pageCount);
+    final oldChildren = childrenOfRoot(_scores, root.id);
+    final suggested = await _outlineProposals(pdf.path);
+    if (!mounted) return;
+
+    final marks = await Navigator.of(context).push<List<SplitMark>>(
+      MaterialPageRoute(
+        builder: (_) => SplitScoreScreen(
+          bookTitle: root.title,
+          pdf: pdf,
+          documentId: document.id,
+          pages: bounds,
+          thumbnails: _thumbnails,
+          proposals: suggested,
+          initialMarks: [
+            for (final piece in oldChildren)
+              (startPage: piece.firstAbsolutePage, title: piece.title),
+          ],
+          appBarTitle: 'Edit pieces',
+        ),
+      ),
+    );
+    if (marks == null || marks.length < 2 || !mounted) return;
+
+    final preview = planPieceResplit(
+      oldChildren: oldChildren,
+      marks: marks,
+      bounds: bounds,
+      rootId: root.id,
+      pdfDocumentId: document.id,
+      bookTitle: root.title,
+      now: DateTime.now().toUtc(),
+      nextId: () => '',
+    );
+    if (!await _confirmEditPieces(oldChildren, preview.removedIds)) return;
+
+    final plan = await library.editPieces(rootId: root.id, marks: marks);
+    for (final id in plan.removedIds) {
+      await handOverPageScales(
+        root: libraryRoot,
+        originalScoreId: id,
+        pieces: plan.children,
+      );
+      await _labelStore?.setScoreLabels(id, {});
+      await _setlistStore?.removeScoreFromAll(id);
+      await _thumbnails?.evict(id);
+    }
+    await _reload();
+    if (!mounted) return;
+    final count = plan.children.length;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Updated $count ${count == 1 ? 'piece' : 'pieces'}')),
+    );
+  }
+
+  /// Whether any piece about to disappear holds annotations, bookmarks, jump
+  /// links, a Label, or Setlist membership — and if so, asks before that data
+  /// is deleted along with it (Spec 0055 follow-up G3 — data-loss policy).
+  Future<bool> _confirmEditPieces(
+    List<Score> oldChildren,
+    List<String> removedIds,
+  ) async {
+    if (removedIds.isEmpty) return true;
+    final atRisk = <Score>[];
+    for (final id in removedIds) {
+      final piece = oldChildren.firstWhere((c) => c.id == id);
+      if (await _pieceHasData(id)) atRisk.add(piece);
+    }
+    if (atRisk.isEmpty) return true;
+    if (!mounted) return false;
+    final names = atRisk.map((s) => '“${s.title}”').join(', ');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit pieces?'),
+        content: Text(
+          '$names ${atRisk.length == 1 ? 'is' : 'are'} not part of the new '
+          'split. ${atRisk.length == 1 ? 'Its' : 'Their'} annotations, '
+          'bookmarks, jump links, Labels, and Setlist membership will be '
+          'deleted. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  /// Whether [scoreId] holds anything a musician would miss: ink, a bookmark,
+  /// a jump link, a Label, or Setlist membership.
+  Future<bool> _pieceHasData(String scoreId) async {
+    final root = _library?.root;
+    if (root == null) return false;
+    final annotationsFile = File(
+      p.join(root.path, 'annotations', '$scoreId.json'),
+    );
+    if (await annotationsFile.exists()) {
+      try {
+        final json =
+            jsonDecode(await annotationsFile.readAsString())
+                as Map<String, dynamic>;
+        final strokes = json['strokes'] as List<dynamic>? ?? const [];
+        final stamps = json['stamps'] as List<dynamic>? ?? const [];
+        if (strokes.isNotEmpty || stamps.isNotEmpty) return true;
+      } catch (_) {
+        // An unreadable file is not "no data" — better to warn than to lose it.
+        return true;
+      }
+    }
+    if ((await BookmarkStore(root: root, scoreId: scoreId).list())
+        .isNotEmpty) {
+      return true;
+    }
+    if ((await JumpLinkStore(root: root, scoreId: scoreId).list())
+        .isNotEmpty) {
+      return true;
+    }
+    if ((_labelStore?.labelsForScore(scoreId) ?? const {}).isNotEmpty) {
+      return true;
+    }
+    return _setlists.any((s) => s.scoreIds.contains(scoreId));
+  }
+
   /// Resplitting a child narrows the page order on the Score that keeps its id.
   /// Says the count first — being told afterwards is being told too late
   /// (Spec 0052, G3 #5). A first split of a root does not narrow anything.
@@ -1130,6 +1288,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
           onOpenFullScore: () async {
             Navigator.of(piecesContext).pop();
             await _openScore(root);
+          },
+          onEditPieces: () async {
+            Navigator.of(piecesContext).pop();
+            await _editPieces(root);
           },
           onRename: (piece) async {
             Navigator.of(piecesContext).pop();
@@ -1750,6 +1912,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
           trailing: PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
+                case 'pieces':
+                  _openPieces(score);
+                case 'edit_pieces':
+                  _editPieces(score);
                 case 'open_full':
                   _openScore(score);
                 case 'rename':
@@ -1767,6 +1933,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
               }
             },
             itemBuilder: (context) => [
+              // Menu parity with the row tap gesture (Spec 0055): tapping a
+              // root with children drills into PiecesScreen, so "…" needs its
+              // own path there too, not just the "Open full score" shortcut.
+              if (hasChildren)
+                const PopupMenuItem(value: 'pieces', child: Text('Pieces…')),
+              // Redraw where the book's pieces begin, seeded from today's
+              // boundaries (Spec 0055 follow-up "Edit pieces").
+              if (hasChildren)
+                const PopupMenuItem(
+                  value: 'edit_pieces',
+                  child: Text('Edit pieces…'),
+                ),
               if (hasChildren)
                 const PopupMenuItem(
                   value: 'open_full',

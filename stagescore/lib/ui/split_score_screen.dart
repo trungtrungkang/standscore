@@ -34,6 +34,8 @@ class SplitScoreScreen extends StatefulWidget {
     this.fixedFirstTitle,
     this.thumbnails,
     this.proposals = const <OutlineSplitProposal>[],
+    this.initialMarks = const <SplitMark>[],
+    this.appBarTitle = 'Split into pieces',
   });
 
   /// Name the default piece titles are built from — the book when splitting a
@@ -64,6 +66,16 @@ class SplitScoreScreen extends StatefulWidget {
   /// Boundaries and names read off the outline, already flattened and sorted.
   final List<OutlineSplitProposal> proposals;
 
+  /// Marks the grid opens with already checked — "Edit pieces" reopening a
+  /// root that already has children, one mark per current piece, so the
+  /// musician sees today's boundaries and un-checks or adds to them rather
+  /// than starting from a blank grid (Spec 0055 follow-up).
+  final List<SplitMark> initialMarks;
+
+  /// App bar title: "Split into pieces" for a first cut, "Edit pieces" when
+  /// [initialMarks] seeds the grid from an existing split.
+  final String appBarTitle;
+
   @override
   State<SplitScoreScreen> createState() => _SplitScoreScreenState();
 }
@@ -88,6 +100,11 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
       for (final proposal in widget.proposals)
         if (widget.pages.contains(proposal.startPage)) proposal,
     ];
+    for (final mark in widget.initialMarks) {
+      if (widget.pages.contains(mark.startPage)) {
+        _titles[mark.startPage] = mark.title;
+      }
+    }
     final fixed = widget.fixedFirstTitle;
     if (fixed != null) _titles[widget.pages.firstPage] = fixed;
   }
@@ -182,7 +199,7 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
     final pieces = _titles.length;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Split into pieces'),
+        title: Text(widget.appBarTitle),
         actions: [
           TextButton(
             // The fixed mark is not a mark anyone put there, so it does not

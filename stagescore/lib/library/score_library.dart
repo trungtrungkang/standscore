@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:stagescore/library/library_migration.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/pdf_document.dart';
+import 'package:stagescore/library/piece_resplit.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_overlays.dart';
 import 'package:uuid/uuid.dart';
@@ -312,6 +313,63 @@ class ScoreLibrary {
     }
     await _write(scores, manifest.documents);
     return scores;
+  }
+
+  /// Redefine a root's pieces from scratch ("Edit pieces", Spec 0055 follow-up).
+  ///
+  /// Unlike [splitScore], which only ever *adds* children, this **replaces**
+  /// the current set with one child per mark — see [planPieceResplit] for the
+  /// id-preserving match. The root itself (`pageExtent` null, whole file) is
+  /// untouched. Clears overlays for every piece [PieceResplitPlan.removedIds]
+  /// names; Label and Setlist cleanup for those ids is the caller's job, the
+  /// same way it is for [deleteScore] today.
+  Future<PieceResplitPlan> editPieces({
+    required String rootId,
+    required List<SplitMark> marks,
+  }) async {
+    await ensureReady();
+    final manifest = await _read();
+    final index = manifest.scores.indexWhere((s) => s.id == rootId);
+    if (index < 0) throw StateError('Score not found: $rootId');
+    final root = manifest.scores[index];
+    if (!root.isRoot) {
+      throw StateError('editPieces requires a root Score: $rootId');
+    }
+    final document = manifest.documentById(root.pdfDocumentId);
+    if (document == null) {
+      throw StateError('No PdfDocument for Score $rootId');
+    }
+    final pageCount = document.pageCount;
+    if (pageCount == null) {
+      throw StateError('Cannot split an uncounted PDF: ${document.id}');
+    }
+
+    final oldChildren = [
+      for (final s in manifest.scores)
+        if (s.parentId == rootId) s,
+    ];
+    final plan = planPieceResplit(
+      oldChildren: oldChildren,
+      marks: marks,
+      bounds: PageExtent.whole(pageCount),
+      rootId: rootId,
+      pdfDocumentId: document.id,
+      bookTitle: root.title,
+      now: DateTime.now().toUtc(),
+      nextId: _uuid.v4,
+    );
+    if (identical(plan.children, oldChildren)) return plan;
+
+    final scores = [
+      for (final s in manifest.scores)
+        if (s.parentId != rootId) s,
+      ...plan.children,
+    ];
+    await _write(scores, manifest.documents);
+    for (final id in plan.removedIds) {
+      await clearScoreOverlays(root: _root, scoreId: id);
+    }
+    return plan;
   }
 
   /// Change which pages of its document a Score covers (Spec 0052).

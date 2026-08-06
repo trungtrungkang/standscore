@@ -21,6 +21,7 @@ class PiecesScreen extends StatelessWidget {
     required this.canSplit,
     required this.onOpenPiece,
     required this.onOpenFullScore,
+    required this.onEditPieces,
     required this.onRename,
     required this.onLabels,
     required this.onSplit,
@@ -37,6 +38,13 @@ class PiecesScreen extends StatelessWidget {
   final bool Function(Score score) canSplit;
   final ValueChanged<Score> onOpenPiece;
   final VoidCallback onOpenFullScore;
+
+  /// Redraw where this root's pieces begin, seeded from today's boundaries
+  /// (Spec 0055 follow-up "Edit pieces") — reachable here too, not only from
+  /// the Library row's own "…", since this screen is where the pieces
+  /// actually live.
+  final VoidCallback onEditPieces;
+
   final ValueChanged<Score> onRename;
   final ValueChanged<Score> onLabels;
   final ValueChanged<Score> onSplit;
@@ -50,6 +58,19 @@ class PiecesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(root.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'edit_pieces':
+                  onEditPieces();
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'edit_pieces', child: Text('Edit pieces…')),
+            ],
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
