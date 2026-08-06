@@ -50,6 +50,23 @@ Phát hiện lớn nhất không phải từ vựng. `apps/web/src/components/pd
 
 Hai dòng cuối là chênh lệch năng lực, không phải chênh lệch tên gọi, và đáng để ý: web **chia sẻ được** bộ chú thích, StageScore thì không.
 
+### Sáu hàng ở mức trường, thêm bởi ADR 0019 (accepted 2026-08-05)
+
+Trigger *"Mở cổng H3 … khi StageScore bắt đầu Transport / BackingTrack"* đã kích hoạt: ADR 0019 mở H5 (BackingTrack + SyncMap trên PdfMode) và giữ H3/H4 đóng. Sáu hàng dưới đây khác các hàng trên ở một điểm quan trọng — **chúng là mức trường, không phải mức khái niệm**, và hai bên **trùng đúng tên đúng nghĩa** thay vì cần dịch:
+
+| Khái niệm | StageScore | Backing & Score web |
+|---|---|---|
+| Một ô nhịp được định vị trên trang | `MeasureBox` — trang, số ô nhịp, chỉ số dòng, toạ độ `0..1` | `MeasureBox` — `pageIndex`, `measureNumber`, `systemIndex`, toạ độ `0..1` |
+| Một phách trong một ô nhịp | `BeatBox` trong một `MeasureBox` | `beatSplits` |
+| Một dòng nhạc trên trang | `SystemBox` | suy ra từ `systemIndex` trên `MeasureBox` |
+| Thời điểm của một ô nhịp / một phách | thời điểm trong `SyncMap` | `timeMs`, `beatTimestamps` trên `TimemapEntry` |
+| Tempo tại một phách | tempo trên `MeasureBox` | `tempoAtBeat` |
+| Ô nhịp lấy đà | ô nhịp lấy đà | `startsAtBeat` |
+
+**Trùng tên ở đây không phải vi phạm quyết định 2.** Quyết định đó cấm bịa **tên thứ ba** và cấm ép đổi tên; nó không cấm hai context gọi cùng một thứ bằng cùng một tên khi nó **thật sự là cùng một thứ**. Ở đây nó là, và điều đó làm phép dịch gần như không tốn gì — đó là lý do ADR 0019 quyết định 3e **rút** đề xuất `MeasureAnchor` của ADR 0017 và dùng `MeasureBox`.
+
+**Cái giá thì đi kèm, và nó cộng vào câu hỏi sản phẩm mà ADR này để mở.** ADR 0019 quyết định 6 đặt công cụ soạn MeasureMap **trong app**, tức nhân đôi `useTappingSystem` và `SyncWorkspaceClient` bên web — thêm một lớp trùng lặp nữa bên cạnh 4.463 dòng `PdfViewer`. Điều kiện để chấp nhận được, và nó kiểm được bằng một test round-trip trên sáu hàng trên: **trùng giao diện thì được, trùng dữ liệu thì không.** Nếu hai công cụ đẻ ra hai định dạng không dịch được cho nhau thì thứ bị nhân đôi không còn là một màn hình mà là cả kho nội dung. Câu hỏi lớn hơn — hai công cụ soạn, hai `PdfViewer` — **vẫn mở**.
+
 ## Xem lại khi nào (Triggers)
 
 "Nếu sau này có phát sinh gì thì hẵng tính tiếp" — đây là danh sách "phát sinh" được viết ra để nó không phụ thuộc vào việc ai đó tình cờ nhớ:

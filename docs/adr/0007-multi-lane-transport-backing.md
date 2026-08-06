@@ -19,7 +19,7 @@ Users will play along with a band-style **BackingTrack** (audio), not only hear 
 3. **SyncMap** maps musical position (measure/beat or MusicXML time) ↔ audio timeline (seconds + sample). Backing is never “hope BPM matches.”
 4. **Mixer** exposes per-lane gain, mute, solo — product UI can be simple later; the seam exists from day one.
 5. **PracticePolicy** defines WaitMode behavior when a BackingLane is present (pause all vs pause guide only, etc.) — chosen per Spec, not hard-coded into the clock.
-6. BackingTrack **belongs to Score** (optional asset), usable primarily in SmartMode; PdfMode+backing is a later Spec if SyncMap can be established without MusicXML.
+6. BackingTrack **belongs to Score** (optional asset), usable primarily in SmartMode; PdfMode+backing is a later Spec if SyncMap can be established without MusicXML. — **Condition met. ADR 0019 (accepted 2026-08-05) establishes SyncMap without MusicXML**, from a MeasureMap the musician draws on the PDF page (geometry) plus tempo and time signature per measure (time). That later Spec is now scheduled: Spec 0057 (import BackingTrack + Transport), preceded by Spec 0056 (spike). PdfMode is therefore no longer the secondary case for BackingTrack — it is the **only** case, because SmartMode stays closed under ADR 0008.
 
 ## Considered options
 
