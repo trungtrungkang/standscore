@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:stagescore/measure_map/measure_box.dart';
@@ -7,6 +8,26 @@ import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
 import 'package:stagescore/measure_map/measure_map_painter.dart';
 import 'package:stagescore/measure_map/measure_map_selection.dart';
 import 'package:stagescore/measure_map/measure_map_store.dart';
+
+/// Wins the arena immediately so PageView / scrollables cannot steal a
+/// SystemBox rubber-band (L→R on page ≥ 2 looked like a page turn).
+class _EagerHorizontalDragGestureRecognizer
+    extends HorizontalDragGestureRecognizer {
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    super.addAllowedPointer(event);
+    resolve(GestureDisposition.accepted);
+  }
+}
+
+class _EagerVerticalDragGestureRecognizer
+    extends VerticalDragGestureRecognizer {
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    super.addAllowedPointer(event);
+    resolve(GestureDisposition.accepted);
+  }
+}
 
 /// Per-page MeasureMap overlay — same 0–1 / pageRect path as annotations.
 class PageMeasureMapOverlay extends StatefulWidget {
@@ -109,12 +130,35 @@ class _PageMeasureMapOverlayState extends State<PageMeasureMapOverlay> {
       onPointerDown: (e) => _onDown(_normalize(e.localPosition)),
       onPointerMove: (e) => _onMove(_normalize(e.localPosition)),
       onPointerUp: (_) => _onUp(),
-      onPointerCancel: (_) => _onCancel(),
-      child: GestureDetector(
+      // Match Draw ink: commit (or discard undersized) instead of dropping the
+      // rubber-band when a competing scroll recognizer briefly wins.
+      onPointerCancel: (_) => _onUp(),
+      child: RawGestureDetector(
         behavior: HitTestBehavior.translucent,
-        onPanStart: (_) {},
-        onPanUpdate: (_) {},
-        onPanEnd: (_) {},
+        gestures: <Type, GestureRecognizerFactory>{
+          _EagerHorizontalDragGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<
+                _EagerHorizontalDragGestureRecognizer
+              >(
+                () => _EagerHorizontalDragGestureRecognizer(),
+                (_EagerHorizontalDragGestureRecognizer instance) {
+                  instance.onStart = (_) {};
+                  instance.onUpdate = (_) {};
+                  instance.onEnd = (_) {};
+                },
+              ),
+          _EagerVerticalDragGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<
+                _EagerVerticalDragGestureRecognizer
+              >(
+                () => _EagerVerticalDragGestureRecognizer(),
+                (_EagerVerticalDragGestureRecognizer instance) {
+                  instance.onStart = (_) {};
+                  instance.onUpdate = (_) {};
+                  instance.onEnd = (_) {};
+                },
+              ),
+        },
         child: stack,
       ),
     );
@@ -396,15 +440,6 @@ class _PageMeasureMapOverlayState extends State<PageMeasureMapOverlay> {
 
     final dirty = _storeDirty;
     _resetGesture();
-    if (dirty) widget.config.onChanged();
-  }
-
-  void _onCancel() {
-    _clearLongPress();
-    final dirty = _storeDirty;
-    _resetGesture();
-    _inProgress = null;
-    setState(() {});
     if (dirty) widget.config.onChanged();
   }
 

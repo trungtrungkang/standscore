@@ -54,10 +54,17 @@ import 'package:stagescore/pageturn/pedal_key_map.dart';
 import 'package:stagescore/pdf/continuous_page_order_view.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
 import 'package:stagescore/pdf/page_measure_map_overlay.dart';
+import 'package:stagescore/pdf/page_playhead_overlay.dart';
 import 'package:stagescore/pdf/pdf_surface.dart';
 import 'package:stagescore/pdf/single_page_slider.dart';
 import 'package:stagescore/setlist/setlist_nav.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
+import 'package:stagescore/sync_map/playhead_overlay_config.dart';
+import 'package:stagescore/sync_map/playhead_position.dart';
+import 'package:stagescore/sync_map/playback_prefs.dart';
+import 'package:stagescore/sync_map/playback_prefs_store.dart';
+import 'package:stagescore/sync_map/sync_map_from_measure_map.dart';
+import 'package:stagescore/sync_map/sync_map_playback.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/beat_strip.dart';
 import 'package:stagescore/ui/bookmarks_sheet.dart';
@@ -77,6 +84,7 @@ import 'package:stagescore/ui/page_scale_sheet.dart';
 import 'package:stagescore/ui/page_turn_interaction_layer.dart';
 import 'package:stagescore/ui/page_turn_settings_sheet.dart';
 import 'package:stagescore/ui/performance_chrome.dart';
+import 'package:stagescore/ui/playback_controls_bar.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
 import 'package:stagescore/ui/score_menu.dart';
 import 'package:stagescore/ui/score_menu_quick_bar.dart';
@@ -155,6 +163,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   DisplayPrefsStore? _displayStore;
   MetronomePrefsStore? _metronomeStore;
   final MetronomeEngine _metronome = MetronomeEngine();
+  late final SyncMapPlayback _playback = SyncMapPlayback(metronome: _metronome);
+  PlaybackPrefsStore? _playbackStore;
+  PlaybackPrefs _playbackPrefs = const PlaybackPrefs();
+  int? _lastPlayheadPage;
 
   /// Mirror of [MetronomeEngine.isRunning], so a beat can be told apart from a
   /// start or a stop — see [_onMetronomeChanged].
@@ -223,8 +235,31 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _orderScrollController.addListener(_onControllerChanged);
     HardwareKeyboard.instance.addHandler(_onHardwareKey);
     _metronome.addListener(_onMetronomeChanged);
+    _playback.addListener(_onPlaybackChanged);
     _chrome.addListener(_onChromeChanged);
     _loadPrefs();
+  }
+
+  /// Bring the playhead's page into view — not Spec 0060 fine page-turn.
+  void _onPlaybackChanged() {
+    if (!mounted || !_playback.playheadVisible) {
+      _lastPlayheadPage = null;
+      return;
+    }
+    final pos = playheadAtTime(
+      syncMap: _playback.map,
+      store: _measureMap,
+      timeMs: _playback.positionMs,
+    );
+    if (pos == null) return;
+    if (pos.pageNumber == _lastPlayheadPage) return;
+    _lastPlayheadPage = pos.pageNumber;
+    final slot = _pageOrder.entries.indexWhere(
+      (e) => e.sourcePage == pos.pageNumber,
+    );
+    if (slot >= 0 && slot + 1 != _pageNumber) {
+      unawaited(_jumpToPage(slot + 1));
+    }
   }
 
   /// Only a start or a stop reaches the screen.
@@ -247,6 +282,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _chrome.dispose();
     HardwareKeyboard.instance.removeHandler(_onHardwareKey);
     _metronome.removeListener(_onMetronomeChanged);
+    _playback.removeListener(_onPlaybackChanged);
+    _playback.dispose();
     _metronome.dispose();
     _controller.removeListener(_onControllerChanged);
     _sliderController.removeListener(_onControllerChanged);
@@ -348,6 +385,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final pageScaleStore = PageScalePrefsStore(root: root);
     final displayStore = DisplayPrefsStore(root: root);
     final metronomeStore = MetronomePrefsStore(root: root);
+    final playbackStore = PlaybackPrefsStore(root: root);
     final pageTurn = await pageTurnStore.load();
     final layout = await layoutStore.load();
     final drawStyle = await drawStyleStore.load();
@@ -355,6 +393,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final pageScale = await pageScaleStore.load();
     final display = await displayStore.load();
     final metronomePrefs = await metronomeStore.load();
+    final playbackPrefs = await playbackStore.load();
 
     List<int> pieceCounts = const [];
     final session = widget.setlistSession;
@@ -374,6 +413,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _pageScaleStore = pageScaleStore;
     _displayStore = displayStore;
     _metronomeStore = metronomeStore;
+    _playbackStore = playbackStore;
     _pageTurnPrefs = pageTurn;
     _layoutPrefs = layout;
     _announcedLayout = null;
@@ -381,6 +421,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _colorFilterMode = colorFilter;
     _pageScalePrefs = pageScale;
     _displayPrefs = display;
+    _playbackPrefs = playbackPrefs;
+    _playback.setCountInMeasures(playbackPrefs.countInMeasures);
     // Scores open with the chrome hidden, except the very first one: it keeps
     // the chrome up long enough to learn the reveal gesture (Spec 0034).
     final introduceChrome =
@@ -414,7 +456,43 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       context: context,
       engine: _metronome,
       onPrefsChanged: _saveMetronomePrefs,
+      playbackPrefs: _playbackPrefs,
+      onPlaybackPrefsChanged: _savePlaybackPrefs,
     );
+  }
+
+  Future<void> _savePlaybackPrefs(PlaybackPrefs prefs) async {
+    _playback.setCountInMeasures(prefs.countInMeasures);
+    setState(() => _playbackPrefs = prefs);
+    await _playbackStore?.save(prefs);
+  }
+
+  Future<void> _togglePlaybackControls() async {
+    final next = !_playbackPrefs.showPlaybackControls;
+    if (!next && _playback.isActive) {
+      _playback.pause();
+    }
+    await _savePlaybackPrefs(
+      _playbackPrefs.copyWith(showPlaybackControls: next),
+    );
+  }
+
+  void _syncPlaybackFromMeasureMap({bool announceLoss = true}) {
+    final ok = _playback.replaceMap(syncMapFromMeasureMap(_measureMap));
+    if (!ok && announceLoss && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).playbackMapLostSnackbar),
+        ),
+      );
+    }
+    if (_measureMap.isEmpty && _playbackPrefs.showPlaybackControls) {
+      unawaited(
+        _savePlaybackPrefs(
+          _playbackPrefs.copyWith(showPlaybackControls: false),
+        ),
+      );
+    }
   }
 
   Future<void> _saveDisplayPrefs(DisplayPrefs prefs) async {
@@ -496,6 +574,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _piecePageCounts[_scoreIndex] = pageOrder.length;
       }
     });
+    _playback.stop();
+    _syncPlaybackFromMeasureMap(announceLoss: false);
     if (showHint) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _showHint());
     }
@@ -638,6 +718,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   void _setMeasureMapEditing(bool enabled) {
+    if (enabled && _playback.isActive) {
+      _playback.pause();
+    }
     setState(() {
       _measureMapEditing = enabled;
       if (enabled) {
@@ -658,8 +741,18 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
   Future<void> _onMeasureMapChanged() async {
     if (!mounted) return;
+    _syncPlaybackFromMeasureMap();
     setState(() {});
     await _measureMapPersistence?.save(_measureMap);
+  }
+
+  PlayheadOverlayConfig? _playheadConfig() {
+    if (!_prefsReady) return null;
+    return PlayheadOverlayConfig(
+      playback: _playback,
+      store: _measureMap,
+      suppressed: _measureMapEditing,
+    );
   }
 
   void _setMeasureMapSelection(MeasureMapSelection next) {
@@ -1003,6 +1096,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     annotationsVisible: _annotationsVisible,
     exporting: _exporting,
     metronomeRunning: _metronome.isRunning,
+    playbackControlsVisible: _playbackPrefs.showPlaybackControls,
+    measureMapReady: _measureMap.isNotEmpty,
     stagePreset: StagePreset.directionFor(
       display: _displayPrefs,
       scale: _pageScalePrefs,
@@ -1076,6 +1171,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _pickDisplay();
       case ScoreMenuAction.metronome:
         _openMetronome();
+      case ScoreMenuAction.togglePlaybackControls:
+        unawaited(_togglePlaybackControls());
       case ScoreMenuAction.stagePreset:
         _applyStagePreset();
     }
@@ -1279,7 +1376,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           fit: StackFit.expand,
           children: [
             child,
-            if (_prefsReady && !_drawEnabled && links.isNotEmpty)
+            if (_prefsReady &&
+                !_drawEnabled &&
+                !_measureMapEditing &&
+                links.isNotEmpty)
               JumpLinkInteractiveLayer(
                 pageRect: _jumpLinkPageRect(viewSize),
                 links: links,
@@ -1956,6 +2056,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                 context: context,
                 initialTimeSignature: meta.timeSignature,
                 initialTempo: meta.tempo,
+                initialStartsAtBeat: box.startsAtBeat,
               );
               if (result == null || !mounted) return;
               _measureMap.applyMeta(
@@ -1965,6 +2066,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                 tempo: result.tempo,
                 nextN: result.nextN,
               );
+              // Pickup start beat is per-measure only (Spec 0059 Option B).
+              if (result.startsAtBeat != null) {
+                _measureMap.setStartsAtBeat(id, result.startsAtBeat!);
+              }
               await _onMeasureMapChanged();
             },
             onToggleEditBeats: () {
@@ -2003,6 +2108,16 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                       : _buildContinuousBody(layoutMode),
                 ),
         ),
+        if (_prefsReady &&
+            _playbackPrefs.showPlaybackControls &&
+            !_measureMapEditing)
+          PlaybackControlsBar(
+            playback: _playback,
+            enabled: _measureMap.isNotEmpty,
+            onPlay: () => unawaited(_playback.play()),
+            onPause: _playback.pause,
+            onStop: _playback.stop,
+          ),
       ],
     );
 
@@ -2115,6 +2230,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               reverseDirection: _pageTurnPrefs.reverseDirection,
               initialPage: _pageNumber,
               measureMap: _measureMapConfig(),
+              playhead: _playheadConfig(),
             ),
             _interactionLayer(),
           ],
@@ -2161,6 +2277,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               controller: _orderScrollController,
               initialPage: _pageNumber,
               measureMap: _measureMapConfig(),
+              playhead: _playheadConfig(),
             ),
             _interactionLayer(),
           ],
@@ -2212,6 +2329,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               },
               pageOverlaysBuilder: (context, pageRect, page) {
                 final measureMap = _measureMapConfig();
+                final playhead = _playheadConfig();
                 return [
                   PageAnnotationOverlay(
                     pageRect: pageRect,
@@ -2235,6 +2353,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                       pageRect: pageRect,
                       page: page,
                       config: measureMap,
+                    ),
+                  if (playhead != null)
+                    PagePlayheadOverlay(
+                      pageRect: pageRect,
+                      page: page,
+                      config: playhead,
                     ),
                 ];
               },

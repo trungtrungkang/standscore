@@ -19,6 +19,8 @@ List<ScoreMenuGroup> menu({
   bool annotationsVisible = true,
   bool exporting = false,
   bool metronomeRunning = false,
+  bool playbackControlsVisible = false,
+  bool measureMapReady = true,
   StagePresetDirection stagePreset = StagePresetDirection.play,
 }) {
   return buildScoreMenu(
@@ -30,6 +32,8 @@ List<ScoreMenuGroup> menu({
     annotationsVisible: annotationsVisible,
     exporting: exporting,
     metronomeRunning: metronomeRunning,
+    playbackControlsVisible: playbackControlsVisible,
+    measureMapReady: measureMapReady,
     stagePreset: stagePreset,
   );
 }
@@ -196,7 +200,8 @@ void main() {
       // reachable by scrolling the sheet, not clipped away.
       await tester.scrollUntilVisible(find.text('Page scale…'), 80);
       expect(find.text('Locked'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Jump Links'), -80);
+      // Playback controls (0059) adds a Playing row — scroll farther back up.
+      await tester.scrollUntilVisible(find.text('Jump Links'), -120);
 
       await tester.tap(find.text('Jump Links'));
       await tester.pumpAndSettle();
@@ -293,6 +298,28 @@ void main() {
         ).label,
         'Set up to practise',
       );
+    });
+  });
+
+  group('Playback controls entry (Spec 0059)', () {
+    test('toggles Show/Hide label and disables when MeasureMap empty', () {
+      expect(
+        entryFor(menu(), ScoreMenuAction.togglePlaybackControls).label,
+        'Show Playback controls',
+      );
+      expect(
+        entryFor(
+          menu(playbackControlsVisible: true),
+          ScoreMenuAction.togglePlaybackControls,
+        ).label,
+        'Hide Playback controls',
+      );
+      final disabled = entryFor(
+        menu(measureMapReady: false),
+        ScoreMenuAction.togglePlaybackControls,
+      );
+      expect(disabled.enabled, isFalse);
+      expect(disabled.value, 'Map measures first');
     });
   });
 }

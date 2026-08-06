@@ -25,6 +25,8 @@ class MeasureMapStore {
 
   bool get isEmpty => _boxes.isEmpty;
 
+  bool get isNotEmpty => _boxes.isNotEmpty;
+
   void clear() => _boxes.clear();
 
   MeasureBox? byId(String id) {
@@ -475,6 +477,17 @@ class MeasureMapStore {
   /// Apply tempo / time signature over a scope (Spec 0058 G3 #14).
   ///
   /// Changing time signature resets beatSplits to even for every box in range.
+  /// Set pickup start beat for one measure (Spec 0059 Option B). `0` clears.
+  bool setStartsAtBeat(String id, int startsAtBeat) {
+    final box = byId(id);
+    if (box == null) return false;
+    final beats = beatsFromTimeSignature(resolveMeta(box).timeSignature);
+    final clamped = startsAtBeat.clamp(0, beats - 1);
+    if (box.startsAtBeat == clamped) return false;
+    _replace(box.copyWith(startsAtBeat: clamped));
+    return true;
+  }
+
   bool applyMeta({
     required String anchorId,
     required MeasureMetaScope scope,

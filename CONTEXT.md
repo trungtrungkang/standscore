@@ -109,8 +109,12 @@ Một ký hiệu, hình khối, hoặc đoạn chữ ngắn được đặt lên
 _Avoid_: Sticker, emoji (too casual), annotation (broader)
 
 **Playhead**:
-Chỉ báo trực quan cho vị trí phát nhạc hoặc luyện tập hiện tại, trên bản nhạc đã dựng ở SmartMode.
-_Avoid_: Cursor (ambiguous with text caret), progress bar
+Chỉ báo vị trí phát trên giấy theo SyncMap × MeasureMap (`beatSplits`) — trên PdfMode khi Playback controls đang Play/Pause (Spec 0059). Cũng dùng trong SmartMode khi Transport chạy.
+_Avoid_: Cursor (ambiguous with text caret), progress bar, scrubber
+
+**PlaybackControls**:
+UI Play / Pause / Stop trên PdfMode (show/hide từ ScoreMenu). Chạy timeline SyncMap + click metronome; không phải Transport đầy đủ (0062).
+_Avoid_: Transport bar, media controls (generic)
 
 ### Playback & practice (Phát nhạc và luyện tập)
 
@@ -127,7 +131,7 @@ Một bản thu âm (bản mix đầy đủ hoặc một stem) mà người dùn
 _Avoid_: Soundtrack, accompaniment file, band track (UI copy ok), MP3 (format ≠ concept)
 
 **SyncMap**:
-Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và một dòng thời gian phát — có thể gắn một hay nhiều BackingTrack, hoặc chỉ metronome / thời gian nhạc thuần (không bắt buộc có audio).
+Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và một dòng thời gian phát — có thể gắn một hay nhiều BackingTrack, hoặc chỉ metronome / thời gian nhạc thuần (không bắt buộc có audio). Trên PdfMode (Spec 0059) được **tính** từ MeasureMap (tempo + time signature → `timeMs` / `beatTimestamps`); không ghi đĩa riêng trong slice đó.
 _Avoid_: Offset alone, BPM (too narrow), sync file (may be a serialization of SyncMap)
 
 **AutoPlay**:

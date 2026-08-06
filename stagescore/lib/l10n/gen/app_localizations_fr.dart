@@ -384,7 +384,36 @@ class AppLocalizationsFr extends AppLocalizations {
   String get scoreMenuMetronome => 'Métronome…';
 
   @override
+  String get scoreMenuShowPlaybackControls => 'Show Playback controls';
+
+  @override
+  String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
+
+  @override
+  String get scoreMenuPlaybackMapFirst => 'Map measures first';
+
+  @override
   String get scoreMenuPageTurnSettings => 'Réglages de tourne-page';
+
+  @override
+  String get playbackControlsPlay => 'Play';
+
+  @override
+  String get playbackControlsPause => 'Pause';
+
+  @override
+  String get playbackControlsStop => 'Stop';
+
+  @override
+  String playbackControlsCountInBadge(int count) {
+    return 'Count-in $count';
+  }
+
+  @override
+  String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';
 
   @override
   String scoreMenuLayoutValueBoth(String stored, String resolved) {
@@ -1086,6 +1115,22 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get metronomeSheetShowBeatsHint =>
       'Faire clignoter le temps sur la partition pendant la lecture';
+
+  @override
+  String get metronomeSheetCountIn => 'Count-in';
+
+  @override
+  String get metronomeSheetCountInHint =>
+      'Click measures before Play from the start (not after Pause)';
+
+  @override
+  String get metronomeSheetCountInNone => 'Off';
+
+  @override
+  String get metronomeSheetCountInOne => '1';
+
+  @override
+  String get metronomeSheetCountInTwo => '2';
 
   @override
   String metronomeSheetVolume(int percent) {
@@ -1801,6 +1846,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get measureMapEditMeta => 'Tempo et signature…';
+
+  @override
+  String get measureMapStartsAtBeat => 'Starts at beat';
+
+  @override
+  String get measureMapStartsAtBeatHint =>
+      '1 = full measure; higher skips early beats (pickup on a wide box)';
 
   @override
   String get measureMapClearAll => 'Effacer le MeasureMap…';

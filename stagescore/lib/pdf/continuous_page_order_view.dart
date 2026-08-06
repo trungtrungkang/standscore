@@ -13,6 +13,7 @@ import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
 import 'package:stagescore/pdf/shared_zoom.dart';
 import 'package:stagescore/l10n/gen/app_localizations.dart';
+import 'package:stagescore/sync_map/playhead_overlay_config.dart';
 
 /// Scrollable PageOrder view for non-identity continuous layouts (Spec 0011).
 class ContinuousPageOrderView extends StatefulWidget {
@@ -44,6 +45,7 @@ class ContinuousPageOrderView extends StatefulWidget {
     this.pageBorderColor = const Color(0xFF424242),
     this.initialPage = 1,
     this.measureMap,
+    this.playhead,
   });
 
   final String filePath;
@@ -76,6 +78,7 @@ class ContinuousPageOrderView extends StatefulWidget {
   final int initialPage;
 
   final MeasureMapOverlayConfig? measureMap;
+  final PlayheadOverlayConfig? playhead;
 
   @override
   State<ContinuousPageOrderView> createState() =>
@@ -412,6 +415,7 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
             pageBorderColor: widget.pageBorderColor,
             transformationController: _transformFor(index),
             measureMap: widget.measureMap,
+            playhead: widget.playhead,
             panEnabled: !widget.drawEnabled &&
                 !(widget.measureMap?.editEnabled ?? false),
             scaleEnabled: !widget.drawEnabled &&

@@ -38,6 +38,8 @@ void main() {
                   annotationsVisible: true,
                   exporting: false,
                   metronomeRunning: false,
+                  playbackControlsVisible: false,
+                  measureMapReady: true,
                   stagePreset: StagePresetDirection.play,
                 ),
               ),

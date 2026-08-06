@@ -150,30 +150,38 @@ class _GoToMeasureDialogState extends State<_GoToMeasureDialog> {
 }
 
 /// Tempo / time-signature edit + scope (Spec 0058 G3 #14).
+///
+/// [startsAtBeat] is 0-based (web); UI edits 1-based "Starts at beat".
 class MeasureMetaEditResult {
   const MeasureMetaEditResult({
     required this.timeSignature,
     required this.tempo,
     required this.scope,
     this.nextN,
+    this.startsAtBeat,
   });
 
   final String timeSignature;
   final double tempo;
   final MeasureMetaScope scope;
   final int? nextN;
+
+  /// 0-based; null means leave unchanged.
+  final int? startsAtBeat;
 }
 
 Future<MeasureMetaEditResult?> showMeasureMetaDialog({
   required BuildContext context,
   required String initialTimeSignature,
   required double initialTempo,
+  int initialStartsAtBeat = 0,
 }) {
   return showDialog<MeasureMetaEditResult>(
     context: context,
     builder: (ctx) => _MeasureMetaDialog(
       initialTimeSignature: initialTimeSignature,
       initialTempo: initialTempo,
+      initialStartsAtBeat: initialStartsAtBeat,
     ),
   );
 }
@@ -182,10 +190,12 @@ class _MeasureMetaDialog extends StatefulWidget {
   const _MeasureMetaDialog({
     required this.initialTimeSignature,
     required this.initialTempo,
+    required this.initialStartsAtBeat,
   });
 
   final String initialTimeSignature;
   final double initialTempo;
+  final int initialStartsAtBeat;
 
   @override
   State<_MeasureMetaDialog> createState() => _MeasureMetaDialogState();
@@ -203,6 +213,10 @@ class _MeasureMetaDialogState extends State<_MeasureMetaDialog> {
   final TextEditingController _nextNController = TextEditingController(
     text: '4',
   );
+  late final TextEditingController _startsAtController = TextEditingController(
+    // Musicians count beats from 1; storage is 0-based.
+    text: '${widget.initialStartsAtBeat + 1}',
+  );
   MeasureMetaScope _scope = MeasureMetaScope.thisMeasure;
 
   @override
@@ -210,6 +224,7 @@ class _MeasureMetaDialogState extends State<_MeasureMetaDialog> {
     _tsController.dispose();
     _tempoController.dispose();
     _nextNController.dispose();
+    _startsAtController.dispose();
     super.dispose();
   }
 
@@ -221,6 +236,8 @@ class _MeasureMetaDialogState extends State<_MeasureMetaDialog> {
     if (_scope == MeasureMetaScope.nextN && (n == null || n < 1)) {
       return;
     }
+    final startsDisplay = int.tryParse(_startsAtController.text.trim()) ?? 1;
+    final startsAtBeat = (startsDisplay - 1).clamp(0, 31);
     Navigator.pop(
       context,
       MeasureMetaEditResult(
@@ -228,6 +245,7 @@ class _MeasureMetaDialogState extends State<_MeasureMetaDialog> {
         tempo: tempo,
         scope: _scope,
         nextN: n,
+        startsAtBeat: startsAtBeat,
       ),
     );
   }
@@ -255,6 +273,16 @@ class _MeasureMetaDialogState extends State<_MeasureMetaDialog> {
               ),
               decoration: InputDecoration(
                 labelText: l10n.measureMapTempoLabel,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextField(
+              controller: _startsAtController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(
+                labelText: l10n.measureMapStartsAtBeat,
+                helperText: l10n.measureMapStartsAtBeatHint,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),

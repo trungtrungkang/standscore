@@ -13,6 +13,7 @@ import 'package:stagescore/pdf/performance_page_slot.dart';
 import 'package:stagescore/pdf/shared_zoom.dart';
 import 'package:stagescore/pdf/zoom_toggle.dart';
 import 'package:stagescore/l10n/gen/app_localizations.dart';
+import 'package:stagescore/sync_map/playhead_overlay_config.dart';
 
 /// ScorePDF-style single-page slider over [PageOrder] (Specs 0004 / 0011).
 class SinglePageSlider extends StatefulWidget {
@@ -46,6 +47,7 @@ class SinglePageSlider extends StatefulWidget {
     this.onDocumentReady,
     this.initialPage = 1,
     this.measureMap,
+    this.playhead,
   });
 
   final String filePath;
@@ -81,6 +83,7 @@ class SinglePageSlider extends StatefulWidget {
   final int initialPage;
 
   final MeasureMapOverlayConfig? measureMap;
+  final PlayheadOverlayConfig? playhead;
 
   @override
   State<SinglePageSlider> createState() => _SinglePageSliderState();
@@ -312,8 +315,12 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final scrollable =
-        widget.allowUserScroll && !widget.drawEnabled && !_currentZoomed;
+    // Mirror ContinuousPageOrderView: MeasureMap edit locks page swipes the
+    // same way Draw does (Spec 0058 vs PageTurn / PageView arena).
+    final scrollable = widget.allowUserScroll &&
+        !widget.drawEnabled &&
+        !(widget.measureMap?.editEnabled ?? false) &&
+        !_currentZoomed;
 
     return PageView.builder(
       controller: _pageController,
@@ -365,6 +372,7 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
               !(widget.measureMap?.editEnabled ?? false) &&
               !widget.zoomLocked,
           measureMap: widget.measureMap,
+          playhead: widget.playhead,
         );
       },
     );

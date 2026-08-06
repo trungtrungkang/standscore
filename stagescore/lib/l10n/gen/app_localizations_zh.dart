@@ -377,7 +377,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scoreMenuMetronome => '节拍器…';
 
   @override
+  String get scoreMenuShowPlaybackControls => 'Show Playback controls';
+
+  @override
+  String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
+
+  @override
+  String get scoreMenuPlaybackMapFirst => 'Map measures first';
+
+  @override
   String get scoreMenuPageTurnSettings => 'Page turn 设置';
+
+  @override
+  String get playbackControlsPlay => 'Play';
+
+  @override
+  String get playbackControlsPause => 'Pause';
+
+  @override
+  String get playbackControlsStop => 'Stop';
+
+  @override
+  String playbackControlsCountInBadge(int count) {
+    return 'Count-in $count';
+  }
+
+  @override
+  String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';
 
   @override
   String scoreMenuLayoutValueBoth(String stored, String resolved) {
@@ -1057,6 +1086,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get metronomeSheetShowBeatsHint => '播放时在 Score 上闪烁提示节拍';
+
+  @override
+  String get metronomeSheetCountIn => 'Count-in';
+
+  @override
+  String get metronomeSheetCountInHint =>
+      'Click measures before Play from the start (not after Pause)';
+
+  @override
+  String get metronomeSheetCountInNone => 'Off';
+
+  @override
+  String get metronomeSheetCountInOne => '1';
+
+  @override
+  String get metronomeSheetCountInTwo => '2';
 
   @override
   String metronomeSheetVolume(int percent) {
@@ -1763,6 +1808,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get measureMapEditMeta => '速度与拍号…';
 
   @override
+  String get measureMapStartsAtBeat => 'Starts at beat';
+
+  @override
+  String get measureMapStartsAtBeatHint =>
+      '1 = full measure; higher skips early beats (pickup on a wide box)';
+
+  @override
   String get measureMapClearAll => '清除 MeasureMap…';
 }
 
@@ -2139,7 +2191,36 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get scoreMenuMetronome => '節拍器…';
 
   @override
+  String get scoreMenuShowPlaybackControls => 'Show Playback controls';
+
+  @override
+  String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
+
+  @override
+  String get scoreMenuPlaybackMapFirst => 'Map measures first';
+
+  @override
   String get scoreMenuPageTurnSettings => '翻頁設定';
+
+  @override
+  String get playbackControlsPlay => 'Play';
+
+  @override
+  String get playbackControlsPause => 'Pause';
+
+  @override
+  String get playbackControlsStop => 'Stop';
+
+  @override
+  String playbackControlsCountInBadge(int count) {
+    return 'Count-in $count';
+  }
+
+  @override
+  String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';
 
   @override
   String scoreMenuLayoutValueBoth(String stored, String resolved) {
@@ -2819,6 +2900,22 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get metronomeSheetShowBeatsHint => '播放時在樂譜上閃爍拍點';
+
+  @override
+  String get metronomeSheetCountIn => 'Count-in';
+
+  @override
+  String get metronomeSheetCountInHint =>
+      'Click measures before Play from the start (not after Pause)';
+
+  @override
+  String get metronomeSheetCountInNone => 'Off';
+
+  @override
+  String get metronomeSheetCountInOne => '1';
+
+  @override
+  String get metronomeSheetCountInTwo => '2';
 
   @override
   String metronomeSheetVolume(int percent) {
@@ -3523,6 +3620,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get measureMapEditMeta => '速度與拍號…';
+
+  @override
+  String get measureMapStartsAtBeat => 'Starts at beat';
+
+  @override
+  String get measureMapStartsAtBeatHint =>
+      '1 = full measure; higher skips early beats (pickup on a wide box)';
 
   @override
   String get measureMapClearAll => '清除 MeasureMap…';

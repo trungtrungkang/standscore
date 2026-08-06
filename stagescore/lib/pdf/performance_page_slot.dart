@@ -10,7 +10,9 @@ import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
 import 'package:stagescore/pdf/page_measure_map_overlay.dart';
+import 'package:stagescore/pdf/page_playhead_overlay.dart';
 import 'package:stagescore/pdf/pdf_surface.dart';
+import 'package:stagescore/sync_map/playhead_overlay_config.dart';
 
 /// Renders one PageOrder slot: PDF page or blank (Spec 0011).
 class PerformancePageSlot extends StatelessWidget {
@@ -40,6 +42,7 @@ class PerformancePageSlot extends StatelessWidget {
     this.pageBorderWidth = 2.0,
     this.pageBorderColor = const Color(0xFF424242),
     this.measureMap,
+    this.playhead,
   });
 
   final PdfDocument document;
@@ -72,6 +75,9 @@ class PerformancePageSlot extends StatelessWidget {
 
   /// Optional MeasureMap overlay (Spec 0058).
   final MeasureMapOverlayConfig? measureMap;
+
+  /// Optional SyncMap playhead overlay (Spec 0059).
+  final PlayheadOverlayConfig? playhead;
 
   /// Drawn above page pixels — PdfPageView [decoration] sits under the image
   /// and is fully covered, so borders there are invisible.
@@ -183,6 +189,12 @@ class PerformancePageSlot extends StatelessWidget {
                             pageRect: pageRect,
                             page: page,
                             config: measureMap!,
+                          ),
+                        if (playhead != null)
+                          PagePlayheadOverlay(
+                            pageRect: pageRect,
+                            page: page,
+                            config: playhead!,
                           ),
                         ?_pageBorderOverlay(),
                       ],

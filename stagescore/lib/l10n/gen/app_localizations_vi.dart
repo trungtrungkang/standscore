@@ -383,7 +383,36 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scoreMenuMetronome => 'Metronome…';
 
   @override
+  String get scoreMenuShowPlaybackControls => 'Hiện Playback controls';
+
+  @override
+  String get scoreMenuHidePlaybackControls => 'Ẩn Playback controls';
+
+  @override
+  String get scoreMenuPlaybackMapFirst => 'Map measures trước';
+
+  @override
   String get scoreMenuPageTurnSettings => 'Cài đặt lật trang';
+
+  @override
+  String get playbackControlsPlay => 'Play';
+
+  @override
+  String get playbackControlsPause => 'Pause';
+
+  @override
+  String get playbackControlsStop => 'Stop';
+
+  @override
+  String playbackControlsCountInBadge(int count) {
+    return 'Count-in $count';
+  }
+
+  @override
+  String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get playbackMapLostSnackbar => 'MeasureMap đã đổi — đã dừng phát';
 
   @override
   String scoreMenuLayoutValueBoth(String stored, String resolved) {
@@ -1081,6 +1110,22 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get metronomeSheetShowBeatsHint =>
       'Nháy phách trên Score khi đang phát';
+
+  @override
+  String get metronomeSheetCountIn => 'Count-in';
+
+  @override
+  String get metronomeSheetCountInHint =>
+      'Đếm trước vài ô khi Play từ đầu (không sau Pause)';
+
+  @override
+  String get metronomeSheetCountInNone => 'Tắt';
+
+  @override
+  String get metronomeSheetCountInOne => '1';
+
+  @override
+  String get metronomeSheetCountInTwo => '2';
 
   @override
   String metronomeSheetVolume(int percent) {
@@ -1793,6 +1838,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get measureMapEditMeta => 'Tempo & time signature…';
+
+  @override
+  String get measureMapStartsAtBeat => 'Starts at beat';
+
+  @override
+  String get measureMapStartsAtBeatHint =>
+      '1 = đủ ô; số lớn hơn bỏ phách đầu (pickup trên ô rộng)';
 
   @override
   String get measureMapClearAll => 'Xoá MeasureMap…';

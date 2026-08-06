@@ -383,7 +383,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scoreMenuMetronome => 'Metronome…';
 
   @override
+  String get scoreMenuShowPlaybackControls => 'Show Playback controls';
+
+  @override
+  String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
+
+  @override
+  String get scoreMenuPlaybackMapFirst => 'Map measures first';
+
+  @override
   String get scoreMenuPageTurnSettings => 'Page turn settings';
+
+  @override
+  String get playbackControlsPlay => 'Play';
+
+  @override
+  String get playbackControlsPause => 'Pause';
+
+  @override
+  String get playbackControlsStop => 'Stop';
+
+  @override
+  String playbackControlsCountInBadge(int count) {
+    return 'Count-in $count';
+  }
+
+  @override
+  String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';
 
   @override
   String scoreMenuLayoutValueBoth(String stored, String resolved) {
@@ -1080,6 +1109,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get metronomeSheetShowBeatsHint =>
       'Flash the beat on the score while it plays';
+
+  @override
+  String get metronomeSheetCountIn => 'Count-in';
+
+  @override
+  String get metronomeSheetCountInHint =>
+      'Click measures before Play from the start (not after Pause)';
+
+  @override
+  String get metronomeSheetCountInNone => 'Off';
+
+  @override
+  String get metronomeSheetCountInOne => '1';
+
+  @override
+  String get metronomeSheetCountInTwo => '2';
 
   @override
   String metronomeSheetVolume(int percent) {
@@ -1792,6 +1837,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get measureMapEditMeta => 'Tempo & time signature…';
+
+  @override
+  String get measureMapStartsAtBeat => 'Starts at beat';
+
+  @override
+  String get measureMapStartsAtBeatHint =>
+      '1 = full measure; higher skips early beats (pickup on a wide box)';
 
   @override
   String get measureMapClearAll => 'Clear MeasureMap…';

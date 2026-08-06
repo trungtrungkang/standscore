@@ -478,5 +478,28 @@
   "measureMapDeleteSystem": "Xoá system",
   "measureMapDeleteMeasure": "Xoá ô nhịp",
   "measureMapEditMeta": "Tempo & time signature…",
-  "measureMapClearAll": "Xoá MeasureMap…"
+  "measureMapClearAll": "Xoá MeasureMap…",
+  "scoreMenuShowPlaybackControls": "Hiện Playback controls",
+  "scoreMenuHidePlaybackControls": "Ẩn Playback controls",
+  "scoreMenuPlaybackMapFirst": "Map measures trước",
+  "playbackControlsPlay": "Play",
+  "playbackControlsPause": "Pause",
+  "playbackControlsStop": "Stop",
+  "playbackControlsCountInBadge": "Count-in {count}",
+  "@playbackControlsCountInBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackMapLostSnackbar": "MeasureMap đã đổi — đã dừng phát",
+  "metronomeSheetCountIn": "Count-in",
+  "metronomeSheetCountInHint": "Đếm trước vài ô khi Play từ đầu (không sau Pause)",
+  "metronomeSheetCountInNone": "Tắt",
+  "metronomeSheetCountInOne": "1",
+  "metronomeSheetCountInTwo": "2",
+  "measureMapStartsAtBeat": "Starts at beat",
+  "measureMapStartsAtBeatHint": "1 = đủ ô; số lớn hơn bỏ phách đầu (pickup trên ô rộng)",
+  "playbackControlsCountInLabel": "Count-in"
 }

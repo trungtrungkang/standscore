@@ -478,5 +478,28 @@
   "measureMapDeleteSystem": "System 삭제",
   "measureMapDeleteMeasure": "마디 삭제",
   "measureMapEditMeta": "템포 및 박자…",
-  "measureMapClearAll": "MeasureMap 지우기…"
+  "measureMapClearAll": "MeasureMap 지우기…",
+  "scoreMenuShowPlaybackControls": "Show Playback controls",
+  "scoreMenuHidePlaybackControls": "Hide Playback controls",
+  "scoreMenuPlaybackMapFirst": "Map measures first",
+  "playbackControlsPlay": "Play",
+  "playbackControlsPause": "Pause",
+  "playbackControlsStop": "Stop",
+  "playbackControlsCountInBadge": "Count-in {count}",
+  "@playbackControlsCountInBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackMapLostSnackbar": "MeasureMap changed — playback stopped",
+  "metronomeSheetCountIn": "Count-in",
+  "metronomeSheetCountInHint": "Click measures before Play from the start (not after Pause)",
+  "metronomeSheetCountInNone": "Off",
+  "metronomeSheetCountInOne": "1",
+  "metronomeSheetCountInTwo": "2",
+  "measureMapStartsAtBeat": "Starts at beat",
+  "measureMapStartsAtBeatHint": "1 = full measure; higher skips early beats (pickup on a wide box)",
+  "playbackControlsCountInLabel": "Count-in"
 }

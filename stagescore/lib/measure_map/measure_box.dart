@@ -89,6 +89,7 @@ class MeasureBox {
     this.timeSignature,
     this.tempo,
     this.beatSplits = const [],
+    this.startsAtBeat = 0,
   });
 
   final String id;
@@ -124,6 +125,11 @@ class MeasureBox {
   /// Web wire format is N−1 boundaries between beats.
   final List<double> beatSplits;
 
+  /// 0-based beat index where audible music starts (Spec 0059 Option B).
+  ///
+  /// `0` = full measure from the written downbeat. Stored only when &gt; 0.
+  final int startsAtBeat;
+
   MeasureBox copyWith({
     String? id,
     int? pageNumber,
@@ -136,6 +142,7 @@ class MeasureBox {
     String? timeSignature,
     double? tempo,
     List<double>? beatSplits,
+    int? startsAtBeat,
     bool clearTimeSignature = false,
     bool clearTempo = false,
   }) {
@@ -153,6 +160,7 @@ class MeasureBox {
           : (timeSignature ?? this.timeSignature),
       tempo: clearTempo ? null : (tempo ?? this.tempo),
       beatSplits: beatSplits ?? this.beatSplits,
+      startsAtBeat: startsAtBeat ?? this.startsAtBeat,
     );
   }
 
@@ -177,6 +185,7 @@ class MeasureBox {
     if (timeSignature != null) 'timeSignature': timeSignature,
     if (tempo != null) 'tempo': tempo,
     if (beatSplits.isNotEmpty) 'beatSplits': beatSplits,
+    if (startsAtBeat > 0) 'startsAtBeat': startsAtBeat,
   };
 
   factory MeasureBox.fromJson(Map<String, dynamic> json) {
@@ -198,6 +207,7 @@ class MeasureBox {
       timeSignature: json['timeSignature'] as String?,
       tempo: (json['tempo'] as num?)?.toDouble(),
       beatSplits: raw,
+      startsAtBeat: (json['startsAtBeat'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -217,6 +227,7 @@ class MeasureBox {
       'height': height,
       if (timeSignature != null) 'timeSignature': timeSignature,
       if (webSplits.isNotEmpty) 'beatSplits': webSplits,
+      if (startsAtBeat > 0) 'startsAtBeat': startsAtBeat,
     };
   }
 
@@ -242,6 +253,7 @@ class MeasureBox {
       height: (json['height'] as num).toDouble(),
       timeSignature: ts,
       beatSplits: splits,
+      startsAtBeat: (json['startsAtBeat'] as num?)?.toInt() ?? 0,
     );
   }
 }

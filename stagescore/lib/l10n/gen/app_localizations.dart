@@ -795,11 +795,65 @@ abstract class AppLocalizations {
   /// **'Metronome…'**
   String get scoreMenuMetronome;
 
+  /// No description provided for @scoreMenuShowPlaybackControls.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Playback controls'**
+  String get scoreMenuShowPlaybackControls;
+
+  /// No description provided for @scoreMenuHidePlaybackControls.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide Playback controls'**
+  String get scoreMenuHidePlaybackControls;
+
+  /// No description provided for @scoreMenuPlaybackMapFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Map measures first'**
+  String get scoreMenuPlaybackMapFirst;
+
   /// No description provided for @scoreMenuPageTurnSettings.
   ///
   /// In en, this message translates to:
   /// **'Page turn settings'**
   String get scoreMenuPageTurnSettings;
+
+  /// No description provided for @playbackControlsPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get playbackControlsPlay;
+
+  /// No description provided for @playbackControlsPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get playbackControlsPause;
+
+  /// No description provided for @playbackControlsStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get playbackControlsStop;
+
+  /// No description provided for @playbackControlsCountInBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Count-in {count}'**
+  String playbackControlsCountInBadge(int count);
+
+  /// No description provided for @playbackControlsCountInLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Count-in'**
+  String get playbackControlsCountInLabel;
+
+  /// No description provided for @playbackMapLostSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'MeasureMap changed — playback stopped'**
+  String get playbackMapLostSnackbar;
 
   /// No description provided for @scoreMenuLayoutValueBoth.
   ///
@@ -1894,6 +1948,36 @@ abstract class AppLocalizations {
   /// **'Flash the beat on the score while it plays'**
   String get metronomeSheetShowBeatsHint;
 
+  /// No description provided for @metronomeSheetCountIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Count-in'**
+  String get metronomeSheetCountIn;
+
+  /// No description provided for @metronomeSheetCountInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Click measures before Play from the start (not after Pause)'**
+  String get metronomeSheetCountInHint;
+
+  /// No description provided for @metronomeSheetCountInNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get metronomeSheetCountInNone;
+
+  /// No description provided for @metronomeSheetCountInOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1'**
+  String get metronomeSheetCountInOne;
+
+  /// No description provided for @metronomeSheetCountInTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'2'**
+  String get metronomeSheetCountInTwo;
+
   /// No description provided for @metronomeSheetVolume.
   ///
   /// In en, this message translates to:
@@ -2953,6 +3037,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tempo & time signature…'**
   String get measureMapEditMeta;
+
+  /// No description provided for @measureMapStartsAtBeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts at beat'**
+  String get measureMapStartsAtBeat;
+
+  /// No description provided for @measureMapStartsAtBeatHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1 = full measure; higher skips early beats (pickup on a wide box)'**
+  String get measureMapStartsAtBeatHint;
 
   /// No description provided for @measureMapClearAll.
   ///

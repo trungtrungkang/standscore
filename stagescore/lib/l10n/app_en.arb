@@ -193,7 +193,23 @@
   "scoreMenuPlaying": "Playing",
   "scoreMenuMetronomeRunning": "Metronome (running)…",
   "scoreMenuMetronome": "Metronome…",
+  "scoreMenuShowPlaybackControls": "Show Playback controls",
+  "scoreMenuHidePlaybackControls": "Hide Playback controls",
+  "scoreMenuPlaybackMapFirst": "Map measures first",
   "scoreMenuPageTurnSettings": "Page turn settings",
+  "playbackControlsPlay": "Play",
+  "playbackControlsPause": "Pause",
+  "playbackControlsStop": "Stop",
+  "playbackControlsCountInBadge": "Count-in {count}",
+  "@playbackControlsCountInBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackControlsCountInLabel": "Count-in",
+  "playbackMapLostSnackbar": "MeasureMap changed — playback stopped",
   "scoreMenuLayoutValueBoth": "{stored} · {resolved}",
   "@scoreMenuLayoutValueBoth": {
     "placeholders": {
@@ -619,6 +635,11 @@
   "metronomeSheetMute": "Mute",
   "metronomeSheetShowBeats": "Show beats",
   "metronomeSheetShowBeatsHint": "Flash the beat on the score while it plays",
+  "metronomeSheetCountIn": "Count-in",
+  "metronomeSheetCountInHint": "Click measures before Play from the start (not after Pause)",
+  "metronomeSheetCountInNone": "Off",
+  "metronomeSheetCountInOne": "1",
+  "metronomeSheetCountInTwo": "2",
   "metronomeSheetVolume": "Volume: {percent}%",
   "@metronomeSheetVolume": {
     "placeholders": {
@@ -1164,5 +1185,7 @@
   "measureMapDeleteSystem": "Delete system",
   "measureMapDeleteMeasure": "Delete measure",
   "measureMapEditMeta": "Tempo & time signature…",
+  "measureMapStartsAtBeat": "Starts at beat",
+  "measureMapStartsAtBeatHint": "1 = full measure; higher skips early beats (pickup on a wide box)",
   "measureMapClearAll": "Clear MeasureMap…"
 }

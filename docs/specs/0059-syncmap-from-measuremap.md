@@ -8,10 +8,10 @@
 - **Depends on Specs:** **0058** (`done`, **rev. 2** — `beatSplits` = N mốc nội tại; không phải nguồn thời lượng), **0030** (metronome — click đi theo cùng clock khi Play), **0035** / **0043** (ScoreMenu IA — lối show/hide Playback controls), 0052 / 0055 (lớp phủ theo `scoreId`)
 - **Tier:** **M** — seam thời gian + UI playback trên PdfMode; không SDK mới, không quyền mới, không byte rời máy, không di trú library. **G3 + G4**; không cần ADR mới; **Security Review không cần** (ADR 0019: cần cho SongPack và thu âm, không cần slice 1–7)
 - **G3:** **accepted 2026-08-07** — Orchestrator chấp nhận **mọi** khuyến nghị (câu 1–11b + 2b–2g). Câu 2 đã chốt sớm hơn cùng ngày (Playback controls + playhead).
-- **G4:** chưa
+- **G4:** chưa (build xong 2026-08-07 — chờ manual)
 - **Security Review:** không cần
 
-> **Được build:** G3 accepted. Chat build riêng (ADR 0016) — đo baseline test đầu chat. Slice 6 ADR 0019; **0060** = lật trang rảnh tay tinh (playhead đã thuộc 0059).
+> **Build xong.** Baseline **596** → **621** test; `flutter analyze` sạch. Slice 6 ADR 0019; **0060** = lật trang rảnh tay tinh (playhead đã thuộc 0059).
 
 ---
 
@@ -51,7 +51,7 @@ Nhạc công map bài → mở PdfMode → bật **Playback controls** (ScoreMen
 ### B. Persistence
 
 - **G3 câu 1:** hàm thuần `MeasureMap → SyncMap` — **không** file `sync_maps/…` trong 0059.
-- Pref **show/hide Playback controls** (mặc định **ẩn**) và pref **count-in ô (0/1/2)** (mặc định **1**) — persist.
+- Pref **show/hide Playback controls** (mặc định **ẩn**) và pref **count-in ô (0/1/2)** (mặc định **0** — G4) — persist.
 
 ### C. Phép dịch web (ADR 0019 quyết định 6)
 
@@ -66,7 +66,7 @@ Round-trip subset `TimemapEntry`: `timeMs`, `measure`, `beatTimestamps`, `timeSi
   - **Stop** — dừng và đưa vị trí về đầu timeline (ô `measureNumber` nhỏ nhất trên map).
 - **Điều kiện:** controls / Play khi MeasureMap **không rỗng**; map rỗng → mục menu **disabled** + lý do (G3 2d).
 - Clock PdfMode riêng cho timeline này (chưa Transport / `ClickLane` — **0062**). Click audible: tái sử dụng `MetronomeEngine` theo cùng clock khi Play (volume/mute/showBeats vẫn prefs 0030). **Không** invent engine audio thứ hai.
-- **Count-in (đếm trước):** pref **0 / 1 / 2** ô; mặc định **1**; chỉnh ở **metronome sheet** (controls có thể hiện badge). Tempo + meter = ô đích bắt đầu. Trong count-in: playhead **chưa** chạy trên bài. **Chỉ** sau Stop / lần Play đầu từ đầu bài — **không** count-in sau Pause→Play (G3 11 / 11b).
+- **Count-in (đếm trước):** pref **0 / 1 / 2** ô; mặc định **0** (G4; G3 từng là 1); chỉnh ở **metronome sheet**. Badge chỉ hiện **trong lúc đếm**, bên phải transport; dạng `measures.beat` 1-based (`2.4`…`2.1` rồi `1.4`…`1.1` với 4/4; pref `1` bắt đầu `1.4`). Hết count-in → ẩn. Tempo + meter = ô đích bắt đầu. Trong count-in: playhead **chưa** chạy trên bài. **Chỉ** sau Stop / lần Play đầu từ đầu bài — **không** count-in sau Pause→Play (G3 11 / 11b).
 - Đổi MeasureMap lúc đang Play: tính lại SyncMap; tiếp tục từ `measure`+phách gần nhất nếu còn; nếu mất → Stop + snackbar.
 
 ### D2. Nhịp lấy đà (pickup / anacrusis)
@@ -176,7 +176,7 @@ Orchestrator: chấp nhận **mọi** khuyến nghị như bảng dưới.
 | 8 | **Play bắt đầu từ đâu?** | Stop/lần đầu: ô `measureNumber` nhỏ nhất (+ `startsAtBeat`); Pause→Play: tiếp tục |
 | 9 | **All-pages gốc?** | Theo MeasureMap của `scoreId` đang mở |
 | 10 | **Baseline test?** | Đo đầu chat build; kỳ vọng ~**595+** (sau 0058) |
-| 11 | **Count-in?** | Pref **0 / 1 / 2** ô; mặc định **1**; chỉnh ở **metronome sheet**; controls có thể badge; tempo/meter = ô đích |
+| 11 | **Count-in?** | Pref **0 / 1 / 2** ô; mặc định **0** (G4; G3 là 1); chỉnh ở **metronome sheet**; pref `0` ẩn badge; tempo/meter = ô đích |
 | 11b | **Count-in sau Pause?** | **Không** — chỉ sau Stop / Play đầu từ đầu bài |
 
 ---

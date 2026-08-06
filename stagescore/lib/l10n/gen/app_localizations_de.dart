@@ -385,7 +385,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get scoreMenuMetronome => 'Metronom…';
 
   @override
+  String get scoreMenuShowPlaybackControls => 'Show Playback controls';
+
+  @override
+  String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
+
+  @override
+  String get scoreMenuPlaybackMapFirst => 'Map measures first';
+
+  @override
   String get scoreMenuPageTurnSettings => 'Seitenwechsel-Einstellungen';
+
+  @override
+  String get playbackControlsPlay => 'Play';
+
+  @override
+  String get playbackControlsPause => 'Pause';
+
+  @override
+  String get playbackControlsStop => 'Stop';
+
+  @override
+  String playbackControlsCountInBadge(int count) {
+    return 'Count-in $count';
+  }
+
+  @override
+  String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';
 
   @override
   String scoreMenuLayoutValueBoth(String stored, String resolved) {
@@ -1086,6 +1115,22 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get metronomeSheetShowBeatsHint =>
       'Blinkt im Takt auf dem Stück, während es läuft';
+
+  @override
+  String get metronomeSheetCountIn => 'Count-in';
+
+  @override
+  String get metronomeSheetCountInHint =>
+      'Click measures before Play from the start (not after Pause)';
+
+  @override
+  String get metronomeSheetCountInNone => 'Off';
+
+  @override
+  String get metronomeSheetCountInOne => '1';
+
+  @override
+  String get metronomeSheetCountInTwo => '2';
 
   @override
   String metronomeSheetVolume(int percent) {
@@ -1800,6 +1845,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get measureMapEditMeta => 'Tempo & Taktart…';
+
+  @override
+  String get measureMapStartsAtBeat => 'Starts at beat';
+
+  @override
+  String get measureMapStartsAtBeatHint =>
+      '1 = full measure; higher skips early beats (pickup on a wide box)';
 
   @override
   String get measureMapClearAll => 'MeasureMap löschen…';

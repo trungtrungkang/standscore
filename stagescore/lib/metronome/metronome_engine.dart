@@ -52,6 +52,11 @@ class MetronomeEngine extends ChangeNotifier {
   AudioSource? _loopSource;
   SoundHandle? _loopHandle;
 
+  /// Preloaded one-shot clicks for SyncMap Play (Spec 0059) — avoids
+  /// synthesize + loadMem on every beat, which made the playhead lead the ear.
+  AudioSource? _accentClickSource;
+  AudioSource? _tickClickSource;
+
   MetronomePrefs get prefs => _prefs;
   bool get isRunning => _running;
   int get beatInBar => _beatInBar;
@@ -268,10 +273,68 @@ class MetronomeEngine extends ChangeNotifier {
     }
   }
 
+  /// Load one-shot click buffers once (safe to call before SyncMap Play).
+  Future<void> ensureClicksReady() async {
+    if (_prefs.muted || _prefs.volume <= 0.001) return;
+    await _ensureClickSources();
+  }
+
+  Future<void> _ensureClickSources() async {
+    await _ensureReady();
+    if (_accentClickSource != null && _tickClickSource != null) return;
+    try {
+      await (await AudioSession.instance).setActive(true);
+    } catch (_) {}
+    // Same pitch pair as [synthesizeMetronomeLoopWav].
+    _accentClickSource ??= await SoLoud.instance.loadMem(
+      'stagescore_metro_click_accent.wav',
+      synthesizeClickWav(frequencyHz: 880, durationMs: 30, amplitude: 0.9),
+      mode: LoadMode.memory,
+    );
+    _tickClickSource ??= await SoLoud.instance.loadMem(
+      'stagescore_metro_click_tick.wav',
+      synthesizeClickWav(frequencyHz: 1200, durationMs: 30, amplitude: 0.55),
+      mode: LoadMode.memory,
+    );
+  }
+
+  Future<void> _disposeClickSources() async {
+    final accent = _accentClickSource;
+    final tick = _tickClickSource;
+    _accentClickSource = null;
+    _tickClickSource = null;
+    final soloud = SoLoud.instance;
+    if (!soloud.isInitialized) return;
+    for (final source in [accent, tick]) {
+      if (source == null) continue;
+      try {
+        await soloud.disposeSource(source);
+      } catch (_) {}
+    }
+  }
+
+  /// One-shot click for SyncMap-driven Play (Spec 0059).
+  ///
+  /// Reuses cached SoLoud sources + this engine's volume/mute prefs.
+  /// Does not start the looping metronome.
+  Future<void> playClick({required bool accent}) async {
+    if (_prefs.muted || _prefs.volume <= 0.001) return;
+    await _ensureClickSources();
+    final source = accent ? _accentClickSource : _tickClickSource;
+    if (source == null) return;
+    try {
+      SoLoud.instance.play(
+        source,
+        volume: _prefs.volume.clamp(0.0, 1.0),
+      );
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
     _beatPoll?.cancel();
     unawaited(_stopLoopAudio());
+    unawaited(_disposeClickSources());
     unawaited(WakelockPlus.disable());
     _ready = false;
     super.dispose();
