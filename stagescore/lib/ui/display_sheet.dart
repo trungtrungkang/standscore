@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/display_prefs.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/sheet_body.dart';
@@ -62,8 +63,9 @@ class _DisplaySheetState extends State<_DisplaySheet> {
     final picked = await showDialog<Color>(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context);
         return AlertDialog(
-          title: const Text('Border color'),
+          title: Text(l10n.displaySheetBorderColorTitle),
           content: StatefulBuilder(
             builder: (context, setLocal) {
               final color = hsv.toColor();
@@ -81,19 +83,21 @@ class _DisplaySheetState extends State<_DisplaySheet> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Hue ${hsv.hue.round()}'),
+                  Text(l10n.displaySheetHue(hsv.hue.round())),
                   Slider(
                     value: hsv.hue,
                     max: 360,
                     onChanged: (v) => setLocal(() => hsv = hsv.withHue(v)),
                   ),
-                  Text('Sat ${(hsv.saturation * 100).round()}%'),
+                  Text(
+                    l10n.displaySheetSaturation((hsv.saturation * 100).round()),
+                  ),
                   Slider(
                     value: hsv.saturation,
                     onChanged: (v) =>
                         setLocal(() => hsv = hsv.withSaturation(v)),
                   ),
-                  Text('Val ${(hsv.value * 100).round()}%'),
+                  Text(l10n.displaySheetColorValue((hsv.value * 100).round())),
                   Slider(
                     value: hsv.value,
                     onChanged: (v) => setLocal(() => hsv = hsv.withValue(v)),
@@ -105,11 +109,11 @@ class _DisplaySheetState extends State<_DisplaySheet> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(l10n.actionCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, hsv.toColor()),
-              child: const Text('OK'),
+              child: Text(l10n.actionOk),
             ),
           ],
         );
@@ -123,13 +127,14 @@ class _DisplaySheetState extends State<_DisplaySheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return SheetBody(
       children: [
-        Text('Display', style: theme.textTheme.titleMedium),
+        Text(l10n.displaySheetTitle, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Performance mode'),
+          title: Text(l10n.displaySheetPerformanceMode),
           subtitle: Text(widget.performanceModeHint),
           isThreeLine: true,
           value: _prefs.performanceMode,
@@ -138,13 +143,13 @@ class _DisplaySheetState extends State<_DisplaySheet> {
         const Divider(),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Page border'),
+          title: Text(l10n.displaySheetPageBorder),
           value: _prefs.borderEnabled,
           onChanged: (v) => _update(_prefs.copyWith(borderEnabled: v)),
         ),
         if (_prefs.borderEnabled) ...[
           Text(
-            'Thickness ${_prefs.borderWidth.toStringAsFixed(1)}',
+            l10n.displaySheetThickness(_prefs.borderWidth.toStringAsFixed(1)),
             style: theme.textTheme.bodySmall,
           ),
           Slider(
@@ -153,7 +158,7 @@ class _DisplaySheetState extends State<_DisplaySheet> {
             max: DisplayPrefs.maxBorderWidth,
             onChanged: (v) => _update(_prefs.copyWith(borderWidth: v)),
           ),
-          Text('Color', style: theme.textTheme.bodySmall),
+          Text(l10n.displaySheetColorLabel, style: theme.textTheme.bodySmall),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: 10,
@@ -169,7 +174,7 @@ class _DisplaySheetState extends State<_DisplaySheet> {
                 ),
               ActionChip(
                 avatar: const Icon(Icons.palette_outlined, size: 18),
-                label: const Text('Custom'),
+                label: Text(l10n.displaySheetCustomChip),
                 onPressed: _pickCustomColor,
               ),
             ],
@@ -179,15 +184,15 @@ class _DisplaySheetState extends State<_DisplaySheet> {
         const Divider(),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Show status bar'),
-          subtitle: const Text('Clock and system icons at the top'),
+          title: Text(l10n.displaySheetShowStatusBar),
+          subtitle: Text(l10n.displaySheetShowStatusBarHint),
           value: _prefs.showStatusBar,
           onChanged: (v) => _update(_prefs.copyWith(showStatusBar: v)),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Avoid notches and bars'),
-          subtitle: const Text('Keep the Score clear of cutouts'),
+          title: Text(l10n.displaySheetAvoidNotches),
+          subtitle: Text(l10n.displaySheetAvoidNotchesHint),
           value: _prefs.avoidNotches,
           onChanged: (v) => _update(_prefs.copyWith(avoidNotches: v)),
         ),

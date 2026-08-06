@@ -24,6 +24,9 @@ dependencies:
   wakelock_plus: ^1.5.2
   package_info_plus: ^9.0.1
   url_launcher: ^6.3.2
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -50,6 +53,7 @@ flutter_native_splash:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/sample_score.pdf
     - assets/brand/stagescore-logo.png

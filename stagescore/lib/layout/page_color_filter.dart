@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 
 /// PdfMode page color filter (Spec 0025 / P2.9).
 enum PageColorFilterMode { off, sepia, green, invert }
 
 extension PageColorFilterModeX on PageColorFilterMode {
-  String get label => switch (this) {
-    PageColorFilterMode.off => 'Off',
-    PageColorFilterMode.sepia => 'Sepia',
-    PageColorFilterMode.green => 'Green',
-    PageColorFilterMode.invert => 'Invert',
+  String label(AppLocalizations l10n) => switch (this) {
+    PageColorFilterMode.off => l10n.pageColorFilterOff,
+    PageColorFilterMode.sepia => l10n.pageColorFilterSepia,
+    PageColorFilterMode.green => l10n.pageColorFilterGreen,
+    PageColorFilterMode.invert => l10n.pageColorFilterInvert,
   };
 
   /// Null means no [ColorFiltered] wrapper.

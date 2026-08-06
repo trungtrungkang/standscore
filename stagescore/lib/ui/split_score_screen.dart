@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/outline_split.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score_library.dart';
@@ -35,7 +36,7 @@ class SplitScoreScreen extends StatefulWidget {
     this.thumbnails,
     this.proposals = const <OutlineSplitProposal>[],
     this.initialMarks = const <SplitMark>[],
-    this.appBarTitle = 'Split into pieces',
+    this.appBarTitle,
   });
 
   /// Name the default piece titles are built from — the book when splitting a
@@ -73,8 +74,9 @@ class SplitScoreScreen extends StatefulWidget {
   final List<SplitMark> initialMarks;
 
   /// App bar title: "Split into pieces" for a first cut, "Edit pieces" when
-  /// [initialMarks] seeds the grid from an existing split.
-  final String appBarTitle;
+  /// [initialMarks] seeds the grid from an existing split. Null uses the
+  /// default "Split into pieces" localization.
+  final String? appBarTitle;
 
   @override
   State<SplitScoreScreen> createState() => _SplitScoreScreenState();
@@ -165,9 +167,10 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
 
   Future<void> _rename(int page) async {
     if (!_titles.containsKey(page)) return;
+    final l10n = AppLocalizations.of(context);
     final typed = await promptForTitle(
       context: context,
-      title: 'Name this piece',
+      title: l10n.splitScoreScreenRenameTitle,
       initial: _titleFor(page),
     );
     if (typed == null || !mounted) return;
@@ -195,11 +198,12 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final pieces = _titles.length;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.appBarTitle),
+        title: Text(widget.appBarTitle ?? l10n.splitScoreScreenTitle),
         actions: [
           TextButton(
             // The fixed mark is not a mark anyone put there, so it does not
@@ -207,16 +211,16 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
             onPressed: pieces > (widget.fixedFirstTitle == null ? 0 : 1)
                 ? _clearMarks
                 : null,
-            child: const Text('Clear marks'),
+            child: Text(l10n.splitScoreScreenClearMarks),
           ),
           TextButton(
             onPressed: _canSave ? _save : null,
-            child: const Text('Save'),
+            child: Text(l10n.actionSave),
           ),
         ],
       ),
       body: !widget.pages.isValid
-          ? const Center(child: Text('This PDF has no pages to split.'))
+          ? Center(child: Text(l10n.splitScoreScreenNoPages))
           : PdfPageGrid(
               pdf: widget.pdf,
               firstPage: widget.pages.firstPage,
@@ -245,17 +249,12 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                switch (pieces) {
-                  0 => 'No pieces yet',
-                  1 => '1 piece',
-                  _ => '$pieces pieces',
-                },
+                l10n.splitScoreScreenPieceCount(pieces),
                 style: theme.textTheme.titleSmall,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Tap a page where a new piece begins. '
-                'Long-press a marked page to name it.',
+                l10n.splitScoreScreenHint,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -263,9 +262,13 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
               if (_frontMatterCount > 0)
                 Text(
                   _frontMatterCount == 1
-                      ? 'Page ${widget.pages.firstPage} is not in any piece.'
-                      : 'Pages ${widget.pages.firstPage}–${_starts.first - 1} '
-                            'are not in any piece.',
+                      ? l10n.splitScoreScreenFrontMatterPage(
+                          widget.pages.firstPage,
+                        )
+                      : l10n.splitScoreScreenFrontMatterPages(
+                          widget.pages.firstPage,
+                          _starts.first - 1,
+                        ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -275,9 +278,7 @@ class _SplitScoreScreenState extends State<SplitScoreScreen> {
                 OutlinedButton(
                   onPressed: _useProposals,
                   child: Text(
-                    _proposals.length == 1
-                        ? 'Use contents list (1 entry)'
-                        : 'Use contents list (${_proposals.length} entries)',
+                    l10n.splitScoreScreenUseContents(_proposals.length),
                   ),
                 ),
               ],

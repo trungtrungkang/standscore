@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/layout_fit.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
@@ -25,6 +26,7 @@ Future<void> showLayoutSettingsSheet({
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
+          final l10n = AppLocalizations.of(context);
           void update(PdfLayoutPrefs next) {
             current = next;
             setModalState(() {});
@@ -57,14 +59,14 @@ Future<void> showLayoutSettingsSheet({
                           child: Padding(
                             padding: const EdgeInsets.only(left: AppSpacing.sm),
                             child: Text(
-                              'Layout',
+                              l10n.layoutSettingsSheetTitle,
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                           ),
                         ),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Done'),
+                          child: Text(l10n.actionDone),
                         ),
                       ],
                     ),
@@ -77,6 +79,7 @@ Future<void> showLayoutSettingsSheet({
                       children: [
                         for (final mode in pickableLayoutModes)
                           _LayoutRow(
+                            l10n: l10n,
                             mode: mode,
                             selected: current.mode == mode,
                             resolvedForAuto: mode == PdfLayoutMode.auto
@@ -94,9 +97,11 @@ Future<void> showLayoutSettingsSheet({
                           const Divider(height: 24),
                           ListTile(
                             leading: const Icon(Icons.swipe_outlined),
-                            title: const Text('Page turn settings'),
-                            subtitle: const Text(
-                              'Tap zones, swipe, pedal, animation',
+                            title: Text(
+                              l10n.layoutSettingsSheetPageTurnSettings,
+                            ),
+                            subtitle: Text(
+                              l10n.layoutSettingsSheetPageTurnSettingsSubtitle,
                             ),
                             onTap: () {
                               Navigator.of(context).pop();
@@ -119,6 +124,7 @@ Future<void> showLayoutSettingsSheet({
 
 class _LayoutRow extends StatelessWidget {
   const _LayoutRow({
+    required this.l10n,
     required this.mode,
     required this.selected,
     required this.resolvedForAuto,
@@ -128,6 +134,7 @@ class _LayoutRow extends StatelessWidget {
     required this.onSelected,
   });
 
+  final AppLocalizations l10n;
   final PdfLayoutMode mode;
   final bool selected;
 
@@ -148,10 +155,10 @@ class _LayoutRow extends StatelessWidget {
     // One line, because the sheet has six rows and 0035 does not let a
     // settings surface grow into something that reads as a pushed screen.
     final subtitle = fallsBack
-        ? 'One page on this screen — rotate for a spread'
+        ? l10n.layoutSettingsSheetFallsBack
         : [
-            if (auto != null) 'Now: ${auto.label}',
-            navigationHintFor(drawnMode, pageTurnPrefs),
+            if (auto != null) l10n.layoutSettingsSheetNow(auto.label(l10n)),
+            navigationHintFor(l10n, drawnMode, pageTurnPrefs),
           ].join(' · ');
 
     return ListTile(
@@ -163,12 +170,12 @@ class _LayoutRow extends StatelessWidget {
       ),
       title: Row(
         children: [
-          Flexible(child: Text(mode.label)),
+          Flexible(child: Text(mode.label(l10n))),
           if (recommended) ...[
             const SizedBox(width: AppSpacing.sm),
             // Advice, never a lock: every mode stays pickable on every screen.
             Text(
-              'fits this screen',
+              l10n.layoutSettingsSheetFitsScreen,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.primary,
               ),

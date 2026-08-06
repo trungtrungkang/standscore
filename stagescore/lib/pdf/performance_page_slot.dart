@@ -4,6 +4,7 @@ import 'package:stagescore/annotation/annotation_store.dart';
 import 'package:stagescore/annotation/draw_style.dart';
 import 'package:stagescore/annotation/draw_tool.dart';
 import 'package:stagescore/annotation/stamp.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
@@ -82,6 +83,7 @@ class PerformancePageSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // The gutter sits outside the filtered subtree, so tint it here.
     final bg = pdfSurfaceColor(context, filter: colorFilterMode);
     if (entry.isBlank) {
@@ -98,7 +100,7 @@ class PerformancePageSlot extends StatelessWidget {
                 ),
                 Center(
                   child: Text(
-                    'Blank',
+                    l10n.performancePageSlotBlank,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Theme.of(context).colorScheme.outline,
                     ),
@@ -116,7 +118,9 @@ class PerformancePageSlot extends StatelessWidget {
     if (source < 1 || source > document.pages.length) {
       return ColoredBox(
         color: bg,
-        child: Center(child: Text('Missing PDF page $source')),
+        child: Center(
+          child: Text(l10n.performancePageSlotMissingPage(source)),
+        ),
       );
     }
     final page = document.pages[source - 1];

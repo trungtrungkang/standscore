@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/label/label.dart';
 import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/theme/app_tokens.dart';
@@ -24,6 +25,7 @@ Future<void> showLibraryFilterSheet({
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
+          final l10n = AppLocalizations.of(context);
           void apply() => onChanged({...localSelected}, localMode);
 
           return SafeArea(
@@ -42,7 +44,7 @@ Future<void> showLibraryFilterSheet({
                     children: [
                       Expanded(
                         child: Text(
-                          'Filter',
+                          l10n.libraryFilterSheetTitle,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
@@ -53,28 +55,28 @@ Future<void> showLibraryFilterSheet({
                           apply();
                           setModalState(() {});
                         },
-                        child: const Text('Clear'),
+                        child: Text(l10n.actionClear),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Done'),
+                        child: Text(l10n.actionDone),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   SegmentedButton<LabelFilterMode>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: LabelFilterMode.any,
-                        label: Text('Any'),
+                        label: Text(l10n.libraryFilterSheetModeAny),
                       ),
                       ButtonSegment(
                         value: LabelFilterMode.all,
-                        label: Text('All'),
+                        label: Text(l10n.libraryFilterSheetModeAll),
                       ),
                       ButtonSegment(
                         value: LabelFilterMode.untagged,
-                        label: Text('Untagged'),
+                        label: Text(l10n.libraryFilterSheetModeUntagged),
                       ),
                     ],
                     selected: {localMode},
@@ -87,12 +89,12 @@ Future<void> showLibraryFilterSheet({
                   const SizedBox(height: AppSpacing.lg),
                   if (localMode == LabelFilterMode.untagged)
                     Text(
-                      'Showing Scores with no Labels.',
+                      l10n.libraryFilterSheetUntaggedHint,
                       style: Theme.of(context).textTheme.bodyMedium,
                     )
                   else if (store.labels.isEmpty)
                     Text(
-                      'No Labels yet. Create one from a Score’s Label menu.',
+                      l10n.libraryFilterSheetEmptyLabels,
                       style: Theme.of(context).textTheme.bodyMedium,
                     )
                   else

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:pdfrx/pdfrx.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
 import 'package:stagescore/library/score_origin.dart';
@@ -37,6 +38,7 @@ class SetlistSession {
 
   /// Resolve Setlist membership against the library. Skips missing Scores.
   static Future<({SetlistSession? session, int skipped})> resolve({
+    required AppLocalizations l10n,
     required Setlist setlist,
     required ScoreLibrary library,
   }) async {
@@ -61,6 +63,7 @@ class SetlistSession {
           score: score,
           filePath: file.path,
           originLine: scoreOriginLine(
+            l10n: l10n,
             extent: score.pageExtent,
             documentName: document?.displayName,
             documentPageCount: document?.pageCount,

@@ -1,11 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/display_prefs.dart';
 import 'package:stagescore/layout/page_scale.dart';
 import 'package:stagescore/layout/stage_preset.dart';
 
+import 'support/test_l10n.dart';
+
 void main() {
   const practising = DisplayPrefs(performanceMode: false, showStatusBar: true);
   const playing = DisplayPrefs(performanceMode: true, showStatusBar: false);
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await testL10n();
+  });
 
   group('directionFor', () {
     test('offers the way back only from the exact play shape', () {
@@ -133,6 +141,7 @@ void main() {
     test('names what moved, for the Undo snackbar', () {
       expect(
         StagePreset.changes(
+          l10n: l10n,
           beforeDisplay: practising,
           beforeScale: const PageScalePrefs(),
           afterDisplay: StagePreset.applyToDisplay(
@@ -151,6 +160,7 @@ void main() {
     test('is empty when the preset was a no-op', () {
       expect(
         StagePreset.changes(
+          l10n: l10n,
           beforeDisplay: playing,
           beforeScale: const PageScalePrefs(locked: true),
           afterDisplay: playing,

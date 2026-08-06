@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stagescore/annotation/draw_style.dart';
 import 'package:stagescore/annotation/draw_tool.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/draw_toolbar.dart';
 
 /// Draw-mode controls belong on one bar, not split between the AppBar and the
@@ -17,6 +18,8 @@ Future<void> pumpToolbar(
 }) {
   return tester.pumpWidget(
     MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: DrawToolbar(
           tool: tool,

@@ -11,6 +11,7 @@ import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
 import 'package:stagescore/pdf/shared_zoom.dart';
 import 'package:stagescore/pdf/zoom_toggle.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 
 /// ScorePDF-style single-page slider over [PageOrder] (Specs 0004 / 0011).
 class SinglePageSlider extends StatefulWidget {
@@ -298,8 +299,9 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_error != null) {
-      return Center(child: Text('Failed to open PDF:\n$_error'));
+      return Center(child: Text(l10n.singlePageSliderOpenFailed(_error!)));
     }
     final doc = _document;
     if (doc == null) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/bookmark/bookmark.dart';
 import 'package:stagescore/bookmark/bookmark_store.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/title_prompt.dart';
 
@@ -58,10 +59,11 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
   }
 
   Future<void> _add() async {
+    final l10n = AppLocalizations.of(context);
     final title = await promptForTitle(
       context: context,
-      title: 'Add bookmark',
-      initial: 'Page ${widget.currentPage}',
+      title: l10n.bookmarksSheetAddTitle,
+      initial: l10n.bookmarksSheetPageLabel(widget.currentPage),
     );
     if (title == null) return;
     await widget.store.add(title: title, pageNumber: widget.currentPage);
@@ -69,9 +71,10 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
   }
 
   Future<void> _rename(Bookmark bookmark) async {
+    final l10n = AppLocalizations.of(context);
     final title = await promptForTitle(
       context: context,
-      title: 'Rename bookmark',
+      title: l10n.bookmarksSheetRenameTitle,
       initial: bookmark.title,
     );
     if (title == null) return;
@@ -86,6 +89,7 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bottom = MediaQuery.viewInsetsOf(context).bottom;
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
@@ -106,14 +110,14 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Bookmarks',
+                        l10n.bookmarksSheetTitle,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
                     TextButton.icon(
                       onPressed: _add,
                       icon: const Icon(Icons.bookmark_add_outlined),
-                      label: const Text('Add'),
+                      label: Text(l10n.actionAdd),
                     ),
                   ],
                 ),
@@ -124,7 +128,7 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
                     : _items.isEmpty
                     ? Center(
                         child: Text(
-                          'No bookmarks yet',
+                          l10n.bookmarksSheetEmpty,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       )
@@ -135,7 +139,11 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
                           return ListTile(
                             leading: const Icon(Icons.bookmark_outline),
                             title: Text(bookmark.title),
-                            subtitle: Text('Page ${bookmark.pageNumber}'),
+                            subtitle: Text(
+                              l10n.bookmarksSheetPageLabel(
+                                bookmark.pageNumber,
+                              ),
+                            ),
                             onTap: () {
                               Navigator.of(context).pop();
                               widget.onJumpToPage(bookmark.pageNumber);
@@ -148,14 +156,14 @@ class _BookmarksSheetBodyState extends State<_BookmarksSheetBody> {
                                   _delete(bookmark);
                                 }
                               },
-                              itemBuilder: (context) => const [
+                              itemBuilder: (context) => [
                                 PopupMenuItem(
                                   value: 'rename',
-                                  child: Text('Rename'),
+                                  child: Text(l10n.actionRename),
                                 ),
                                 PopupMenuItem(
                                   value: 'delete',
-                                  child: Text('Delete'),
+                                  child: Text(l10n.actionDelete),
                                 ),
                               ],
                             ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/relative_day.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
@@ -55,6 +56,7 @@ class PiecesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(root.title, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -66,8 +68,11 @@ class PiecesScreen extends StatelessWidget {
                   onEditPieces();
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'edit_pieces', child: Text('Edit pieces…')),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit_pieces',
+                child: Text(l10n.piecesScreenEditPieces),
+              ),
             ],
           ),
         ],
@@ -85,7 +90,7 @@ class PiecesScreen extends StatelessWidget {
           const Divider(height: 1),
           Expanded(
             child: pieces.isEmpty
-                ? const Center(child: Text('No pieces yet'))
+                ? Center(child: Text(l10n.piecesScreenNoPieces))
                 : ListView.separated(
                     itemCount: pieces.length,
                     separatorBuilder: (_, _) => const Divider(height: 1),
@@ -94,6 +99,7 @@ class PiecesScreen extends StatelessWidget {
                       final pdf = library.absoluteFileOrNull(score);
                       final document = library.documentFor(score);
                       final origin = scoreOriginLine(
+                        l10n: l10n,
                         extent: score.pageExtent,
                         documentName: null,
                         documentPageCount: document?.pageCount,
@@ -124,6 +130,7 @@ class PiecesScreen extends StatelessWidget {
                                 _recencyLine(
                                   score,
                                   library,
+                                  l10n,
                                   includePageCount: origin == null,
                                 ),
                                 style: theme.textTheme.bodySmall?.copyWith(
@@ -162,30 +169,30 @@ class PiecesScreen extends StatelessWidget {
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'rename',
-                              child: Text('Rename…'),
+                              child: Text(l10n.piecesScreenRename),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'labels',
-                              child: Text('Labels…'),
+                              child: Text(l10n.piecesScreenLabels),
                             ),
                             if (canSplit(score))
-                              const PopupMenuItem(
+                              PopupMenuItem(
                                 value: 'split',
-                                child: Text('Split into pieces…'),
+                                child: Text(l10n.piecesScreenSplitIntoPieces),
                               ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'pages',
-                              child: Text('Pages…'),
+                              child: Text(l10n.piecesScreenPages),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'replace',
-                              child: Text('Replace PDF…'),
+                              child: Text(l10n.piecesScreenReplacePdf),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'delete',
-                              child: Text('Delete…'),
+                              child: Text(l10n.piecesScreenDelete),
                             ),
                           ],
                         ),
@@ -202,16 +209,17 @@ class PiecesScreen extends StatelessWidget {
   /// nothing else on the row already says so) how long it is.
   static String _recencyLine(
     Score score,
-    ScoreLibrary library, {
+    ScoreLibrary library,
+    AppLocalizations l10n, {
     required bool includePageCount,
   }) {
     final when = score.lastOpenedAt == null
-        ? 'Added ${relativeDay(score.createdAt)}'
-        : 'Opened ${relativeDay(score.lastOpenedAt!)}';
+        ? l10n.piecesScreenAdded(relativeDay(l10n, score.createdAt))
+        : l10n.piecesScreenOpened(relativeDay(l10n, score.lastOpenedAt!));
     if (!includePageCount) return when;
     final pages = library.pageCountOf(score);
     if (pages == null) return when;
-    return '$when · $pages ${pages == 1 ? 'page' : 'pages'}';
+    return l10n.piecesScreenRecencyWithPages(when, pages);
   }
 }
 
@@ -238,12 +246,12 @@ class _BookSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final pdf = library.absoluteFileOrNull(root);
     final totalPages = library.pageCountOf(root);
     final summary = [
-      '$pieceCount ${pieceCount == 1 ? 'piece' : 'pieces'}',
-      if (totalPages != null)
-        '$totalPages ${totalPages == 1 ? 'page' : 'pages'}',
+      l10n.piecesScreenPieceCount(pieceCount),
+      if (totalPages != null) l10n.piecesScreenPageCount(totalPages),
     ].join(' · ');
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -285,7 +293,7 @@ class _BookSummary extends StatelessWidget {
                   ),
                   onPressed: onOpenFullScore,
                   icon: const Icon(Icons.menu_book_outlined, size: 18),
-                  label: const Text('Open full score'),
+                  label: Text(l10n.piecesScreenOpenFullScore),
                 ),
               ],
             ),

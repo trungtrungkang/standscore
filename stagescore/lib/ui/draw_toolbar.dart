@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:stagescore/annotation/draw_style.dart';
 import 'package:stagescore/annotation/draw_tool.dart';
 import 'package:stagescore/annotation/stamp.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 
 /// Callback when the user arms a stamp for the next tap (Spec 0019).
@@ -65,6 +66,7 @@ class DrawToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final activeColor = style.colorFor(_inkTool);
+    final l10n = AppLocalizations.of(context);
 
     return Material(
       color: scheme.primary.withValues(alpha: 0.10),
@@ -78,7 +80,7 @@ class DrawToolbar extends StatelessWidget {
             Builder(
               builder: (buttonContext) {
                 return _LabeledAction(
-                  label: 'Color',
+                  label: l10n.drawToolbarColorLabel,
                   onTap: DrawToolPresets.isInkTool(tool)
                       ? () => _pickColor(buttonContext)
                       : null,
@@ -97,7 +99,7 @@ class DrawToolbar extends StatelessWidget {
             Builder(
               builder: (buttonContext) {
                 return _LabeledAction(
-                  label: _label(tool),
+                  label: _label(l10n, tool),
                   onTap: () => _pickTool(buttonContext),
                   child: Icon(_icon(tool), size: 22),
                 );
@@ -107,7 +109,7 @@ class DrawToolbar extends StatelessWidget {
               builder: (buttonContext) {
                 final ink = DrawToolPresets.isInkTool(tool);
                 return _LabeledAction(
-                  label: 'Size',
+                  label: l10n.drawToolbarSizeLabel,
                   onTap: ink ? () => _pickWidth(buttonContext) : null,
                   child: _WidthDot(
                     step: ink ? _widthStepIndex : 1,
@@ -120,23 +122,25 @@ class DrawToolbar extends StatelessWidget {
             ),
             const Spacer(),
             _LabeledAction(
-              label: 'Undo',
+              label: l10n.drawToolbarUndo,
               onTap: onUndo,
               child: const Icon(Icons.undo, size: 22),
             ),
             _LabeledAction(
-              label: 'Redo',
+              label: l10n.drawToolbarRedo,
               onTap: onRedo,
               child: const Icon(Icons.redo, size: 22),
             ),
             if (onDeleteStamp != null)
               _LabeledAction(
-                label: 'Delete',
+                label: l10n.drawToolbarDelete,
                 onTap: onDeleteStamp,
                 child: const Icon(Icons.delete_outline, size: 22),
               ),
             _LabeledAction(
-              label: pendingStamp == null ? 'Stamp' : 'Place',
+              label: pendingStamp == null
+                  ? l10n.drawToolbarStamp
+                  : l10n.drawToolbarPlace,
               onTap: onStampArmed == null ? null : () => _pickStamp(context),
               child: Icon(
                 pendingStamp == null
@@ -147,7 +151,7 @@ class DrawToolbar extends StatelessWidget {
               ),
             ),
             _LabeledAction(
-              label: 'More',
+              label: l10n.drawToolbarMore,
               onTap: () => _openOptions(context),
               child: const Icon(Icons.more_horiz, size: 22),
             ),
@@ -176,7 +180,10 @@ class DrawToolbar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Stamps', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  AppLocalizations.of(context).stampSheetTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: AppSpacing.md),
                 Wrap(
                   spacing: 8,
@@ -184,7 +191,7 @@ class DrawToolbar extends StatelessWidget {
                   children: [
                     for (final k in StampKind.values)
                       ActionChip(
-                        label: Text(k.label),
+                        label: Text(k.label(AppLocalizations.of(context))),
                         onPressed: () => Navigator.pop(context, k),
                       ),
                   ],
@@ -203,23 +210,26 @@ class DrawToolbar extends StatelessWidget {
       text = await showDialog<String>(
         context: context,
         builder: (context) {
+          final l10n = AppLocalizations.of(context);
           return AlertDialog(
-            title: const Text('Text stamp'),
+            title: Text(l10n.drawToolbarTextStampTitle),
             content: TextField(
               controller: controller,
               autofocus: true,
               maxLength: 24,
-              decoration: const InputDecoration(hintText: 'Short label'),
+              decoration: InputDecoration(
+                hintText: l10n.drawToolbarTextStampHint,
+              ),
               onSubmitted: (v) => Navigator.pop(context, v.trim()),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(l10n.actionCancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, controller.text.trim()),
-                child: const Text('Place'),
+                child: Text(l10n.drawToolbarPlace),
               ),
             ],
           );
@@ -315,6 +325,7 @@ class DrawToolbar extends StatelessWidget {
   }
 
   Future<void> _pickTool(BuildContext buttonContext) async {
+    final l10n = AppLocalizations.of(buttonContext);
     final selected = await showMenu<DrawTool>(
       context: buttonContext,
       position: _anchorRect(buttonContext),
@@ -326,7 +337,7 @@ class DrawToolbar extends StatelessWidget {
               children: [
                 Icon(_icon(t), size: 20),
                 const SizedBox(width: AppSpacing.md),
-                Expanded(child: Text(_label(t))),
+                Expanded(child: Text(_label(l10n, t))),
                 if (tool == t) const Icon(Icons.check, size: 18),
               ],
             ),
@@ -338,6 +349,7 @@ class DrawToolbar extends StatelessWidget {
   }
 
   Future<void> _pickWidth(BuildContext buttonContext) async {
+    final l10n = AppLocalizations.of(buttonContext);
     final steps = _widthSteps;
     final current = _widthStepIndex;
     final selected = await showMenu<int>(
@@ -351,7 +363,7 @@ class DrawToolbar extends StatelessWidget {
               children: [
                 _WidthDot(step: i),
                 const SizedBox(width: AppSpacing.md),
-                Expanded(child: Text(_widthLabel(i))),
+                Expanded(child: Text(_widthLabel(l10n, i))),
                 if (i == current) const Icon(Icons.check, size: 18),
               ],
             ),
@@ -378,6 +390,7 @@ class DrawToolbar extends StatelessWidget {
         final maxHeight = MediaQuery.sizeOf(context).height * 0.75;
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final l10n = AppLocalizations.of(context);
             final inkTool = localTool == DrawTool.marker
                 ? DrawTool.marker
                 : DrawTool.pen;
@@ -408,19 +421,19 @@ class DrawToolbar extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              'Draw options',
+                              l10n.drawToolbarDrawOptionsTitle,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('Done'),
+                            child: Text(l10n.actionDone),
                           ),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        'Tool',
+                        l10n.drawToolbarTool,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -431,7 +444,7 @@ class DrawToolbar extends StatelessWidget {
                           for (final t in DrawTool.values)
                             ChoiceChip(
                               avatar: Icon(_icon(t), size: 18),
-                              label: Text(_label(t)),
+                              label: Text(_label(l10n, t)),
                               selected: localTool == t,
                               showCheckmark: false,
                               onSelected: (_) {
@@ -444,7 +457,7 @@ class DrawToolbar extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        'Color',
+                        l10n.drawToolbarColorLabel,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -489,7 +502,7 @@ class DrawToolbar extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        'Width',
+                        l10n.drawToolbarWidth,
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -531,7 +544,7 @@ class DrawToolbar extends StatelessWidget {
                       const SizedBox(height: AppSpacing.sm),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Straight line'),
+                        title: Text(l10n.drawToolbarStraightLine),
                         value: localStyle.straightLine,
                         onChanged: (v) {
                           localStyle = localStyle.copyWith(straightLine: v);
@@ -557,18 +570,18 @@ class DrawToolbar extends StatelessWidget {
     DrawTool.eyedropper => Icons.colorize,
   };
 
-  static String _label(DrawTool tool) => switch (tool) {
-    DrawTool.pen => 'Pen',
-    DrawTool.marker => 'Marker',
-    DrawTool.eraser => 'Eraser',
-    DrawTool.eyedropper => 'Dropper',
+  static String _label(AppLocalizations l10n, DrawTool tool) => switch (tool) {
+    DrawTool.pen => l10n.drawToolPen,
+    DrawTool.marker => l10n.drawToolMarker,
+    DrawTool.eraser => l10n.drawToolEraser,
+    DrawTool.eyedropper => l10n.drawToolEyedropper,
   };
 }
 
-String _widthLabel(int step) => switch (step) {
-  0 => 'Thin',
-  1 => 'Medium',
-  _ => 'Thick',
+String _widthLabel(AppLocalizations l10n, int step) => switch (step) {
+  0 => l10n.drawWidthThin,
+  1 => l10n.drawWidthMedium,
+  _ => l10n.drawWidthThick,
 };
 
 /// The active stroke width, drawn at that width (Spec 0035).

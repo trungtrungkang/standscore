@@ -1,11 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/pageturn/gesture_map.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
 import 'package:stagescore/pageturn/page_turn_prefs_store.dart';
 
+import 'support/test_l10n.dart';
+
 void main() {
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await testL10n();
+  });
   group('gestureMapEdgeBand', () {
     test('resolves top and bottom with 6% bands', () {
       const h = 1000.0;
@@ -70,12 +78,13 @@ void main() {
 
   group('gestureMapRevealHint', () {
     test('names the default reveal inputs', () {
-      final hint = gestureMapRevealHint(const GestureMap());
+      final hint = gestureMapRevealHint(l10n, const GestureMap());
       expect(hint, contains('long-press or tap the top edge'));
     });
 
     test('names a single reveal input', () {
       final hint = gestureMapRevealHint(
+        l10n,
         const GestureMap(
           longPress: GestureMapAction.disabled,
           topEdge: GestureMapAction.disabled,

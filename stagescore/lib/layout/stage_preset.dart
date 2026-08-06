@@ -1,3 +1,4 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/display_prefs.dart';
 import 'package:stagescore/layout/page_scale.dart';
 
@@ -37,10 +38,11 @@ class StagePreset {
     return ready ? StagePresetDirection.practise : StagePresetDirection.play;
   }
 
-  static String labelFor(StagePresetDirection direction) => switch (direction) {
-    StagePresetDirection.play => 'Set up to play',
-    StagePresetDirection.practise => 'Set up to practise',
-  };
+  static String labelFor(AppLocalizations l10n, StagePresetDirection direction) =>
+      switch (direction) {
+        StagePresetDirection.play => l10n.stagePresetSetUpToPlay,
+        StagePresetDirection.practise => l10n.stagePresetSetUpToPractise,
+      };
 
   static DisplayPrefs applyToDisplay(
     DisplayPrefs display,
@@ -60,6 +62,7 @@ class StagePreset {
   /// What just changed, for the Undo snackbar — empty when the preset was a
   /// no-op, which is the case worth not bragging about.
   static List<String> changes({
+    required AppLocalizations l10n,
     required DisplayPrefs beforeDisplay,
     required PageScalePrefs beforeScale,
     required DisplayPrefs afterDisplay,
@@ -67,11 +70,15 @@ class StagePreset {
   }) {
     return [
       if (beforeDisplay.performanceMode != afterDisplay.performanceMode)
-        afterDisplay.performanceMode ? 'chrome hidden' : 'chrome shown',
+        afterDisplay.performanceMode
+            ? l10n.stagePresetChromeHidden
+            : l10n.stagePresetChromeShown,
       if (beforeDisplay.showStatusBar != afterDisplay.showStatusBar)
-        afterDisplay.showStatusBar ? 'status bar shown' : 'status bar hidden',
+        afterDisplay.showStatusBar
+            ? l10n.stagePresetStatusBarShown
+            : l10n.stagePresetStatusBarHidden,
       if (beforeScale.locked != afterScale.locked)
-        afterScale.locked ? 'scale kept' : 'pinch free',
+        afterScale.locked ? l10n.stagePresetScaleKept : l10n.stagePresetPinchFree,
     ];
   }
 }

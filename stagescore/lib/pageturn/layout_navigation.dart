@@ -1,3 +1,4 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
 
@@ -34,26 +35,33 @@ PageTurnPrefs resolvePageTurnPrefsForLayout(
 
 /// One line naming the gestures that turn a page in [mode], read off the
 /// prefs that will actually be in force there (Spec 0041).
-String navigationHintFor(PdfLayoutMode mode, PageTurnPrefs prefs) {
+String navigationHintFor(
+  AppLocalizations l10n,
+  PdfLayoutMode mode,
+  PageTurnPrefs prefs,
+) {
   final resolved = resolvePageTurnPrefsForLayout(prefs, mode);
-  final parts = <String>[?_tapHint(resolved.tapMode), ?_swipeHint(resolved)];
-  if (parts.isEmpty) return 'Pedal or the page bar';
+  final parts = <String>[
+    ?_tapHint(l10n, resolved.tapMode),
+    ?_swipeHint(l10n, resolved),
+  ];
+  if (parts.isEmpty) return l10n.layoutNavigationPedalOrPageBar;
   return parts.join(' · ');
 }
 
-String? _tapHint(PageTurnTapMode mode) => switch (mode) {
-  PageTurnTapMode.leftRight => 'tap left / right',
-  PageTurnTapMode.topBottom => 'tap top / bottom',
-  PageTurnTapMode.next => 'tap anywhere',
-  PageTurnTapMode.previous => 'tap anywhere to go back',
+String? _tapHint(AppLocalizations l10n, PageTurnTapMode mode) => switch (mode) {
+  PageTurnTapMode.leftRight => l10n.layoutNavigationTapLeftRight,
+  PageTurnTapMode.topBottom => l10n.layoutNavigationTapTopBottom,
+  PageTurnTapMode.next => l10n.layoutNavigationTapAnywhere,
+  PageTurnTapMode.previous => l10n.layoutNavigationTapAnywhereBack,
   PageTurnTapMode.disabled || PageTurnTapMode.matchLayout => null,
 };
 
-String? _swipeHint(PageTurnPrefs prefs) {
+String? _swipeHint(AppLocalizations l10n, PageTurnPrefs prefs) {
   final horizontal = prefs.swipeLeft || prefs.swipeRight;
   final vertical = prefs.swipeUp || prefs.swipeDown;
-  if (horizontal && vertical) return 'swipe';
-  if (horizontal) return 'swipe sideways';
-  if (vertical) return 'swipe up / down';
+  if (horizontal && vertical) return l10n.layoutNavigationSwipe;
+  if (horizontal) return l10n.layoutNavigationSwipeSideways;
+  if (vertical) return l10n.layoutNavigationSwipeUpDown;
   return null;
 }

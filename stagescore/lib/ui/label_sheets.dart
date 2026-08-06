@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 
@@ -20,6 +21,7 @@ Future<void> showScoreLabelsSheet({
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
+          final l10n = AppLocalizations.of(context);
           final assigned = store.labelsForScore(scoreId);
 
           Future<void> reload() async {
@@ -44,7 +46,7 @@ Future<void> showScoreLabelsSheet({
                     children: [
                       Expanded(
                         child: Text(
-                          'Labels · $scoreTitle',
+                          l10n.labelSheetsTitle(scoreTitle),
                           style: Theme.of(context).textTheme.titleMedium,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -61,11 +63,11 @@ Future<void> showScoreLabelsSheet({
                           );
                           await reload();
                         },
-                        child: const Text('Manage'),
+                        child: Text(l10n.labelSheetsManage),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Done'),
+                        child: Text(l10n.actionDone),
                       ),
                     ],
                   ),
@@ -83,7 +85,7 @@ Future<void> showScoreLabelsSheet({
                         await reload();
                       },
                       icon: const Icon(Icons.add),
-                      label: const Text('Create Label'),
+                      label: Text(l10n.labelSheetsCreateLabel),
                     )
                   else
                     ConstrainedBox(
@@ -112,7 +114,7 @@ Future<void> showScoreLabelsSheet({
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: const Icon(Icons.add),
-                            title: const Text('New Label'),
+                            title: Text(l10n.labelSheetsNewLabel),
                             onTap: () async {
                               final name = await _promptLabelName(context);
                               if (name == null) return;
@@ -149,6 +151,7 @@ Future<void> showManageLabelsSheet({
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
+          final l10n = AppLocalizations.of(context);
           Future<void> reload() async {
             onChanged();
             setModalState(() {});
@@ -170,7 +173,7 @@ Future<void> showManageLabelsSheet({
                     children: [
                       Expanded(
                         child: Text(
-                          'Manage Labels',
+                          l10n.labelSheetsManageTitle,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
@@ -181,18 +184,18 @@ Future<void> showManageLabelsSheet({
                           await store.create(name);
                           await reload();
                         },
-                        child: const Text('Add'),
+                        child: Text(l10n.actionAdd),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Done'),
+                        child: Text(l10n.actionDone),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   if (store.labels.isEmpty)
                     Text(
-                      'No Labels yet.',
+                      l10n.labelSheetsNoLabelsYet,
                       style: Theme.of(context).textTheme.bodyMedium,
                     )
                   else
@@ -214,8 +217,9 @@ Future<void> showManageLabelsSheet({
                             key: ValueKey(label.id),
                             title: Text(label.name),
                             subtitle: Text(
-                              '${store.usageCount(label.id)} score'
-                              '${store.usageCount(label.id) == 1 ? '' : 's'}',
+                              l10n.labelSheetsUsageCount(
+                                store.usageCount(label.id),
+                              ),
                             ),
                             leading: ReorderableDragStartListener(
                               index: index,
@@ -237,24 +241,28 @@ Future<void> showManageLabelsSheet({
                                     final ok = await showDialog<bool>(
                                       context: context,
                                       builder: (context) => AlertDialog(
-                                        title: const Text('Delete Label?'),
+                                        title: Text(l10n.labelSheetsDeleteTitle),
                                         content: Text(
                                           usage == 0
-                                              ? 'Delete “${label.name}”?'
-                                              : 'Delete “${label.name}”? '
-                                                    'It will be removed from $usage '
-                                                    'score${usage == 1 ? '' : 's'}.',
+                                              ? l10n.labelSheetsDeleteConfirm(
+                                                  label.name,
+                                                )
+                                              : l10n
+                                                    .labelSheetsDeleteConfirmWithUsage(
+                                                      label.name,
+                                                      usage,
+                                                    ),
                                         ),
                                         actions: [
                                           TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context, false),
-                                            child: const Text('Cancel'),
+                                            child: Text(l10n.actionCancel),
                                           ),
                                           FilledButton(
                                             onPressed: () =>
                                                 Navigator.pop(context, true),
-                                            child: const Text('Delete'),
+                                            child: Text(l10n.actionDelete),
                                           ),
                                         ],
                                       ),
@@ -264,14 +272,14 @@ Future<void> showManageLabelsSheet({
                                     await reload();
                                 }
                               },
-                              itemBuilder: (context) => const [
+                              itemBuilder: (context) => [
                                 PopupMenuItem(
                                   value: 'rename',
-                                  child: Text('Rename'),
+                                  child: Text(l10n.actionRename),
                                 ),
                                 PopupMenuItem(
                                   value: 'delete',
-                                  child: Text('Delete'),
+                                  child: Text(l10n.actionDelete),
                                 ),
                               ],
                             ),
@@ -330,21 +338,26 @@ class _LabelNameDialogState extends State<_LabelNameDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(widget.initial == null ? 'New Label' : 'Rename Label'),
+      title: Text(
+        widget.initial == null
+            ? l10n.labelSheetsNewLabel
+            : l10n.labelSheetsRenameLabelTitle,
+      ),
       content: TextField(
         controller: _controller,
         autofocus: true,
         maxLength: 40,
-        decoration: const InputDecoration(hintText: 'Label name'),
+        decoration: InputDecoration(hintText: l10n.labelSheetsNameHint),
         onSubmitted: (_) => _submit(),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Save')),
+        FilledButton(onPressed: _submit, child: Text(l10n.actionSave)),
       ],
     );
   }

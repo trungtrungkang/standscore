@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/pageturn/page_jump.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 
@@ -62,6 +63,7 @@ class PageNavBar extends StatelessWidget {
     if (pageCount < 1) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final max = pageCount.toDouble();
     final value = pageNumber.clamp(1, pageCount).toDouble();
 
@@ -88,7 +90,7 @@ class PageNavBar extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  tooltip: 'Previous page',
+                  tooltip: l10n.pageNavBarPreviousPageTooltip,
                   onPressed: canGoPrev
                       ? () {
                           if (onPrevPage != null) {
@@ -120,7 +122,7 @@ class PageNavBar extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
-                  tooltip: 'Next page',
+                  tooltip: l10n.pageNavBarNextPageTooltip,
                   onPressed: canGoNext
                       ? () {
                           if (onNextPage != null) {
@@ -149,11 +151,10 @@ class PageNavBar extends StatelessWidget {
     if (result == null || !context.mounted) return;
     onJumpToPage(result.page);
     if (result.wasClamped) {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Jumped to page ${result.page} (valid range 1–$pageCount).',
-          ),
+          content: Text(l10n.pageNavBarJumpedSnackbar(result.page, pageCount)),
         ),
       );
     }
@@ -203,22 +204,25 @@ class _JumpToPageDialogState extends State<_JumpToPageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Go to page'),
+      title: Text(l10n.pageNavBarGoToPageTitle),
       content: TextField(
         controller: _controller,
         autofocus: true,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(labelText: 'Page (1–${widget.pageCount})'),
+        decoration: InputDecoration(
+          labelText: l10n.pageNavBarPageFieldLabel(widget.pageCount),
+        ),
         onSubmitted: (_) => _submit(),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Go')),
+        FilledButton(onPressed: _submit, child: Text(l10n.actionGo)),
       ],
     );
   }

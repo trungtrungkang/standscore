@@ -1,11 +1,13 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
+
 /// Page scale scope for Spec 0031 / P2.14.
 enum PageScaleScope { fixed, perScore, perPage }
 
 extension PageScaleScopeX on PageScaleScope {
-  String get label => switch (this) {
-    PageScaleScope.fixed => 'Fixed',
-    PageScaleScope.perScore => 'Per Score',
-    PageScaleScope.perPage => 'Per Page',
+  String label(AppLocalizations l10n) => switch (this) {
+    PageScaleScope.fixed => l10n.pageScaleScopeFixed,
+    PageScaleScope.perScore => l10n.pageScaleScopePerScore,
+    PageScaleScope.perPage => l10n.pageScaleScopePerPage,
   };
 }
 

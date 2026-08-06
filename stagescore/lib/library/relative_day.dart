@@ -1,3 +1,5 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
+
 /// How long ago [value] was, in the words a musician would use (Spec 0040).
 ///
 /// Recency is the question the Library list is really asking — the default sort
@@ -7,14 +9,14 @@
 ///
 /// Days are counted between local calendar days, not by elapsed hours: 23:50
 /// yesterday is "yesterday" at 00:10 today, not "today".
-String relativeDay(DateTime value, {DateTime? now}) {
+String relativeDay(AppLocalizations l10n, DateTime value, {DateTime? now}) {
   final local = value.toLocal();
   final today = _startOfDay(now?.toLocal() ?? DateTime.now());
   final days = today.difference(_startOfDay(local)).inDays;
   return switch (days) {
-    <= 0 => 'today',
-    1 => 'yesterday',
-    < 7 => '$days days ago',
+    <= 0 => l10n.relativeDayToday,
+    1 => l10n.relativeDayYesterday,
+    < 7 => l10n.relativeDayDaysAgo(days),
     _ => formatDay(local),
   };
 }

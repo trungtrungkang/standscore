@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 
 /// Says what just changed and offers to put it back (Spec 0036).
 ///
@@ -9,10 +10,14 @@ import 'package:flutter/material.dart';
 /// zone lives once the chrome is hidden (0034). Undo here is a convenience
 /// with a short window, not a decision waiting on the musician, so it times
 /// out like any other message.
-SnackBar undoSnackBar({required String message, required VoidCallback onUndo}) {
+SnackBar undoSnackBar({
+  required AppLocalizations l10n,
+  required String message,
+  required VoidCallback onUndo,
+}) {
   return SnackBar(
     content: Text(message),
     persist: false,
-    action: SnackBarAction(label: 'Undo', onPressed: onUndo),
+    action: SnackBarAction(label: l10n.actionUndo, onPressed: onUndo),
   );
 }

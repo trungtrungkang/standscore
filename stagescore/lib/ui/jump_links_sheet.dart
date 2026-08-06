@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stagescore/jumplink/jump_link.dart';
 import 'package:stagescore/jumplink/jump_link_store.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/jump_link_edit_sheet.dart';
 
@@ -108,12 +109,11 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
           colorValue: draft.colorValue,
         );
         if (mounted) {
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Drag the button to a clear spot. Long-press to edit.',
-              ),
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: Text(l10n.jumpLinksSheetDragHint),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -145,6 +145,7 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
   }
 
   Widget _buildEditor() {
+    final l10n = AppLocalizations.of(context);
     final existing = _editing;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -159,7 +160,7 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
         originPage: existing?.originPage ?? widget.currentPage,
         existing: existing,
         leading: IconButton(
-          tooltip: 'Back',
+          tooltip: l10n.actionBack,
           onPressed: _backToList,
           icon: const Icon(Icons.arrow_back),
         ),
@@ -170,6 +171,7 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
   }
 
   Widget _buildList() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -184,14 +186,14 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
             children: [
               Expanded(
                 child: Text(
-                  'Jump Links',
+                  l10n.jumpLinksSheetTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
               TextButton.icon(
                 onPressed: widget.pageCount < 1 ? null : _openAdd,
                 icon: const Icon(Icons.add_link),
-                label: const Text('Add'),
+                label: Text(l10n.actionAdd),
               ),
             ],
           ),
@@ -202,7 +204,7 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
               : _items.isEmpty
               ? Center(
                   child: Text(
-                    'No jump links yet',
+                    l10n.jumpLinksSheetEmpty,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 )
@@ -216,9 +218,12 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
                         color: link.color,
                       ),
                       title: Text(
-                        'Page ${link.originPage} → ${link.destinationPage}',
+                        l10n.jumpLinksSheetRowTitle(
+                          link.originPage,
+                          link.destinationPage,
+                        ),
                       ),
-                      subtitle: const Text('Tap to go to link page'),
+                      subtitle: Text(l10n.jumpLinksSheetRowSubtitle),
                       onTap: () {
                         Navigator.of(context).pop();
                         widget.onJumpToPage(link.originPage);
@@ -231,9 +236,15 @@ class _JumpLinksSheetBodyState extends State<_JumpLinksSheetBody> {
                             _delete(link);
                           }
                         },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text(l10n.actionEdit),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(l10n.actionDelete),
+                          ),
                         ],
                       ),
                     );

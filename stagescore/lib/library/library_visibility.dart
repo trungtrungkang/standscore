@@ -1,3 +1,4 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/label/label.dart';
 import 'package:stagescore/label/label_filter.dart';
 import 'package:stagescore/library/library_search.dart';
@@ -79,11 +80,15 @@ List<Score> sortLibraryScores(
 }
 
 /// Subtitle crumb when a child appears outside its book (search / filter).
-String? childInRootSubtitle(Score score, List<Score> allScores) {
+String? childInRootSubtitle(
+  AppLocalizations l10n,
+  Score score,
+  List<Score> allScores,
+) {
   final parentId = score.parentId;
   if (parentId == null) return null;
   for (final s in allScores) {
-    if (s.id == parentId) return 'in ${s.title}';
+    if (s.id == parentId) return l10n.libraryVisibilityInBook(s.title);
   }
-  return 'in book';
+  return l10n.libraryVisibilityInBookFallback;
 }

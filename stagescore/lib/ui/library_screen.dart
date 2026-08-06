@@ -36,10 +36,13 @@ import 'package:stagescore/pdf/pdf_outline.dart';
 import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
 import 'package:stagescore/setlist/setlist_store.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_appearance.dart';
+import 'package:stagescore/theme/app_locale_pref.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/about_sheet.dart';
 import 'package:stagescore/ui/appearance_sheet.dart';
+import 'package:stagescore/ui/language_sheet.dart';
 import 'package:stagescore/ui/label_sheets.dart';
 import 'package:stagescore/ui/library_filter_sheet.dart';
 import 'package:stagescore/ui/page_extent_screen.dart';
@@ -62,6 +65,8 @@ class LibraryScreen extends StatefulWidget {
     this.thumbnails,
     this.appearance = AppAppearance.defaults,
     this.onAppearanceChanged,
+    this.localePref = AppLocalePref.system,
+    this.onLocaleChanged,
     this.onLibraryRestored,
     this.readBuild,
     this.launchUrl,
@@ -77,6 +82,9 @@ class LibraryScreen extends StatefulWidget {
 
   final AppAppearance appearance;
   final ValueChanged<AppAppearance>? onAppearanceChanged;
+
+  final AppLocalePref localePref;
+  final ValueChanged<AppLocalePref>? onLocaleChanged;
 
   /// Called after a successful ZIP restore so app chrome prefs can reload.
   final VoidCallback? onLibraryRestored;
@@ -271,10 +279,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       paths: paths,
     );
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
     if (imported.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('No PDF files to import')));
+      ).showSnackBar(SnackBar(content: Text(l10n.libraryScreenNoPdfFiles)));
       return;
     }
     setState(() => _tab = _LibraryTab.scores);
@@ -282,9 +291,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (!mounted) return;
     final n = imported.length;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(n == 1 ? 'Imported 1 score' : 'Imported $n scores'),
-      ),
+      SnackBar(content: Text(l10n.libraryScreenImportedScores(n))),
     );
     await _suggestSplits(imported);
   }
@@ -347,26 +354,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final root = _libraryRoot;
     if (root == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
 
     // Confirm before paying the cost of zipping the whole library — tapping
     // the menu item to explore should not start a multi-minute job (Spec 0050).
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Create backup?'),
-        content: const Text(
-          'This zips every Score, annotation, Label, Setlist, and preference '
-          'into one file you can share or save. A large library can take a '
-          'while.',
-        ),
+        title: Text(l10n.libraryScreenCreateBackupTitle),
+        content: Text(l10n.libraryScreenCreateBackupBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Create backup'),
+            child: Text(l10n.libraryScreenCreateBackupConfirm),
           ),
         ],
       ),
@@ -386,7 +390,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           .first;
       final zip = File(p.join(exports.path, 'StageScore-backup-$stamp.zip'));
       final cancelled = await _runBackupJob(
-        title: 'Creating backup…',
+        title: l10n.libraryScreenCreatingBackup,
         run: (onProgress, cancelToken) => const LibraryBackup().createBackup(
           libraryRoot: root,
           zipFile: zip,
@@ -399,25 +403,27 @@ class _LibraryScreenState extends State<LibraryScreen> {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(zip.path, mimeType: 'application/zip')],
-            subject: 'StageScore backup',
+            subject: l10n.libraryScreenBackupShareSubject,
           ),
         );
       } on MissingPluginException {
         if (!mounted) return;
         messenger.showSnackBar(
-          SnackBar(content: Text('Backup saved: ${zip.path}')),
+          SnackBar(content: Text(l10n.libraryScreenBackupSaved(zip.path))),
         );
         return;
       }
       if (!mounted) return;
       messenger.showSnackBar(
-        const SnackBar(content: Text('Backup ready — share sheet opened')),
+        SnackBar(content: Text(l10n.libraryScreenBackupReady)),
       );
     } on LibraryBackupCancelledException {
       // Dialog already closed; nothing to report.
     } catch (e) {
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text('Backup failed: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.libraryScreenBackupFailed(e.toString()))),
+      );
     }
   }
 
@@ -425,6 +431,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final root = _libraryRoot;
     if (root == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
 
     final picked = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -438,19 +445,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Restore backup?'),
-        content: const Text(
-          'This replaces all Scores, annotations, Labels, Setlists, '
-          'and app preferences with the backup. This cannot be undone.',
-        ),
+        title: Text(l10n.libraryScreenRestoreBackupTitle),
+        content: Text(l10n.libraryScreenRestoreBackupBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Replace all'),
+            child: Text(l10n.libraryScreenReplaceAll),
           ),
         ],
       ),
@@ -459,7 +463,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     try {
       final cancelled = await _runBackupJob(
-        title: 'Restoring backup…',
+        title: l10n.libraryScreenRestoringBackup,
         run: (onProgress, cancelToken) => const LibraryBackup().restoreBackup(
           zipFile: File(path),
           libraryRoot: root,
@@ -483,7 +487,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       widget.onLibraryRestored?.call();
       if (!mounted) return;
       messenger.showSnackBar(
-        const SnackBar(content: Text('Library restored from backup')),
+        SnackBar(content: Text(l10n.libraryScreenLibraryRestored)),
       );
     } on LibraryBackupCancelledException {
       // Dialog already closed; library left intact.
@@ -492,7 +496,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.libraryScreenRestoreFailed(e.toString()))),
+      );
     }
   }
 
@@ -522,6 +528,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           valueListenable: progress,
           builder: (context, value, _) {
             final percent = (value.fraction * 100).clamp(0, 100).round();
+            final l10n = AppLocalizations.of(context);
             return AlertDialog(
               title: Text(title),
               content: Column(
@@ -530,7 +537,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 children: [
                   LinearProgressIndicator(value: value.fraction),
                   const SizedBox(height: AppSpacing.md),
-                  Text('$percent%'),
+                  Text(l10n.libraryScreenPercentValue(percent)),
                   if (value.label != null) ...[
                     const SizedBox(height: AppSpacing.sm),
                     Text(
@@ -545,7 +552,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 if (value.canCancel)
                   TextButton(
                     onPressed: cancelToken.cancel,
-                    child: const Text('Cancel'),
+                    child: Text(l10n.actionCancel),
                   ),
               ],
             );
@@ -586,10 +593,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   /// What the filter is doing, in a sentence (Spec 0040).
   String _filterDescription() {
-    if (_filterMode == LabelFilterMode.untagged) return 'Untagged';
+    final l10n = AppLocalizations.of(context);
+    if (_filterMode == LabelFilterMode.untagged) {
+      return l10n.libraryScreenUntagged;
+    }
     final names = _activeFilterNames;
-    if (names.isEmpty) return 'this filter';
-    final joiner = _filterMode == LabelFilterMode.all ? ' and ' : ' or ';
+    if (names.isEmpty) return l10n.libraryScreenThisFilter;
+    final joiner = _filterMode == LabelFilterMode.all
+        ? ' ${l10n.libraryScreenAndConjunction} '
+        : ' ${l10n.commonOr} ';
     return names.join(joiner);
   }
 
@@ -603,11 +615,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
   /// The active Label filter, spelled out under the search field.
   Widget _buildFilterChips(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final untagged = _filterMode == LabelFilterMode.untagged;
     final store = _labelStore;
     final chips = <({_FilterChipKind kind, String? id, String name})>[
       if (untagged)
-        (kind: _FilterChipKind.untagged, id: null, name: 'Untagged')
+        (
+          kind: _FilterChipKind.untagged,
+          id: null,
+          name: l10n.libraryScreenUntagged,
+        )
       else
         for (final label in store?.labels ?? const <Label>[])
           if (_filterLabelIds.contains(label.id))
@@ -625,7 +642,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
           if (_filterMode == LabelFilterMode.all && chips.length > 1)
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: Text('All of', style: theme.textTheme.labelMedium),
+              child: Text(
+                l10n.libraryScreenAllOf,
+                style: theme.textTheme.labelMedium,
+              ),
             ),
           Expanded(
             child: Wrap(
@@ -638,13 +658,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     visualDensity: VisualDensity.compact,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     deleteIcon: const Icon(Icons.close, size: 18),
-                    deleteButtonTooltipMessage: 'Remove ${chip.name} filter',
+                    deleteButtonTooltipMessage: l10n
+                        .libraryScreenRemoveFilterChip(chip.name),
                     onDeleted: () => _removeFilterChip(chip.kind, chip.id),
                   ),
               ],
             ),
           ),
-          TextButton(onPressed: _clearFilter, child: const Text('Clear')),
+          TextButton(
+            onPressed: _clearFilter,
+            child: Text(l10n.actionClear),
+          ),
         ],
       ),
     );
@@ -697,7 +721,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (library == null) return;
     final title = await promptForTitle(
       context: context,
-      title: 'Rename Score',
+      title: AppLocalizations.of(context).libraryScreenRenameScoreTitle,
       initial: score.title,
     );
     // Cancelled, or cleared: the file name it came in with is not an
@@ -728,35 +752,34 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final others = sharing - 1;
 
     if (!mounted) return;
+    final dialogL10n = AppLocalizations.of(context);
     final choice = await showDialog<ReplacePdfOverlayChoice>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Replace PDF'),
+        title: Text(dialogL10n.libraryScreenReplacePdfTitle),
         content: Text(
           others > 0
-              ? 'This PDF holds $sharing scores. Replacing it changes '
-                    '“${score.title}” and $others '
-                    '${others == 1 ? 'other score' : 'other scores'} that share '
-                    'the same file. Choose whether to keep annotations, '
-                    'bookmarks, jump links, and page order — or reset them.'
-              : 'Replace the file for “${score.title}”? '
-                    'Choose whether to keep annotations, bookmarks, jump links, '
-                    'and page order — or reset them.',
+              ? dialogL10n.libraryScreenReplacePdfBodyShared(
+                  sharing,
+                  score.title,
+                  others,
+                )
+              : dialogL10n.libraryScreenReplacePdfBodySingle(score.title),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(dialogL10n.actionCancel),
           ),
           TextButton(
             onPressed: () =>
                 Navigator.pop(context, ReplacePdfOverlayChoice.keep),
-            child: const Text('Keep overlays'),
+            child: Text(dialogL10n.libraryScreenKeepOverlays),
           ),
           FilledButton(
             onPressed: () =>
                 Navigator.pop(context, ReplacePdfOverlayChoice.reset),
-            child: const Text('Reset overlays'),
+            child: Text(dialogL10n.libraryScreenResetOverlays),
           ),
         ],
       ),
@@ -771,9 +794,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
       await _reload();
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
       final overlayNote = choice == ReplacePdfOverlayChoice.reset
-          ? 'overlays reset'
-          : 'overlays kept';
+          ? l10n.libraryScreenOverlaysReset
+          : l10n.libraryScreenOverlaysKept;
       // A shorter file can leave a piece describing pages that no longer
       // exist. Saying so is the point: silently repairing it is how a musician
       // finds out on stage.
@@ -782,18 +806,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
         SnackBar(
           content: Text(
             shortened == 0
-                ? 'PDF replaced; $overlayNote.'
-                : 'PDF replaced; $overlayNote. The new file is shorter, so '
-                      '$shortened ${shortened == 1 ? 'score' : 'scores'} '
-                      'no longer cover the same pages.',
+                ? l10n.libraryScreenPdfReplaced(overlayNote)
+                : l10n.libraryScreenPdfReplacedShortened(
+                    overlayNote,
+                    shortened,
+                  ),
           ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Replace failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).libraryScreenReplaceFailed(
+              e.toString(),
+            ),
+          ),
+        ),
+      );
     }
   }
 
@@ -896,8 +927,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final pages = pageCount == null ? null : score.extentIn(pageCount);
     if (document == null || pageCount == null || pdf == null || pages == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Still reading this PDF — try again in a moment.'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).libraryScreenStillReadingPdf,
+          ),
         ),
       );
       return;
@@ -961,7 +994,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await _reload();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Split into ${marks.length} pieces')),
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).libraryScreenSplitIntoPiecesSnackbar(
+            marks.length,
+          ),
+        ),
+      ),
     );
   }
 
@@ -982,8 +1021,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final pdf = library.absoluteFileOrNull(root);
     if (document == null || pageCount == null || pdf == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Still reading this PDF — try again in a moment.'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).libraryScreenStillReadingPdf,
+          ),
         ),
       );
       return;
@@ -1006,7 +1047,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             for (final piece in oldChildren)
               (startPage: piece.firstAbsolutePage, title: piece.title),
           ],
-          appBarTitle: 'Edit pieces',
+          appBarTitle: AppLocalizations.of(context).libraryScreenEditPiecesAppBarTitle,
         ),
       ),
     );
@@ -1039,7 +1080,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (!mounted) return;
     final count = plan.children.length;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Updated $count ${count == 1 ? 'piece' : 'pieces'}')),
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).libraryScreenUpdatedPieces(count),
+        ),
+      ),
     );
   }
 
@@ -1061,25 +1106,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final names = atRisk.map((s) => '“${s.title}”').join(', ');
     final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit pieces?'),
-        content: Text(
-          '$names ${atRisk.length == 1 ? 'is' : 'are'} not part of the new '
-          'split. ${atRisk.length == 1 ? 'Its' : 'Their'} annotations, '
-          'bookmarks, jump links, Labels, and Setlist membership will be '
-          'deleted. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l10n.libraryScreenEditPiecesDialogTitle),
+          content: Text(
+            l10n.libraryScreenEditPiecesBody(names, atRisk.length),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continue'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.actionCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.actionContinue),
+            ),
+          ],
+        );
+      },
     );
     return ok == true;
   }
@@ -1144,25 +1189,30 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (dropping == 0) return true;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Split into pieces?'),
-        content: Text(
-          '$dropping ${dropping == 1 ? 'slot' : 'slots'} in the page order of '
-          '“${score.title}” point outside pages '
-          '${first.firstPage}–${first.lastPage} and will be removed. '
-          'Annotations on those pages are kept with the pieces that hold them.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l10n.libraryScreenSplitIntoPiecesDialogTitle),
+          content: Text(
+            l10n.libraryScreenSplitPageOrderBody(
+              dropping,
+              score.title,
+              first.firstPage,
+              first.lastPage,
+            ),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Split'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.actionCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.libraryScreenSplitConfirm),
+            ),
+          ],
+        );
+      },
     );
     return ok == true;
   }
@@ -1180,8 +1230,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
         pdf == null ||
         current == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Still reading this PDF — try again in a moment.'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).libraryScreenStillReadingPdf,
+          ),
         ),
       );
       return;
@@ -1213,26 +1265,30 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (dropping > 0) {
       final ok = await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Change pages?'),
-          content: Text(
-            '$dropping ${dropping == 1 ? 'slot' : 'slots'} in the page order '
-            'of “${score.title}” point outside pages '
-            '${next.firstPage}–${next.lastPage} and will be removed. '
-            'Annotations on those pages are kept, and come back if you widen '
-            'the pages again.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return AlertDialog(
+            title: Text(l10n.libraryScreenChangePagesTitle),
+            content: Text(
+              l10n.libraryScreenChangePagesBody(
+                dropping,
+                score.title,
+                next.firstPage,
+                next.lastPage,
+              ),
             ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Change pages'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.actionCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(l10n.libraryScreenChangePagesConfirm),
+              ),
+            ],
+          );
+        },
       );
       if (ok != true) return;
     }
@@ -1337,6 +1393,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           score: updated,
           filePath: path,
           originLine: scoreOriginLine(
+            l10n: AppLocalizations.of(context),
             extent: updated.pageExtent,
             documentName: document?.displayName,
             documentPageCount: document?.pageCount,
@@ -1356,21 +1413,28 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (library == null || store == null) return;
     if (setlist.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('This setlist is empty. Add scores first.'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).libraryScreenSetlistEmptyAddScores,
+          ),
         ),
       );
       return;
     }
 
     final resolved = await SetlistSession.resolve(
+      l10n: AppLocalizations.of(context),
       setlist: setlist,
       library: library,
     );
     if (!mounted) return;
     if (resolved.session == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No scores available in this setlist.')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).libraryScreenNoScoresAvailable,
+          ),
+        ),
       );
       return;
     }
@@ -1378,8 +1442,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Skipped ${resolved.skipped} missing score'
-            '${resolved.skipped == 1 ? '' : 's'}.',
+            AppLocalizations.of(context).libraryScreenSkippedMissingScores(resolved.skipped),
           ),
         ),
       );
@@ -1407,7 +1470,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (store == null) return;
     final draft = Setlist(
       id: store.newId(),
-      title: 'New setlist',
+      title: AppLocalizations.of(context).libraryScreenNewSetlist,
       scoreIds: const [],
       createdAt: DateTime.now().toUtc(),
     );
@@ -1441,20 +1504,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (store == null) return;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete setlist?'),
-        content: Text('Delete “${setlist.title}”? Scores are kept.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l10n.libraryScreenDeleteSetlistTitle),
+          content: Text(l10n.libraryScreenDeleteSetlistBody(setlist.title)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.actionCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.actionDelete),
+            ),
+          ],
+        );
+      },
     );
     if (ok != true) return;
     await store.delete(setlist.id);
@@ -1466,30 +1532,31 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final setlists = _setlistStore;
     if (library == null || setlists == null) return;
     final children = childrenOfRoot(_scores, score.id);
-    final content = children.isEmpty
-        ? 'Delete “${score.title}” from the Library? '
-            'The PDF, annotations, bookmarks, jump links, and page order '
-            'will be removed. This cannot be undone.'
-        : 'Delete “${score.title}” and its ${children.length} '
-            '${children.length == 1 ? 'piece' : 'pieces'}? '
-            'The PDF and every overlay on the book and its pieces will be '
-            'removed. This cannot be undone.';
     final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete score?'),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+        final content = children.isEmpty
+            ? l10n.libraryScreenDeleteScoreBody(score.title)
+            : l10n.libraryScreenDeleteScoreWithPiecesBody(
+                score.title,
+                children.length,
+              );
+        return AlertDialog(
+          title: Text(l10n.libraryScreenDeleteScoreTitle),
+          content: Text(content),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.actionCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.actionDelete),
+            ),
+          ],
+        );
+      },
     );
     if (ok != true) return;
     final doomed = [score.id, ...children.map((c) => c.id)];
@@ -1507,7 +1574,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Semantics(
-          label: 'StageScore',
+          label: Brand.productName,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: Image.asset(
@@ -1521,18 +1588,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
         actions: [
           if (_tab == _LibraryTab.scores) ...[
             PopupMenuButton<LibrarySortMode>(
-              tooltip: 'Sort',
+              tooltip: AppLocalizations.of(context).libraryScreenSort,
               enabled: !_loading,
               initialValue: _sortMode,
               onSelected: _setSortMode,
-              itemBuilder: (context) => [
-                for (final mode in LibrarySortMode.values)
-                  CheckedPopupMenuItem<LibrarySortMode>(
-                    value: mode,
-                    checked: _sortMode == mode,
-                    child: Text(mode.label),
-                  ),
-              ],
+              itemBuilder: (context) {
+                final l10n = AppLocalizations.of(context);
+                return [
+                  for (final mode in LibrarySortMode.values)
+                    CheckedPopupMenuItem<LibrarySortMode>(
+                      value: mode,
+                      checked: _sortMode == mode,
+                      child: Text(mode.label(l10n)),
+                    ),
+                ];
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Row(
@@ -1540,7 +1610,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     const Icon(Icons.sort),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
-                      _sortMode.label,
+                      _sortMode.label(AppLocalizations.of(context)),
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                   ],
@@ -1548,14 +1618,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ),
             IconButton(
-              tooltip: 'Filter',
+              tooltip: AppLocalizations.of(context).libraryScreenFilter,
               onPressed: _loading ? null : _openFilter,
               icon: Icon(
                 _filterActive ? Icons.filter_alt : Icons.filter_alt_outlined,
               ),
             ),
             IconButton(
-              tooltip: 'Manage Labels',
+              tooltip: AppLocalizations.of(context).libraryScreenManageLabels,
               onPressed: _loading
                   ? null
                   : () async {
@@ -1573,7 +1643,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ],
           // No "New setlist" action here: the FAB below already is it.
           PopupMenuButton<String>(
-            tooltip: 'More',
+            tooltip: AppLocalizations.of(context).libraryScreenMore,
             onSelected: (value) {
               switch (value) {
                 case 'appearance':
@@ -1582,6 +1652,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   showAppearanceSheet(
                     context: context,
                     appearance: widget.appearance,
+                    onChanged: onChanged,
+                  );
+                case 'language':
+                  final onChanged = widget.onLocaleChanged;
+                  if (onChanged == null) return;
+                  showLanguageSheet(
+                    context: context,
+                    pref: widget.localePref,
                     onChanged: onChanged,
                   );
                 case 'backup':
@@ -1596,15 +1674,31 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   );
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'appearance', child: Text('Appearance…')),
-              PopupMenuItem(value: 'backup', child: Text('Backup…')),
-              PopupMenuItem(value: 'restore', child: Text('Restore…')),
-              PopupMenuItem(
-                value: 'about',
-                child: Text('About ${Brand.productName}…'),
-              ),
-            ],
+            itemBuilder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return [
+                PopupMenuItem(
+                  value: 'appearance',
+                  child: Text(l10n.libraryScreenAppearance),
+                ),
+                PopupMenuItem(
+                  value: 'language',
+                  child: Text(l10n.libraryScreenLanguage),
+                ),
+                PopupMenuItem(
+                  value: 'backup',
+                  child: Text(l10n.libraryScreenBackup),
+                ),
+                PopupMenuItem(
+                  value: 'restore',
+                  child: Text(l10n.libraryScreenRestore),
+                ),
+                PopupMenuItem(
+                  value: 'about',
+                  child: Text(l10n.libraryScreenAbout(Brand.productName)),
+                ),
+              ];
+            },
           ),
         ],
       ),
@@ -1618,16 +1712,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
               AppSpacing.sm,
             ),
             child: SegmentedButton<_LibraryTab>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: _LibraryTab.scores,
-                  label: Text('Scores'),
-                  icon: Icon(Icons.picture_as_pdf_outlined),
+                  label: Text(AppLocalizations.of(context).libraryScreenTabScores),
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
                 ),
                 ButtonSegment(
                   value: _LibraryTab.setlists,
-                  label: Text('Setlists'),
-                  icon: Icon(Icons.queue_music),
+                  label: Text(
+                    AppLocalizations.of(context).libraryScreenTabSetlists,
+                  ),
+                  icon: const Icon(Icons.queue_music),
                 ),
               ],
               selected: {_tab},
@@ -1648,11 +1744,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'Search titles, books & bookmarks',
+                  hintText: AppLocalizations.of(context).libraryScreenSearchHint,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _searchActive
                       ? IconButton(
-                          tooltip: 'Clear',
+                          tooltip: AppLocalizations.of(context).actionClear,
                           onPressed: () {
                             _searchController.clear();
                           },
@@ -1679,12 +1775,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ? FloatingActionButton.extended(
               onPressed: _importPdfs,
               icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('Add PDF'),
+              label: Text(AppLocalizations.of(context).libraryScreenAddPdf),
             )
           : FloatingActionButton.extended(
               onPressed: _createSetlist,
               icon: const Icon(Icons.playlist_add),
-              label: const Text('New setlist'),
+              label: Text(
+                AppLocalizations.of(context).libraryScreenNewSetlist,
+              ),
             ),
     );
   }
@@ -1698,6 +1796,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     ({Score score, List<OutlineSplitProposal> proposals}) suggestion,
   ) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final score = suggestion.score;
     final name = _library?.documentFor(score)?.displayName ?? score.title;
     final pages = _library?.pageCountOf(score);
@@ -1727,8 +1826,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
             // file could not back (Spec 0052, G3 #11). The count belongs on the
             // split screen, where it labels the action that acts on it.
             pages != null
-                ? '“$name” is $pages pages — split it into pieces?'
-                : '“$name” looks like a collection — split it into pieces?',
+                ? l10n.libraryScreenSplitSuggestionWithPages(name, pages)
+                : l10n.libraryScreenSplitSuggestionGeneric(name),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSecondaryContainer,
             ),
@@ -1738,13 +1837,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
             children: [
               TextButton(
                 onPressed: () => _dismissSuggestion(score.id),
-                child: const Text('Not now'),
+                child: Text(l10n.libraryScreenNotNow),
               ),
               const SizedBox(width: AppSpacing.sm),
               FilledButton(
                 onPressed: () =>
                     _splitScore(score, proposals: suggestion.proposals),
-                child: const Text('Split…'),
+                child: Text(l10n.libraryScreenSplitEllipsis),
               ),
             ],
           ),
@@ -1758,7 +1857,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_error != null) {
-      return Center(child: Text('Failed to open library:\n$_error'));
+      return Center(
+        child: Text(
+          AppLocalizations.of(context).libraryScreenFailedToOpen(_error!),
+        ),
+      );
     }
     return _tab == _LibraryTab.scores
         ? _buildScoresBody(context)
@@ -1767,6 +1870,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _buildScoresBody(BuildContext context) {
     if (_scores.isEmpty) {
+      final l10n = AppLocalizations.of(context);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1780,24 +1884,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'No scores yet',
+                l10n.libraryScreenNoScoresYet,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Import PDF sheet music from your device to build your library.',
+              Text(
+                l10n.libraryScreenImportPdfHint,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xl),
               FilledButton.icon(
                 onPressed: _importPdfs,
                 icon: const Icon(Icons.add),
-                label: const Text('Add PDF'),
+                label: Text(l10n.libraryScreenAddPdf),
               ),
               const SizedBox(height: AppSpacing.md),
               TextButton(
                 onPressed: _importSample,
-                child: const Text('Add sample score'),
+                child: Text(l10n.libraryScreenAddSampleScore),
               ),
               // The only screen every new install passes through, so it is the
               // only place the publisher line can land before someone goes
@@ -1818,6 +1922,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     final scores = _visibleScores;
     if (scores.isEmpty) {
+      final l10n = AppLocalizations.of(context);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1826,8 +1931,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
             children: [
               Text(
                 _searchActive
-                    ? 'No scores match “${_searchQuery.trim()}”'
-                    : 'No scores match ${_filterDescription()}',
+                    ? l10n.libraryScreenNoScoresMatchSearch(
+                        _searchQuery.trim(),
+                      )
+                    : l10n.libraryScreenNoScoresMatchFilter(
+                        _filterDescription(),
+                      ),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
@@ -1835,12 +1944,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
               if (_searchActive)
                 TextButton(
                   onPressed: () => _searchController.clear(),
-                  child: const Text('Clear search'),
+                  child: Text(l10n.libraryScreenClearSearch),
                 ),
               if (_filterActive)
                 TextButton(
                   onPressed: _clearFilter,
-                  child: const Text('Clear filter'),
+                  child: Text(l10n.libraryScreenClearFilter),
                 ),
             ],
           ),
@@ -1861,10 +1970,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
         final childCount = score.isRoot
             ? childrenOfRoot(_scores, score.id).length
             : 0;
-        final inRoot = childInRootSubtitle(score, _scores);
+        final l10n = AppLocalizations.of(context);
+        final inRoot = childInRootSubtitle(l10n, score, _scores);
         final origin = score.isRoot
             ? null
             : scoreOriginLine(
+                l10n: l10n,
                 extent: score.pageExtent,
                 documentName: inRoot == null ? document?.displayName : null,
                 documentPageCount: document?.pageCount,
@@ -1888,8 +1999,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
             children: [
               Text(
                 hasChildren
-                    ? '${_recencyLine(score)} · $childCount '
-                        '${childCount == 1 ? 'piece' : 'pieces'}'
+                    ? l10n.libraryScreenRecencyWithPieces(
+                        _recencyLine(score),
+                        childCount,
+                      )
                     : _recencyLine(score),
               ),
               if (inRoot != null)
@@ -1932,39 +2045,58 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   _deleteScore(score);
               }
             },
-            itemBuilder: (context) => [
-              // Menu parity with the row tap gesture (Spec 0055): tapping a
-              // root with children drills into PiecesScreen, so "…" needs its
-              // own path there too, not just the "Open full score" shortcut.
-              if (hasChildren)
-                const PopupMenuItem(value: 'pieces', child: Text('Pieces…')),
-              // Redraw where the book's pieces begin, seeded from today's
-              // boundaries (Spec 0055 follow-up "Edit pieces").
-              if (hasChildren)
-                const PopupMenuItem(
-                  value: 'edit_pieces',
-                  child: Text('Edit pieces…'),
+            itemBuilder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return [
+                // Menu parity with the row tap gesture (Spec 0055): tapping a
+                // root with children drills into PiecesScreen, so "…" needs
+                // its own path there too, not just the "Open full score"
+                // shortcut.
+                if (hasChildren)
+                  PopupMenuItem(
+                    value: 'pieces',
+                    child: Text(l10n.libraryScreenPiecesEllipsis),
+                  ),
+                // Redraw where the book's pieces begin, seeded from today's
+                // boundaries (Spec 0055 follow-up "Edit pieces").
+                if (hasChildren)
+                  PopupMenuItem(
+                    value: 'edit_pieces',
+                    child: Text(l10n.libraryScreenEditPiecesMenuItem),
+                  ),
+                if (hasChildren)
+                  PopupMenuItem(
+                    value: 'open_full',
+                    child: Text(l10n.libraryScreenOpenFullScore),
+                  ),
+                PopupMenuItem(
+                  value: 'rename',
+                  child: Text(l10n.libraryScreenRenameEllipsis),
                 ),
-              if (hasChildren)
-                const PopupMenuItem(
-                  value: 'open_full',
-                  child: Text('Open full score'),
+                PopupMenuItem(
+                  value: 'labels',
+                  child: Text(l10n.libraryScreenLabelsEllipsis),
                 ),
-              const PopupMenuItem(value: 'rename', child: Text('Rename…')),
-              const PopupMenuItem(value: 'labels', child: Text('Labels…')),
-              if (_canSplit(score))
-                const PopupMenuItem(
-                  value: 'split',
-                  child: Text('Split into pieces…'),
+                if (_canSplit(score))
+                  PopupMenuItem(
+                    value: 'split',
+                    child: Text(l10n.libraryScreenSplitIntoPiecesEllipsis),
+                  ),
+                if (_isPiece(score))
+                  PopupMenuItem(
+                    value: 'pages',
+                    child: Text(l10n.libraryScreenPagesEllipsis),
+                  ),
+                PopupMenuItem(
+                  value: 'replace',
+                  child: Text(l10n.libraryScreenReplacePdfEllipsis),
                 ),
-              if (_isPiece(score))
-                const PopupMenuItem(value: 'pages', child: Text('Pages…')),
-              const PopupMenuItem(
-                value: 'replace',
-                child: Text('Replace PDF…'),
-              ),
-              const PopupMenuItem(value: 'delete', child: Text('Delete…')),
-            ],
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(l10n.libraryScreenDeleteEllipsis),
+                ),
+              ];
+            },
           ),
           onTap: () => _onScoreRowTap(score),
         );
@@ -1974,16 +2106,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   /// "Opened today · 4 pages" — when it was last played, and how long it is.
   String _recencyLine(Score score) {
+    final l10n = AppLocalizations.of(context);
     final when = score.lastOpenedAt == null
-        ? 'Added ${relativeDay(score.createdAt)}'
-        : 'Opened ${relativeDay(score.lastOpenedAt!)}';
+        ? l10n.libraryScreenAddedRelative(relativeDay(l10n, score.createdAt))
+        : l10n.libraryScreenOpenedRelative(
+            relativeDay(l10n, score.lastOpenedAt!),
+          );
     final pages = _library?.pageCountOf(score);
     if (pages == null) return when;
-    return '$when · $pages ${pages == 1 ? 'page' : 'pages'}';
+    return l10n.libraryScreenRecencyWithPages(when, pages);
   }
 
   Widget _buildSetlistsBody(BuildContext context) {
     if (_setlists.isEmpty) {
+      final l10n = AppLocalizations.of(context);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1997,19 +2133,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(
-                'No setlists yet',
+                l10n.libraryScreenNoSetlistsYet,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Group scores for continuous performance without reopening each piece.',
+              Text(
+                l10n.libraryScreenSetlistsEmptyHint,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xl),
               FilledButton.icon(
                 onPressed: _createSetlist,
                 icon: const Icon(Icons.playlist_add),
-                label: const Text('New setlist'),
+                label: Text(l10n.libraryScreenNewSetlist),
               ),
             ],
           ),
@@ -2024,14 +2160,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
       itemBuilder: (context, index) {
         final setlist = _setlists[index];
         final count = setlist.scoreIds.length;
+        final l10n = AppLocalizations.of(context);
+        final scoreCount = l10n.libraryScreenSetlistScoreCount(count);
         return ListTile(
           leading: const Icon(Icons.queue_music),
           title: Text(setlist.title),
           subtitle: Text(
             count == 0
-                ? 'Empty'
-                : '$count score${count == 1 ? '' : 's'}'
-                      '${setlist.lastOpenedAt == null ? '' : ' · Opened ${relativeDay(setlist.lastOpenedAt!)}'}',
+                ? l10n.libraryScreenSetlistCountEmpty
+                : setlist.lastOpenedAt == null
+                ? scoreCount
+                : l10n.libraryScreenSetlistScoreCountOpened(
+                    scoreCount,
+                    l10n.libraryScreenOpenedRelative(
+                      relativeDay(l10n, setlist.lastOpenedAt!),
+                    ),
+                  ),
           ),
           onTap: () => _openSetlist(setlist),
           trailing: PopupMenuButton<String>(
@@ -2043,10 +2187,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   _deleteSetlist(setlist);
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'edit', child: Text('Edit')),
-              PopupMenuItem(value: 'delete', child: Text('Delete')),
-            ],
+            itemBuilder: (context) {
+              final l10n = AppLocalizations.of(context);
+              return [
+                PopupMenuItem(value: 'edit', child: Text(l10n.actionEdit)),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(l10n.actionDelete),
+                ),
+              ];
+            },
           ),
         );
       },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
 import 'package:stagescore/ui/score_menu_quick_bar.dart';
 
@@ -17,6 +18,8 @@ Widget _bar({
   double labelFontSize = 11,
 }) {
   return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     theme: ThemeData(
       textTheme: TextTheme(labelSmall: TextStyle(fontSize: labelFontSize)),
     ),

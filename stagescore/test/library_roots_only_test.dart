@@ -1,12 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/label/label.dart';
 import 'package:stagescore/library/library_sort.dart';
 import 'package:stagescore/library/library_visibility.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score.dart';
 
+import 'support/test_l10n.dart';
+
 /// Default list is roots; search/filter widen (Spec 0055).
 void main() {
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await testL10n();
+  });
+
   final root = Score(
     id: 'root',
     title: 'Chopin Etudes',
@@ -54,7 +63,7 @@ void main() {
       bookmarkTitlesByScoreId: const {},
     );
     expect(visible.map((s) => s.id).toList(), ['c3']);
-    expect(childInRootSubtitle(no3, all), 'in Chopin Etudes');
+    expect(childInRootSubtitle(l10n, no3, all), 'in Chopin Etudes');
   });
 
   test('search matching root and child shows both', () {

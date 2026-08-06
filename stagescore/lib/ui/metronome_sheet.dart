@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/metronome/metronome_engine.dart';
 import 'package:stagescore/metronome/metronome_prefs.dart';
 import 'package:stagescore/theme/app_tokens.dart';
@@ -68,6 +69,7 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final engine = widget.engine;
     return SheetBody(
       children: [
@@ -76,7 +78,10 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
             const MetronomeIcon(size: 28),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: Text('Metronome', style: theme.textTheme.titleLarge),
+              child: Text(
+                l10n.metronomeSheetTitle,
+                style: theme.textTheme.titleLarge,
+              ),
             ),
             BeatDots(
               beatsPerBar: _prefs.beatsPerBar,
@@ -89,7 +94,7 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [
-            Text('Tempo', style: theme.textTheme.titleSmall),
+            Text(l10n.metronomeSheetTempo, style: theme.textTheme.titleSmall),
             const Spacer(),
             TextButton(
               onPressed: _editTempo,
@@ -105,19 +110,16 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
           label: '${_prefs.tempoBpm}',
           onChanged: (v) => _update(_prefs.copyWith(tempoBpm: v.round())),
         ),
-        Text('Meter', style: theme.textTheme.titleSmall),
+        Text(l10n.metronomeSheetMeter, style: theme.textTheme.titleSmall),
         const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Equal = same click every beat. Labels group accents; tempo is BPM.',
-          style: theme.textTheme.bodySmall,
-        ),
+        Text(l10n.metronomeSheetMeterHint, style: theme.textTheme.bodySmall),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
             ChoiceChip(
-              label: const Text('Equal'),
+              label: Text(l10n.metronomeSheetEqual),
               selected: !_prefs.accentEnabled,
               onSelected: (_) => _update(_prefs.copyWith(accentEnabled: false)),
             ),
@@ -132,22 +134,20 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
         const SizedBox(height: AppSpacing.md),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Mute (visual only)'),
+          title: Text(l10n.metronomeSheetMute),
           value: _prefs.muted,
           onChanged: (v) => _update(_prefs.copyWith(muted: v)),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Show beats on the Score'),
-          subtitle: const Text(
-            'Keeps these dots on screen while playing, after the chrome hides',
-          ),
+          title: Text(l10n.metronomeSheetShowBeats),
+          subtitle: Text(l10n.metronomeSheetShowBeatsHint),
           value: _prefs.showBeatsOnScore,
           onChanged: (v) => _update(_prefs.copyWith(showBeatsOnScore: v)),
         ),
         if (!_prefs.muted) ...[
           Text(
-            'Volume ${(_prefs.volume * 100).round()}%',
+            l10n.metronomeSheetVolume((_prefs.volume * 100).round()),
             style: theme.textTheme.titleSmall,
           ),
           Slider(
@@ -159,7 +159,11 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
         FilledButton.icon(
           onPressed: () => engine.toggle(),
           icon: Icon(engine.isRunning ? Icons.stop : Icons.play_arrow),
-          label: Text(engine.isRunning ? 'Stop' : 'Start'),
+          label: Text(
+            engine.isRunning
+                ? l10n.metronomeSheetStop
+                : l10n.metronomeSheetStart,
+          ),
         ),
       ],
     );
@@ -193,10 +197,10 @@ class _TempoDialogState extends State<_TempoDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit(AppLocalizations l10n) {
     final n = int.tryParse(_controller.text.trim());
     if (n == null) {
-      setState(() => _error = 'Enter a number');
+      setState(() => _error = l10n.metronomeSheetEnterNumber);
       return;
     }
     if (n < MetronomePrefs.minTempo || n > MetronomePrefs.maxTempo) {
@@ -211,8 +215,9 @@ class _TempoDialogState extends State<_TempoDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Tempo (BPM)'),
+      title: Text(l10n.metronomeSheetTempoDialogTitle),
       content: TextField(
         controller: _controller,
         autofocus: true,
@@ -225,14 +230,17 @@ class _TempoDialogState extends State<_TempoDialog> {
         onChanged: (_) {
           if (_error != null) setState(() => _error = null);
         },
-        onSubmitted: (_) => _submit(),
+        onSubmitted: (_) => _submit(l10n),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('OK')),
+        FilledButton(
+          onPressed: () => _submit(l10n),
+          child: Text(l10n.actionOk),
+        ),
       ],
     );
   }

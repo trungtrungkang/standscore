@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/pageturn/layout_navigation.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
 import 'package:stagescore/pageturn/page_turn_prefs_store.dart';
+
+import 'support/test_l10n.dart';
 
 const _horizontal = [
   PdfLayoutMode.single,
@@ -15,6 +18,12 @@ const _horizontal = [
 const _vertical = [PdfLayoutMode.fitWidth, PdfLayoutMode.halfPageTopBottom];
 
 void main() {
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await testL10n();
+  });
+
   group('Match layout', () {
     test('taps land on the halves the pages move between', () {
       for (final mode in _horizontal) {
@@ -76,11 +85,11 @@ void main() {
   group('navigationHintFor', () {
     test('names the gestures that will actually turn a page', () {
       expect(
-        navigationHintFor(PdfLayoutMode.single, const PageTurnPrefs()),
+        navigationHintFor(l10n, PdfLayoutMode.single, const PageTurnPrefs()),
         'tap left / right · swipe sideways',
       );
       expect(
-        navigationHintFor(PdfLayoutMode.fitWidth, const PageTurnPrefs()),
+        navigationHintFor(l10n, PdfLayoutMode.fitWidth, const PageTurnPrefs()),
         'tap top / bottom · swipe up / down',
       );
     });
@@ -93,7 +102,7 @@ void main() {
         swipeRight: false,
       );
       expect(
-        navigationHintFor(PdfLayoutMode.single, noGestures),
+        navigationHintFor(l10n, PdfLayoutMode.single, noGestures),
         'Pedal or the page bar',
       );
     });

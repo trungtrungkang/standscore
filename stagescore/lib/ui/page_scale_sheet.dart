@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/page_scale.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/sheet_body.dart';
@@ -58,6 +59,7 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final editScale = _prefs.scaleForEdit(
       scoreId: widget.scoreId,
       sourcePage: widget.sourcePage,
@@ -69,27 +71,23 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
 
     return SheetBody(
       children: [
-        Text('Page scale', style: theme.textTheme.titleMedium),
+        Text(l10n.pageScaleSheetTitle, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.xs),
         // Say what this is before showing knobs: pinch changes the view
         // and forgets; this is remembered (Spec 0036).
-        Text(
-          'How big the music is drawn, remembered between sessions. '
-          'Pinching changes the view for now; this changes it for good.',
-          style: theme.textTheme.bodySmall,
-        ),
+        Text(l10n.pageScaleSheetExplainer, style: theme.textTheme.bodySmall),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'On this page right now: ${effective.toStringAsFixed(2)}×',
+          l10n.pageScaleSheetCurrent(effective.toStringAsFixed(2)),
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: AppSpacing.lg),
-        Text('Applies to', style: theme.textTheme.labelLarge),
+        Text(l10n.pageScaleSheetAppliesTo, style: theme.textTheme.labelLarge),
         const SizedBox(height: AppSpacing.sm),
         SegmentedButton<PageScaleScope>(
           segments: [
             for (final scope in PageScaleScope.values)
-              ButtonSegment(value: scope, label: Text(scope.label)),
+              ButtonSegment(value: scope, label: Text(scope.label(l10n))),
           ],
           selected: {_prefs.editScope},
           onSelectionChanged: (selected) {
@@ -97,13 +95,16 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
           },
         ),
         const SizedBox(height: AppSpacing.sm),
-        Text(_scopeHint(_prefs.editScope), style: theme.textTheme.bodySmall),
+        Text(
+          _scopeHint(l10n, _prefs.editScope),
+          style: theme.textTheme.bodySmall,
+        ),
         const SizedBox(height: AppSpacing.lg),
         Row(
           children: [
-            Text('Scale', style: theme.textTheme.labelLarge),
+            Text(l10n.pageScaleSheetScale, style: theme.textTheme.labelLarge),
             const Spacer(),
-            Text('${editScale.toStringAsFixed(2)}×'),
+            Text(l10n.pageScaleSheetScaleValue(editScale.toStringAsFixed(2))),
           ],
         ),
         Slider(
@@ -111,7 +112,7 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
           min: PageScalePrefs.minScale,
           max: PageScalePrefs.maxScale,
           divisions: 20,
-          label: '${editScale.toStringAsFixed(2)}×',
+          label: l10n.pageScaleSheetScaleValue(editScale.toStringAsFixed(2)),
           onChanged: (value) {
             _update(
               _prefs.withEditedScale(
@@ -125,11 +126,8 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           // The intent, not the mechanism — the mechanism is the subtitle.
-          title: const Text('Keep this scale'),
-          subtitle: const Text(
-            'Pinch is off, so a stray touch mid-piece cannot move the '
-            'music',
-          ),
+          title: Text(l10n.pageScaleSheetKeepScale),
+          subtitle: Text(l10n.pageScaleSheetKeepScaleSubtitle),
           value: _prefs.locked,
           onChanged: (value) => _update(_prefs.copyWith(locked: value)),
         ),
@@ -139,10 +137,9 @@ class _PageScaleSheetState extends State<_PageScaleSheet> {
 }
 
 /// What each scope covers, in the terms the musician is choosing between.
-String _scopeHint(PageScaleScope scope) => switch (scope) {
-  PageScaleScope.fixed => 'Every Score, unless one has its own scale',
-  PageScaleScope.perScore => 'This Score only, on every page of it',
-  PageScaleScope.perPage =>
-    'This page only — a dense page can be bigger '
-        'without changing the rest',
-};
+String _scopeHint(AppLocalizations l10n, PageScaleScope scope) =>
+    switch (scope) {
+      PageScaleScope.fixed => l10n.pageScaleSheetHintFixed,
+      PageScaleScope.perScore => l10n.pageScaleSheetHintPerScore,
+      PageScaleScope.perPage => l10n.pageScaleSheetHintPerPage,
+    };

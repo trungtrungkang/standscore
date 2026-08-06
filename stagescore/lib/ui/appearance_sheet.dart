@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_appearance.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 
@@ -52,6 +53,7 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -64,14 +66,14 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Appearance', style: theme.textTheme.titleMedium),
+            Text(l10n.appearanceSheetTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: AppSpacing.lg),
-            Text('Mode', style: theme.textTheme.labelLarge),
+            Text(l10n.appearanceSheetMode, style: theme.textTheme.labelLarge),
             const SizedBox(height: AppSpacing.sm),
             SegmentedButton<AppThemeMode>(
               segments: [
                 for (final mode in AppThemeMode.values)
-                  ButtonSegment(value: mode, label: Text(mode.label)),
+                  ButtonSegment(value: mode, label: Text(mode.label(l10n))),
               ],
               selected: {_current.mode},
               onSelectionChanged: (selected) {
@@ -79,7 +81,10 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
               },
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text('Theme color', style: theme.textTheme.labelLarge),
+            Text(
+              l10n.appearanceSheetThemeColor,
+              style: theme.textTheme.labelLarge,
+            ),
             const SizedBox(height: AppSpacing.md),
             Wrap(
               spacing: 12,
@@ -94,7 +99,7 @@ class _AppearanceSheetState extends State<_AppearanceSheet> {
                   ),
                 ActionChip(
                   avatar: const Icon(Icons.palette_outlined, size: 18),
-                  label: const Text('Custom'),
+                  label: Text(l10n.appearanceSheetCustomChip),
                   onPressed: _pickCustomColor,
                 ),
               ],
@@ -172,8 +177,9 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
   @override
   Widget build(BuildContext context) {
     final color = _hsv.toColor();
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('Custom color'),
+      title: Text(l10n.appearanceSheetCustomColorDialog),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -189,19 +195,19 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
           ),
           const SizedBox(height: AppSpacing.md),
           _SliderRow(
-            label: 'Hue',
+            label: l10n.appearanceSheetHue,
             value: _hsv.hue,
             max: 360,
             onChanged: (v) => setState(() => _hsv = _hsv.withHue(v)),
           ),
           _SliderRow(
-            label: 'Sat',
+            label: l10n.appearanceSheetSat,
             value: _hsv.saturation,
             max: 1,
             onChanged: (v) => setState(() => _hsv = _hsv.withSaturation(v)),
           ),
           _SliderRow(
-            label: 'Val',
+            label: l10n.appearanceSheetVal,
             value: _hsv.value,
             max: 1,
             onChanged: (v) => setState(() => _hsv = _hsv.withValue(v)),
@@ -211,11 +217,11 @@ class _CustomColorDialogState extends State<_CustomColorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, color),
-          child: const Text('Apply'),
+          child: Text(l10n.actionApply),
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/page_extent.dart';
 
 /// "Pages 12–19 of Chopin Etudes.pdf", or null when the Score is a whole file.
@@ -7,6 +8,7 @@ import 'package:stagescore/library/page_extent.dart';
 /// have (ADR 0019, decision 11) — a Score is a piece of music, and the file it
 /// came out of is a detail the musician can look up, not a thing to manage.
 String? scoreOriginLine({
+  required AppLocalizations l10n,
   required PageExtent? extent,
   required String? documentName,
   required int? documentPageCount,
@@ -18,9 +20,9 @@ String? scoreOriginLine({
     return null;
   }
   final pages = extent.length == 1
-      ? 'Page ${extent.firstPage}'
-      : 'Pages ${extent.firstPage}–${extent.lastPage}';
+      ? l10n.scoreOriginPage(extent.firstPage)
+      : l10n.scoreOriginPages(extent.firstPage, extent.lastPage);
   final name = documentName?.trim();
   if (name == null || name.isEmpty) return pages;
-  return '$pages of $name';
+  return l10n.scoreOriginPagesOfBook(pages, name);
 }

@@ -1,13 +1,14 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/score.dart';
 
 /// Library Scores sort key (Spec 0023 / P2.7).
 enum LibrarySortMode { title, created, lastViewed }
 
 extension LibrarySortModeX on LibrarySortMode {
-  String get label => switch (this) {
-    LibrarySortMode.title => 'Title',
-    LibrarySortMode.created => 'Created',
-    LibrarySortMode.lastViewed => 'Last viewed',
+  String label(AppLocalizations l10n) => switch (this) {
+    LibrarySortMode.title => l10n.librarySortTitle,
+    LibrarySortMode.created => l10n.librarySortCreated,
+    LibrarySortMode.lastViewed => l10n.librarySortLastViewed,
   };
 }
 

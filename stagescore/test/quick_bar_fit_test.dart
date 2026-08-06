@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/page_nav_bar.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
 import 'package:stagescore/ui/score_menu_quick_bar.dart';
@@ -143,6 +144,8 @@ void main() {
     // the PageNavBar grows a control, the estimate has to grow with it.
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           bottomNavigationBar: PageNavBar(
             // A page count wider than any real Score's, so the widest the

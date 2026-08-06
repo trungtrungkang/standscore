@@ -11,6 +11,7 @@ import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
 import 'package:stagescore/pdf/shared_zoom.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 
 /// Scrollable PageOrder view for non-identity continuous layouts (Spec 0011).
 class ContinuousPageOrderView extends StatefulWidget {
@@ -305,8 +306,11 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_error != null) {
-      return Center(child: Text('Failed to open PDF:\n$_error'));
+      return Center(
+        child: Text(l10n.continuousPageOrderViewOpenFailed(_error!)),
+      );
     }
     final doc = _document;
     if (doc == null) {

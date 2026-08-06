@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:stagescore/brand/brand.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -51,9 +52,9 @@ class AppBuild {
 
   /// "Version 1.0.0 (4)", or without the parenthesis on a host that has no
   /// build number to report.
-  String get label => buildNumber.isEmpty
-      ? 'Version $version'
-      : 'Version $version ($buildNumber)';
+  String label(AppLocalizations l10n) => buildNumber.isEmpty
+      ? l10n.aboutSheetVersion(version)
+      : l10n.aboutSheetVersionWithBuild(version, buildNumber);
 }
 
 class _AboutSheet extends StatefulWidget {
@@ -89,6 +90,7 @@ class _AboutSheetState extends State<_AboutSheet> {
   /// there is no other feedback on a link row, and the sheet must survive a
   /// device with no browser or no network (Spec 0042).
   Future<void> _open(Uri url) async {
+    final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     var opened = false;
     try {
@@ -97,11 +99,14 @@ class _AboutSheetState extends State<_AboutSheet> {
       opened = false;
     }
     if (opened || !mounted) return;
-    messenger.showSnackBar(SnackBar(content: Text('Could not open $url')));
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.aboutSheetLinkOpenFailed(url.toString()))),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return SafeArea(
       child: ConstrainedBox(
@@ -124,14 +129,14 @@ class _AboutSheetState extends State<_AboutSheet> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: AppSpacing.sm),
                       child: Text(
-                        'About ${Brand.productName}',
+                        l10n.aboutSheetTitle(Brand.productName),
                         style: theme.textTheme.titleLarge,
                       ),
                     ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Done'),
+                    child: Text(l10n.actionDone),
                   ),
                 ],
               ),
@@ -172,7 +177,7 @@ class _AboutSheetState extends State<_AboutSheet> {
                               ),
                               const SizedBox(height: AppSpacing.xs),
                               Text(
-                                _build?.label ?? '',
+                                _build?.label(l10n) ?? '',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
@@ -211,17 +216,17 @@ class _AboutSheetState extends State<_AboutSheet> {
                   const Divider(height: 1),
                   _LinkRow(
                     icon: Icons.language,
-                    label: 'backingscore.com',
+                    label: l10n.aboutSheetWebsiteLabel,
                     onTap: () => _open(Uri.parse(Brand.siteUrl)),
                   ),
                   _LinkRow(
                     icon: Icons.lock_outline,
-                    label: 'Privacy policy',
+                    label: l10n.aboutSheetPrivacyLabel,
                     onTap: () => _open(Uri.parse(Brand.privacyUrl)),
                   ),
                   _LinkRow(
                     icon: Icons.mail_outline,
-                    label: 'Support',
+                    label: l10n.aboutSheetSupportLabel,
                     trailingLabel: Brand.supportEmail,
                     onTap: () => _open(Brand.supportUri),
                   ),

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:stagescore/annotation/draw_tool.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 
 /// Built-in stamp catalog (Spec 0019 / G3).
 enum StampKind {
@@ -22,16 +23,16 @@ extension StampKindX on StampKind {
       this == StampKind.arrow;
 
   /// Short picker label (one token — avoid glyph+label duplication).
-  String get label => switch (this) {
+  String label(AppLocalizations l10n) => switch (this) {
     StampKind.dynamicP => 'p',
     StampKind.dynamicF => 'f',
     StampKind.sharp => '\u266F',
     StampKind.flat => '\u266D',
     StampKind.natural => '\u266E',
-    StampKind.box => 'Box',
-    StampKind.circle => 'Circle',
-    StampKind.arrow => 'Arrow',
-    StampKind.text => 'Text',
+    StampKind.box => l10n.stampBox,
+    StampKind.circle => l10n.stampCircle,
+    StampKind.arrow => l10n.stampArrow,
+    StampKind.text => l10n.stampText,
   };
 
   /// Glyph drawn on the page for symbol stamps (empty for shapes/text).

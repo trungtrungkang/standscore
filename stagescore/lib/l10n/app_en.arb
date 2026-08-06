@@ -1,0 +1,1128 @@
+{
+  "@@locale": "en",
+  "actionCancel": "Cancel",
+  "actionSave": "Save",
+  "actionDone": "Done",
+  "actionDelete": "Delete",
+  "actionOk": "OK",
+  "actionClear": "Clear",
+  "actionApply": "Apply",
+  "actionAdd": "Add",
+  "actionEdit": "Edit",
+  "actionRename": "Rename",
+  "actionBack": "Back",
+  "actionMore": "More",
+  "actionGo": "Go",
+  "actionUndo": "Undo",
+  "actionContinue": "Continue",
+  "actionReset": "Reset",
+  "commonOr": "or",
+  "commonTitleLabel": "Title",
+  "themeModeSystem": "System",
+  "themeModeLight": "Light",
+  "themeModeDark": "Dark",
+  "pdfLayoutModeAuto": "Auto",
+  "pdfLayoutModeSingle": "One page",
+  "pdfLayoutModeTwoPages": "Two pages",
+  "pdfLayoutModeScroll": "Scroll",
+  "pdfLayoutModeScrollSideways": "Scroll (sideways)",
+  "pdfLayoutModeHalfPageTopBottom": "One page + peek",
+  "pdfLayoutModeHalfPageLeftRight": "One page + side peek",
+  "pageColorFilterOff": "Off",
+  "pageColorFilterSepia": "Sepia",
+  "pageColorFilterGreen": "Green",
+  "pageColorFilterInvert": "Invert",
+  "pageScaleScopeFixed": "Fixed",
+  "pageScaleScopePerScore": "Per Score",
+  "pageScaleScopePerPage": "Per Page",
+  "stagePresetSetUpToPlay": "Set up to play",
+  "stagePresetSetUpToPractise": "Set up to practise",
+  "stagePresetChromeHidden": "chrome hidden",
+  "stagePresetChromeShown": "chrome shown",
+  "stagePresetStatusBarShown": "status bar shown",
+  "stagePresetStatusBarHidden": "status bar hidden",
+  "stagePresetScaleKept": "scale kept",
+  "stagePresetPinchFree": "pinch free",
+  "relativeDayToday": "today",
+  "relativeDayYesterday": "yesterday",
+  "relativeDayDaysAgo": "{days} {days, plural, =1{day} other{days}} ago",
+  "@relativeDayDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "pageOrderEditorEntryBlank": "{index}. Blank",
+  "@pageOrderEditorEntryBlank": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "pageOrderEditorEntryPdfPage": "{index}. PDF page {sourcePage}",
+  "@pageOrderEditorEntryPdfPage": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "sourcePage": {
+        "type": "int"
+      }
+    }
+  },
+  "pageOrderEditorResetTitle": "Reset to original?",
+  "pageOrderEditorResetBody": "Restore the PDF page order and remove blanks and duplicates?",
+  "pageOrderEditorReset": "Reset",
+  "pageOrderEditorAppBarTitle": "Page order",
+  "pageOrderEditorNoPages": "No pages",
+  "pageOrderEditorDuplicate": "Duplicate",
+  "pageOrderEditorInsertBlank": "Insert blank",
+  "pageOrderEditorRemove": "Remove",
+  "librarySortTitle": "Title",
+  "librarySortCreated": "Created",
+  "librarySortLastViewed": "Last viewed",
+  "scoreOriginPage": "Page {page}",
+  "@scoreOriginPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreOriginPages": "Pages {first}–{last}",
+  "@scoreOriginPages": {
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreOriginPagesOfBook": "{pages} of {name}",
+  "@scoreOriginPagesOfBook": {
+    "placeholders": {
+      "pages": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryVisibilityInBook": "in {title}",
+  "@libraryVisibilityInBook": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryVisibilityInBookFallback": "in book",
+  "libraryBackupFileNotFound": "Backup file not found.",
+  "libraryBackupFailedGeneric": "Backup failed.",
+  "libraryBackupCreateFailed": "Could not create backup: {error}",
+  "@libraryBackupCreateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryBackupRestoreFailed": "Could not restore backup: {error}",
+  "@libraryBackupRestoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryBackupMissingMarker": "Not a StageScore backup (missing marker).",
+  "libraryBackupUnknownFormat": "Not a StageScore backup (unknown format).",
+  "libraryBackupUnsupportedVersion": "Unsupported StageScore backup version.",
+  "libraryBackupCorruptMarker": "Not a StageScore backup (corrupt marker).",
+  "gestureMapLongPress": "long-press",
+  "gestureMapTapTopEdge": "tap the top edge",
+  "gestureMapTapBottomEdge": "tap the bottom edge",
+  "gestureMapEmptyHint": "Set a gesture to Show menu / chrome to reveal it.",
+  "gestureMapRevealHint": "Hide the toolbar and page bar while you play. To bring them back, {joined}.",
+  "@gestureMapRevealHint": {
+    "placeholders": {
+      "joined": {
+        "type": "String"
+      }
+    }
+  },
+  "layoutNavigationPedalOrPageBar": "Pedal or the page bar",
+  "layoutNavigationTapLeftRight": "tap left / right",
+  "layoutNavigationTapTopBottom": "tap top / bottom",
+  "layoutNavigationTapAnywhere": "tap anywhere",
+  "layoutNavigationTapAnywhereBack": "tap anywhere to go back",
+  "layoutNavigationSwipe": "swipe",
+  "layoutNavigationSwipeSideways": "swipe sideways",
+  "layoutNavigationSwipeUpDown": "swipe up / down",
+  "scoreMenuSheetTitle": "Menu",
+  "appearanceSheetTitle": "Appearance",
+  "appearanceSheetMode": "Mode",
+  "appearanceSheetThemeColor": "Theme color",
+  "appearanceSheetCustomChip": "Custom",
+  "appearanceSheetCustomColorDialog": "Custom color",
+  "appearanceSheetHue": "Hue",
+  "appearanceSheetSat": "Sat",
+  "appearanceSheetVal": "Val",
+  "scoreMenuGoTo": "Go to",
+  "scoreMenuBookmarks": "Bookmarks",
+  "scoreMenuJumpLinks": "Jump Links",
+  "scoreMenuPageOrder": "Page order…",
+  "scoreMenuMarks": "Marks",
+  "scoreMenuHideAnnotations": "Hide annotations",
+  "scoreMenuShowAnnotations": "Show annotations",
+  "scoreMenuExporting": "Exporting…",
+  "scoreMenuExportAnnotated": "Export PDF with annotations",
+  "scoreMenuView": "View",
+  "scoreMenuLayout": "Layout",
+  "scoreMenuDisplay": "Display…",
+  "scoreMenuColorFilter": "Color filter…",
+  "scoreMenuPageScale": "Page scale…",
+  "scoreMenuLocked": "Locked",
+  "scoreMenuPlaying": "Playing",
+  "scoreMenuMetronomeRunning": "Metronome (running)…",
+  "scoreMenuMetronome": "Metronome…",
+  "scoreMenuPageTurnSettings": "Page turn settings",
+  "scoreMenuLayoutValueBoth": "{stored} · {resolved}",
+  "@scoreMenuLayoutValueBoth": {
+    "placeholders": {
+      "stored": {
+        "type": "String"
+      },
+      "resolved": {
+        "type": "String"
+      }
+    }
+  },
+  "languageSheetTitle": "Language",
+  "languageSheetSystem": "System",
+  "languageSheetSystemSubtitle": "Match the device language",
+  "stampSheetTitle": "Stamps",
+  "stampBox": "Box",
+  "stampCircle": "Circle",
+  "stampArrow": "Arrow",
+  "stampText": "Text",
+  "pageScaleSheetTitle": "Page scale",
+  "pageScaleSheetExplainer": "How big the music is drawn, remembered between sessions. Pinching changes the view for now; this changes it for good.",
+  "pageScaleSheetCurrent": "On this page right now: {value}×",
+  "@pageScaleSheetCurrent": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "pageScaleSheetAppliesTo": "Applies to",
+  "pageScaleSheetScale": "Scale",
+  "pageScaleSheetScaleValue": "{value}×",
+  "@pageScaleSheetScaleValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "pageScaleSheetKeepScale": "Keep this scale",
+  "pageScaleSheetKeepScaleSubtitle": "Pinch is off, so a stray touch mid-piece cannot move the music",
+  "pageScaleSheetHintFixed": "Every Score, unless one has its own scale",
+  "pageScaleSheetHintPerScore": "This Score only, on every page of it",
+  "pageScaleSheetHintPerPage": "This page only — a dense page can be bigger without changing the rest",
+  "layoutSettingsSheetTitle": "Layout",
+  "layoutSettingsSheetPageTurnSettings": "Page turn settings",
+  "layoutSettingsSheetPageTurnSettingsSubtitle": "Tap zones, swipe, pedal, animation",
+  "layoutSettingsSheetFallsBack": "One page on this screen — rotate for a spread",
+  "layoutSettingsSheetNow": "Now: {mode}",
+  "@layoutSettingsSheetNow": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "layoutSettingsSheetFitsScreen": "fits this screen",
+  "pageTurnSettingsSheetGestureWarning": "Keep at least one gesture set to Show menu / chrome.",
+  "pageTurnSettingsSheetTitle": "Page turn",
+  "pageTurnSettingsSheetTapZones": "Tap zones",
+  "pageTurnSettingsSheetTapZonesHint": "In {layoutMode}: {navigationHint}.",
+  "@pageTurnSettingsSheetTapZonesHint": {
+    "placeholders": {
+      "layoutMode": {
+        "type": "String"
+      },
+      "navigationHint": {
+        "type": "String"
+      }
+    }
+  },
+  "pageTurnSettingsSheetSwipe": "Swipe",
+  "pageTurnSettingsSheetMatchLayout": "Match layout",
+  "pageTurnSettingsSheetMatchLayoutSubtitle": "Swipe along the way the pages move",
+  "pageTurnSettingsSheetSwipeLeftNext": "Swipe left → next",
+  "pageTurnSettingsSheetSwipeRightPrevious": "Swipe right → previous",
+  "pageTurnSettingsSheetSwipeUpNext": "Swipe up → next",
+  "pageTurnSettingsSheetSwipeDownPrevious": "Swipe down → previous",
+  "pageTurnSettingsSheetReverseDirection": "Reverse page-turn direction",
+  "pageTurnSettingsSheetReverseDirectionSubtitle": "For books that turn the other way",
+  "pageTurnSettingsSheetTurnAmount": "Turn amount",
+  "pageTurnSettingsSheetTurnAmountHintTwoPage": "Half advances one page of the spread instead of the whole pair.",
+  "pageTurnSettingsSheetTurnAmountHintDefault": "Half advances ~½ screen instead of a whole one.",
+  "pageTurnSettingsSheetAnimation": "Animation",
+  "pageTurnSettingsSheetPageTurnDelay": "Page turn delay",
+  "pageTurnSettingsSheetApplyTo": "Apply to",
+  "pageTurnSettingsSheetGestures": "Gestures",
+  "pageTurnSettingsSheetGesturesHint": "Edge taps are thin strips at the top and bottom — not the same as Top/bottom page-turn zones. At least one must be Show menu / chrome; that gesture also reveals the toolbar in Performance mode. Draw is entered from the toolbar, never from a gesture.",
+  "pageTurnSettingsSheetLongPress": "Long-press",
+  "pageTurnSettingsSheetTopEdge": "Top edge",
+  "pageTurnSettingsSheetBottomEdge": "Bottom edge",
+  "pageTurnSettingsSheetPedalKeyboard": "Pedal / keyboard",
+  "pageTurnSettingsSheetPedalKeyboardHint": "Bluetooth pedals that send keyboard keys are supported:\nPrevious — PageUp, ←, ↑, Space\nNext — PageDown, →, ↓, Enter",
+  "pageTurnAnimationOff": "Off",
+  "pageTurnAnimationFast": "Fast",
+  "pageTurnAnimationNormal": "Normal",
+  "pageTurnAnimationSlow": "Slow",
+  "pageTurnDelayOff": "Off",
+  "pageTurnDelay300ms": "0.3s",
+  "pageTurnDelay500ms": "0.5s",
+  "pageTurnDelay1000ms": "1.0s",
+  "pageTurnDelayScopeAll": "All",
+  "pageTurnDelayScopePedalOnly": "Pedal & keyboard only",
+  "pageTurnTapModeMatchLayout": "Match layout",
+  "pageTurnTapModeLeftRight": "Left / right",
+  "pageTurnTapModeTopBottom": "Top / bottom",
+  "pageTurnTapModePrevious": "Anywhere → prev",
+  "pageTurnTapModeNext": "Anywhere → next",
+  "pageTurnTapModeDisabled": "Disabled",
+  "turnAmountFull": "Full page",
+  "turnAmountHalf": "Half page",
+  "gestureMapActionShowChrome": "Show menu / chrome",
+  "gestureMapActionDisabled": "Off",
+  "drawToolbarColorLabel": "Color",
+  "drawToolbarSizeLabel": "Size",
+  "drawToolbarUndo": "Undo",
+  "drawToolbarRedo": "Redo",
+  "drawToolbarDelete": "Delete",
+  "drawToolbarStamp": "Stamp",
+  "drawToolbarPlace": "Place",
+  "drawToolbarMore": "More",
+  "drawToolbarTextStampTitle": "Text stamp",
+  "drawToolbarTextStampHint": "Short label",
+  "drawToolbarDrawOptionsTitle": "Draw options",
+  "drawToolbarTool": "Tool",
+  "drawToolbarWidth": "Width",
+  "drawToolbarStraightLine": "Straight line",
+  "drawToolPen": "Pen",
+  "drawToolMarker": "Marker",
+  "drawToolEraser": "Eraser",
+  "drawToolEyedropper": "Dropper",
+  "drawWidthThin": "Thin",
+  "drawWidthMedium": "Medium",
+  "drawWidthThick": "Thick",
+  "pdfModeScreenTapHint": "Tap the right half for next page, left for previous.",
+  "pdfModeScreenColorFilterTitle": "Color filter",
+  "scoreMenuQuickBarBookmarks": "Bookmarks",
+  "scoreMenuQuickBarDraw": "Draw",
+  "scoreMenuQuickBarExitDraw": "Exit draw",
+  "scoreMenuQuickBarMetronome": "Metronome",
+  "scoreMenuQuickBarMetronomeRunning": "Metronome (running)",
+  "pdfModeScreenExporting": "Exporting PDF…",
+  "pdfModeScreenExportReady": "Export ready — share sheet opened",
+  "pdfModeScreenExportRestartHint": "Exported to {path}. Fully restart the app (stop + flutter run) to enable the share sheet.",
+  "@pdfModeScreenExportRestartHint": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfModeScreenExportFailed": "Export failed: {error}",
+  "@pdfModeScreenExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfModeScreenPieceIndex": "{index}.",
+  "@pdfModeScreenPieceIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfModeScreenHidePieceNotes": "Hide piece notes",
+  "pdfModeScreenShowPieceNotes": "Show piece notes",
+  "pdfModeScreenPieceNotes": "Piece notes",
+  "libraryScreenSort": "Sort",
+  "libraryScreenFilter": "Filter",
+  "libraryScreenManageLabels": "Manage Labels",
+  "libraryScreenMore": "More",
+  "libraryScreenAppearance": "Appearance…",
+  "libraryScreenLanguage": "Language…",
+  "libraryScreenBackup": "Backup…",
+  "libraryScreenRestore": "Restore…",
+  "libraryScreenAbout": "About {productName}…",
+  "@libraryScreenAbout": {
+    "placeholders": {
+      "productName": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenSplitIntoPiecesSnackbar": "Split into {count} {count, plural, =1{piece} other{pieces}}",
+  "@libraryScreenSplitIntoPiecesSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenStillReadingPdf": "Still reading this PDF — try again in a moment.",
+  "libraryScreenEditPiecesAppBarTitle": "Edit pieces",
+  "libraryScreenUpdatedPieces": "Updated to {count} {count, plural, =1{piece} other{pieces}}.",
+  "@libraryScreenUpdatedPieces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenEditPiecesDialogTitle": "Remove piece data?",
+  "libraryScreenEditPiecesBody": "{names} will be removed, along with {count, plural, =1{its} other{their}} annotations, bookmarks, jump links, Labels, and Setlist membership.",
+  "@libraryScreenEditPiecesBody": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenSplitIntoPiecesDialogTitle": "Split into pieces?",
+  "libraryScreenSplitPageOrderBody": "Narrowing “{title}” to pages {firstPage}–{lastPage} will drop {dropping} {dropping, plural, =1{page} other{pages}} from its page order.",
+  "@libraryScreenSplitPageOrderBody": {
+    "placeholders": {
+      "dropping": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "firstPage": {
+        "type": "int"
+      },
+      "lastPage": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenSplitConfirm": "Split",
+  "libraryScreenChangePagesTitle": "Change pages?",
+  "libraryScreenChangePagesBody": "Changing “{title}” to pages {firstPage}–{lastPage} will drop {dropping} {dropping, plural, =1{page} other{pages}} from its page order.",
+  "@libraryScreenChangePagesBody": {
+    "placeholders": {
+      "dropping": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "firstPage": {
+        "type": "int"
+      },
+      "lastPage": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenChangePagesConfirm": "Change",
+  "libraryScreenSetlistEmptyAddScores": "Add scores to this setlist first.",
+  "libraryScreenNoScoresAvailable": "None of the scores in this setlist could be found.",
+  "libraryScreenSkippedMissingScores": "Skipped {count} missing {count, plural, =1{score} other{scores}}.",
+  "@libraryScreenSkippedMissingScores": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenNewSetlist": "New setlist",
+  "libraryScreenDeleteSetlistTitle": "Delete setlist?",
+  "libraryScreenDeleteSetlistBody": "Delete “{title}”? The scores in it are not affected.",
+  "@libraryScreenDeleteSetlistBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenDeleteScoreBody": "Delete “{title}”? This can't be undone.",
+  "@libraryScreenDeleteScoreBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenDeleteScoreWithPiecesBody": "Delete “{title}” and its {count} {count, plural, =1{piece} other{pieces}}? This can't be undone.",
+  "@libraryScreenDeleteScoreWithPiecesBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenDeleteScoreTitle": "Delete score?",
+  "libraryScreenTabScores": "Scores",
+  "libraryScreenTabSetlists": "Setlists",
+  "libraryScreenSearchHint": "Search scores",
+  "libraryScreenAddPdf": "Add PDF",
+  "libraryScreenSplitSuggestionWithPages": "“{name}” ({pages} pages) looks like it could be several pieces.",
+  "@libraryScreenSplitSuggestionWithPages": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenSplitSuggestionGeneric": "“{name}” looks like it could be several pieces.",
+  "@libraryScreenSplitSuggestionGeneric": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenNotNow": "Not now",
+  "libraryScreenSplitEllipsis": "Split…",
+  "libraryScreenFailedToOpen": "Couldn't open the library: {error}",
+  "@libraryScreenFailedToOpen": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenNoScoresYet": "No scores yet",
+  "libraryScreenImportPdfHint": "Import a PDF to get started.",
+  "libraryScreenAddSampleScore": "Add sample score",
+  "libraryScreenNoScoresMatchSearch": "No scores match “{query}”.",
+  "@libraryScreenNoScoresMatchSearch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenNoScoresMatchFilter": "No scores match {filter}.",
+  "@libraryScreenNoScoresMatchFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenClearSearch": "Clear search",
+  "libraryScreenClearFilter": "Clear filter",
+  "libraryScreenRecencyWithPieces": "{when} · {count} {count, plural, =1{piece} other{pieces}}",
+  "@libraryScreenRecencyWithPieces": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenPiecesEllipsis": "Pieces…",
+  "libraryScreenEditPiecesMenuItem": "Edit pieces…",
+  "libraryScreenOpenFullScore": "Open full score",
+  "libraryScreenRenameEllipsis": "Rename…",
+  "libraryScreenLabelsEllipsis": "Labels…",
+  "libraryScreenSplitIntoPiecesEllipsis": "Split into pieces…",
+  "libraryScreenPagesEllipsis": "Pages…",
+  "libraryScreenReplacePdfEllipsis": "Replace PDF…",
+  "libraryScreenDeleteEllipsis": "Delete…",
+  "libraryScreenAddedRelative": "Added {when}",
+  "@libraryScreenAddedRelative": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenOpenedRelative": "Opened {when}",
+  "@libraryScreenOpenedRelative": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenRecencyWithPages": "{when} · {pages} {pages, plural, =1{page} other{pages}}",
+  "@libraryScreenRecencyWithPages": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenNoSetlistsYet": "No setlists yet",
+  "libraryScreenSetlistsEmptyHint": "Group scores for continuous performance without reopening each piece.",
+  "libraryScreenSetlistScoreCount": "{count} {count, plural, =1{score} other{scores}}",
+  "@libraryScreenSetlistScoreCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenSetlistCountEmpty": "Empty",
+  "libraryScreenSetlistScoreCountOpened": "{scoreCount} · {opened}",
+  "@libraryScreenSetlistScoreCountOpened": {
+    "placeholders": {
+      "scoreCount": {
+        "type": "String"
+      },
+      "opened": {
+        "type": "String"
+      }
+    }
+  },
+  "metronomeSheetTitle": "Metronome",
+  "metronomeSheetTempo": "Tempo",
+  "metronomeSheetMeter": "Meter",
+  "metronomeSheetMeterHint": "How beats are grouped in each bar",
+  "metronomeSheetEqual": "Equal",
+  "metronomeSheetMute": "Mute",
+  "metronomeSheetShowBeats": "Show beats",
+  "metronomeSheetShowBeatsHint": "Flash the beat on the score while it plays",
+  "metronomeSheetVolume": "Volume: {percent}%",
+  "@metronomeSheetVolume": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "metronomeSheetStop": "Stop",
+  "metronomeSheetStart": "Start",
+  "metronomeSheetEnterNumber": "Enter a number",
+  "metronomeSheetTempoDialogTitle": "Set tempo",
+  "pageExtentScreenTitle": "Pages",
+  "pageExtentScreenFirstPage": "First page: {page}",
+  "@pageExtentScreenFirstPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "pageExtentScreenLastPage": "Last page: {page}",
+  "@pageExtentScreenLastPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "pageExtentScreenNoPages": "No pages",
+  "pageExtentScreenBadgeOnly": "Only",
+  "pageExtentScreenBadgeFirst": "First",
+  "pageExtentScreenBadgeLast": "Last",
+  "pageExtentScreenSummary": "{title} — {pages} {pages, plural, =1{page} other{pages}}",
+  "@pageExtentScreenSummary": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "pageExtentScreenHint": "Tap a page below to set the selected boundary.",
+  "pageNavBarPreviousPageTooltip": "Previous page",
+  "pageNavBarNextPageTooltip": "Next page",
+  "pageNavBarJumpedSnackbar": "Jumped to page {page} of {count}",
+  "@pageNavBarJumpedSnackbar": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pageNavBarGoToPageTitle": "Go to page",
+  "pageNavBarPageFieldLabel": "Page (1–{count})",
+  "@pageNavBarPageFieldLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "piecesScreenEditPieces": "Edit pieces…",
+  "piecesScreenNoPieces": "No pieces",
+  "piecesScreenRename": "Rename…",
+  "piecesScreenLabels": "Labels…",
+  "piecesScreenSplitIntoPieces": "Split into pieces…",
+  "piecesScreenPages": "Pages…",
+  "piecesScreenReplacePdf": "Replace PDF…",
+  "piecesScreenDelete": "Delete…",
+  "piecesScreenAdded": "Added {when}",
+  "@piecesScreenAdded": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "piecesScreenOpened": "Opened {when}",
+  "@piecesScreenOpened": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "piecesScreenRecencyWithPages": "{when} · {pages} {pages, plural, =1{page} other{pages}}",
+  "@piecesScreenRecencyWithPages": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "piecesScreenPieceCount": "{count} {count, plural, =1{piece} other{pieces}}",
+  "@piecesScreenPieceCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "piecesScreenPageCount": "{count} {count, plural, =1{page} other{pages}}",
+  "@piecesScreenPageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "piecesScreenOpenFullScore": "Open full score",
+  "setlistEditorImportFirst": "Import a score first.",
+  "setlistEditorDefaultTitle": "New setlist",
+  "setlistEditorAppBarTitle": "Edit setlist",
+  "setlistEditorAddScores": "Add scores",
+  "setlistEditorTitleFieldLabel": "Title",
+  "setlistEditorEmpty": "No scores yet. Tap Add scores to build the setlist.",
+  "setlistEditorMissingScore": "Missing score",
+  "setlistEditorRemovedFromLibrary": "Removed from library",
+  "setlistEditorRemoveTooltip": "Remove",
+  "setlistEditorAddCount": "Add ({count})",
+  "@setlistEditorAddCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setlistEditorPieceCount": "{count} {count, plural, =1{piece} other{pieces}}",
+  "@setlistEditorPieceCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setlistEditorPiecesTooltip": "View pieces",
+  "splitScoreScreenRenameTitle": "Rename",
+  "splitScoreScreenTitle": "Split into pieces",
+  "splitScoreScreenClearMarks": "Clear marks",
+  "splitScoreScreenNoPages": "No pages",
+  "splitScoreScreenPieceCount": "{count, plural, =0{No pieces yet} =1{1 piece} other{{count} pieces}}",
+  "@splitScoreScreenPieceCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "splitScoreScreenHint": "Tap a page to mark where a new piece begins. Long-press a marked page to rename it.",
+  "splitScoreScreenFrontMatterPage": "Page {page} is front matter and won't belong to any piece.",
+  "@splitScoreScreenFrontMatterPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "splitScoreScreenFrontMatterPages": "Pages {first}–{last} are front matter and won't belong to any piece.",
+  "@splitScoreScreenFrontMatterPages": {
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
+  "splitScoreScreenUseContents": "Use table of contents ({count} {count, plural, =1{entry} other{entries}})",
+  "@splitScoreScreenUseContents": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenNoPdfFiles": "No PDF files found.",
+  "libraryScreenImportedScores": "Imported {count} {count, plural, =1{score} other{scores}}",
+  "@libraryScreenImportedScores": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenCreateBackupTitle": "Create backup?",
+  "libraryScreenCreateBackupBody": "This saves a copy of your entire library — scores, labels, setlists, and settings — as a zip file you can share or store somewhere safe.",
+  "libraryScreenCreateBackupConfirm": "Create backup",
+  "libraryScreenCreatingBackup": "Creating backup…",
+  "libraryScreenBackupShareSubject": "StageScore backup",
+  "libraryScreenBackupSaved": "Backup saved to {path}",
+  "@libraryScreenBackupSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenBackupReady": "Backup ready — share sheet opened",
+  "libraryScreenBackupFailed": "Could not create backup: {error}",
+  "@libraryScreenBackupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenRestoreBackupTitle": "Restore backup?",
+  "libraryScreenRestoreBackupBody": "This replaces your entire library — scores, labels, setlists, and settings — with the contents of the backup. This cannot be undone.",
+  "libraryScreenReplaceAll": "Replace all",
+  "libraryScreenRestoringBackup": "Restoring backup…",
+  "libraryScreenLibraryRestored": "Library restored",
+  "libraryScreenRestoreFailed": "Could not restore backup: {error}",
+  "@libraryScreenRestoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenPercentValue": "{percent}%",
+  "@libraryScreenPercentValue": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenUntagged": "Untagged",
+  "libraryScreenThisFilter": "this filter",
+  "libraryScreenAndConjunction": "and",
+  "libraryScreenAllOf": "All of",
+  "libraryScreenRemoveFilterChip": "Remove {label} filter",
+  "@libraryScreenRemoveFilterChip": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenRenameScoreTitle": "Rename score",
+  "libraryScreenReplacePdfTitle": "Replace PDF?",
+  "libraryScreenReplacePdfBodyShared": "This PDF is shared by {sharing} pieces, including “{title}”. Replacing it will also change it for the other {others} {others, plural, =1{piece} other{pieces}}.",
+  "@libraryScreenReplacePdfBodyShared": {
+    "placeholders": {
+      "sharing": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "others": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenReplacePdfBodySingle": "Replace the PDF behind “{title}”? You can keep or reset its annotations below.",
+  "@libraryScreenReplacePdfBodySingle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenKeepOverlays": "Keep annotations",
+  "libraryScreenResetOverlays": "Reset annotations",
+  "libraryScreenOverlaysReset": "Annotations reset.",
+  "libraryScreenOverlaysKept": "Annotations kept.",
+  "libraryScreenPdfReplaced": "PDF replaced. {overlayNote}",
+  "@libraryScreenPdfReplaced": {
+    "placeholders": {
+      "overlayNote": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryScreenPdfReplacedShortened": "PDF replaced. {overlayNote} The new file is shorter, so {count} {count, plural, =1{page entry was} other{page entries were}} dropped.",
+  "@libraryScreenPdfReplacedShortened": {
+    "placeholders": {
+      "overlayNote": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryScreenReplaceFailed": "Could not replace PDF: {error}",
+  "@libraryScreenReplaceFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "continuousPageOrderViewOpenFailed": "Could not open PDF: {error}",
+  "@continuousPageOrderViewOpenFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "performancePageSlotBlank": "Blank",
+  "performancePageSlotMissingPage": "Missing page {page}",
+  "@performancePageSlotMissingPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "singlePageSliderOpenFailed": "Could not open PDF: {error}",
+  "@singlePageSliderOpenFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutSheetVersion": "Version {version}",
+  "@aboutSheetVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutSheetVersionWithBuild": "Version {version} ({build})",
+  "@aboutSheetVersionWithBuild": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutSheetLinkOpenFailed": "Could not open link: {url}",
+  "@aboutSheetLinkOpenFailed": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutSheetTitle": "About {productName}",
+  "@aboutSheetTitle": {
+    "placeholders": {
+      "productName": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutSheetWebsiteLabel": "Website",
+  "aboutSheetPrivacyLabel": "Privacy",
+  "aboutSheetSupportLabel": "Support",
+  "bookmarksSheetAddTitle": "Add bookmark",
+  "bookmarksSheetPageLabel": "Page {page}",
+  "@bookmarksSheetPageLabel": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "bookmarksSheetRenameTitle": "Rename bookmark",
+  "bookmarksSheetTitle": "Bookmarks",
+  "bookmarksSheetEmpty": "No bookmarks yet",
+  "displaySheetBorderColorTitle": "Border color",
+  "displaySheetHue": "Hue: {value}",
+  "@displaySheetHue": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "displaySheetSaturation": "Saturation: {value}",
+  "@displaySheetSaturation": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "displaySheetColorValue": "Value: {value}",
+  "@displaySheetColorValue": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "displaySheetTitle": "Display",
+  "displaySheetPerformanceMode": "Performance mode",
+  "displaySheetPageBorder": "Page border",
+  "displaySheetThickness": "Thickness: {value}",
+  "@displaySheetThickness": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "displaySheetColorLabel": "Color",
+  "displaySheetCustomChip": "Custom",
+  "displaySheetShowStatusBar": "Show status bar",
+  "displaySheetShowStatusBarHint": "Keep the clock and battery visible while you play",
+  "displaySheetAvoidNotches": "Avoid notches",
+  "displaySheetAvoidNotchesHint": "Keep the page clear of the camera notch and rounded corners",
+  "jumpLinkEditSheetAddTitle": "Add jump link",
+  "jumpLinkEditSheetEditTitle": "Edit jump link",
+  "jumpLinkEditSheetOriginLabel": "From page {page}",
+  "@jumpLinkEditSheetOriginLabel": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "jumpLinkEditSheetDestinationLabel": "To page {page} of {pageCount}",
+  "@jumpLinkEditSheetDestinationLabel": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "pageCount": {
+        "type": "int"
+      }
+    }
+  },
+  "jumpLinkEditSheetColorLabel": "Color",
+  "jumpLinkEditSheetSizeLabel": "Size",
+  "jumpLinksSheetDragHint": "Added. Drag a jump link in the list to reorder it.",
+  "jumpLinksSheetTitle": "Jump Links",
+  "jumpLinksSheetEmpty": "No jump links yet",
+  "jumpLinksSheetRowTitle": "Page {from} → {to}",
+  "@jumpLinksSheetRowTitle": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "jumpLinksSheetRowSubtitle": "Tap to jump to this link",
+  "labelSheetsTitle": "Labels for {title}",
+  "@labelSheetsTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "labelSheetsManage": "Manage",
+  "labelSheetsCreateLabel": "Create Label",
+  "labelSheetsNewLabel": "New Label",
+  "labelSheetsManageTitle": "Manage Labels",
+  "labelSheetsNoLabelsYet": "No Labels yet",
+  "labelSheetsUsageCount": "Used by {count} {count, plural, =1{Score} other{Scores}}",
+  "@labelSheetsUsageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelSheetsDeleteTitle": "Delete Label?",
+  "labelSheetsDeleteConfirm": "Delete “{name}”?",
+  "@labelSheetsDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "labelSheetsDeleteConfirmWithUsage": "“{name}” is used by {usage} {usage, plural, =1{Score} other{Scores}}. Delete anyway?",
+  "@labelSheetsDeleteConfirmWithUsage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "usage": {
+        "type": "int"
+      }
+    }
+  },
+  "labelSheetsRenameLabelTitle": "Rename Label",
+  "labelSheetsNameHint": "Label name",
+  "libraryFilterSheetTitle": "Filter",
+  "libraryFilterSheetModeAny": "Any",
+  "libraryFilterSheetModeAll": "All",
+  "libraryFilterSheetModeUntagged": "Untagged",
+  "libraryFilterSheetUntaggedHint": "Scores with no Labels",
+  "libraryFilterSheetEmptyLabels": "No Labels to filter by yet"
+}

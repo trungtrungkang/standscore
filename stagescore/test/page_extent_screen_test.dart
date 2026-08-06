@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/ui/page_extent_screen.dart';
 
@@ -26,6 +27,8 @@ void main() {
     saved = null;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
@@ -62,7 +65,7 @@ void main() {
 
     expect(find.text('First page: 3'), findsOneWidget);
     expect(find.text('Last page: 5'), findsOneWidget);
-    expect(find.text('“Op. 10 No. 2” · 3 pages'), findsOneWidget);
+    expect(find.text('Op. 10 No. 2 — 3 pages'), findsOneWidget);
   });
 
   testWidgets('nothing changed means nothing to save', (tester) async {
@@ -86,7 +89,7 @@ void main() {
     // Picking a start is usually followed by picking an end.
     await tapPage(tester, 7);
     expect(find.text('Last page: 7'), findsOneWidget);
-    expect(find.text('“Op. 10 No. 2” · 6 pages'), findsOneWidget);
+    expect(find.text('Op. 10 No. 2 — 6 pages'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(TextButton, 'Save'));
     await tester.pumpAndSettle();
@@ -115,7 +118,7 @@ void main() {
       initial: const PageExtent(firstPage: 4, lastPage: 4),
     );
 
-    expect(find.text('“Op. 10 No. 2” · 1 page'), findsOneWidget);
+    expect(find.text('Op. 10 No. 2 — 1 page'), findsOneWidget);
     expect(find.text('Only'), findsOneWidget);
   });
 }

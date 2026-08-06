@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/setlist/setlist.dart';
@@ -31,6 +32,8 @@ void main() {
   testWidgets('picker lists roots and can drill into pieces', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: SetlistEditorScreen(
           initial: Setlist(
             id: 's',

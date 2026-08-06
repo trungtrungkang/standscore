@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/draw_icon.dart';
 import 'package:stagescore/ui/metronome_icon.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
@@ -77,7 +78,8 @@ class ScoreMenuQuickBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final shortcuts = _shortcuts(theme);
+    final l10n = AppLocalizations.of(context);
+    final shortcuts = _shortcuts(l10n, theme);
 
     if (merged) {
       return Row(
@@ -150,17 +152,22 @@ class ScoreMenuQuickBar extends StatelessWidget {
 
   /// In the reading order of the `⋯` sheet's groups — Go to, Marks, Playing —
   /// so the two surfaces agree about where a thing lives.
-  List<_Shortcut> _shortcuts(ThemeData theme) {
+  List<_Shortcut> _shortcuts(AppLocalizations l10n, ThemeData theme) {
     final primary = theme.colorScheme.primary;
     return [
       _Shortcut(
-        label: 'Bookmarks',
+        label: l10n.scoreMenuQuickBarBookmarks,
         icon: const Icon(kBookmarksIcon),
         onPressed: enabled ? onOpenBookmarks : null,
       ),
       _Shortcut(
-        label: drawEnabled ? 'Exit draw' : 'Draw',
-        alternateLabels: const ['Draw', 'Exit draw'],
+        label: drawEnabled
+            ? l10n.scoreMenuQuickBarExitDraw
+            : l10n.scoreMenuQuickBarDraw,
+        alternateLabels: [
+          l10n.scoreMenuQuickBarDraw,
+          l10n.scoreMenuQuickBarExitDraw,
+        ],
         icon: const DrawIcon(),
         color: drawEnabled ? primary : null,
         onPressed: enabled ? onToggleDraw : null,
@@ -169,7 +176,7 @@ class ScoreMenuQuickBar extends StatelessWidget {
         // The tooltip and the label say the same word; the state is in the
         // tint, so a running metronome does not need a longer label than a
         // stopped one to say so.
-        label: 'Metronome',
+        label: l10n.scoreMenuQuickBarMetronome,
         icon: const MetronomeIcon(),
         // Tinted while running, and a shade stronger on the accented beat.
         // Before this the icon only existed *while* running, which cost the
@@ -178,7 +185,9 @@ class ScoreMenuQuickBar extends StatelessWidget {
         color: metronomeRunning
             ? (metronomeAccent ? primary : primary.withValues(alpha: 0.55))
             : null,
-        tooltip: metronomeRunning ? 'Metronome (running)' : 'Metronome',
+        tooltip: metronomeRunning
+            ? l10n.scoreMenuQuickBarMetronomeRunning
+            : l10n.scoreMenuQuickBarMetronome,
         onPressed: enabled ? onOpenMetronome : null,
       ),
     ];

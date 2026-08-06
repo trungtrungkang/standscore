@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 
 /// App chrome appearance mode (Spec 0026 / P2.10).
 enum AppThemeMode { system, light, dark }
 
 extension AppThemeModeX on AppThemeMode {
-  String get label => switch (this) {
-    AppThemeMode.system => 'System',
-    AppThemeMode.light => 'Light',
-    AppThemeMode.dark => 'Dark',
+  String label(AppLocalizations l10n) => switch (this) {
+    AppThemeMode.system => l10n.themeModeSystem,
+    AppThemeMode.light => l10n.themeModeLight,
+    AppThemeMode.dark => l10n.themeModeDark,
   };
 
   ThemeMode get themeMode => switch (this) {

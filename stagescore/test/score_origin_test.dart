@@ -1,12 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score_origin.dart';
 
+import 'support/test_l10n.dart';
+
 /// The one line that says where a piece came from (Spec 0052).
 void main() {
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await testL10n();
+  });
+
   test('a piece of a book names its pages and its file', () {
     expect(
       scoreOriginLine(
+        l10n: l10n,
         extent: const PageExtent(firstPage: 12, lastPage: 19),
         documentName: 'Chopin Etudes.pdf',
         documentPageCount: 200,
@@ -18,6 +28,7 @@ void main() {
   test('a one-page piece is singular', () {
     expect(
       scoreOriginLine(
+        l10n: l10n,
         extent: const PageExtent(firstPage: 7, lastPage: 7),
         documentName: 'Book.pdf',
         documentPageCount: 30,
@@ -29,6 +40,7 @@ void main() {
   test('a Score that is a whole file says nothing at all', () {
     expect(
       scoreOriginLine(
+        l10n: l10n,
         extent: null,
         documentName: 'Solo.pdf',
         documentPageCount: 4,
@@ -38,6 +50,7 @@ void main() {
     );
     expect(
       scoreOriginLine(
+        l10n: l10n,
         extent: const PageExtent(firstPage: 1, lastPage: 4),
         documentName: 'Solo.pdf',
         documentPageCount: 4,
@@ -50,6 +63,7 @@ void main() {
   test('an uncounted or unnamed document still reports the pages', () {
     expect(
       scoreOriginLine(
+        l10n: l10n,
         extent: const PageExtent(firstPage: 12, lastPage: 19),
         documentName: null,
         documentPageCount: null,
@@ -58,6 +72,7 @@ void main() {
     );
     expect(
       scoreOriginLine(
+        l10n: l10n,
         extent: const PageExtent(firstPage: 1, lastPage: 4),
         documentName: 'Book.pdf',
         documentPageCount: null,

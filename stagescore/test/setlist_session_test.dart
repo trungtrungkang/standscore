@@ -2,11 +2,20 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/score_library.dart';
 import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
 
+import 'support/test_l10n.dart';
+
 void main() {
+  late AppLocalizations l10n;
+
+  setUpAll(() async {
+    l10n = await testL10n();
+  });
+
   test('SetlistSession.resolve skips missing Scores', () async {
     final root = await Directory.systemTemp.createTemp('setlist_session_');
     addTearDown(() => root.delete(recursive: true));
@@ -28,6 +37,7 @@ void main() {
     );
 
     final resolved = await SetlistSession.resolve(
+      l10n: l10n,
       setlist: setlist,
       library: library,
     );

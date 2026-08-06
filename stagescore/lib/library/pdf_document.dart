@@ -57,6 +57,12 @@ class PdfDocument {
   /// argued the opposite — that `.pdf` earns its place because the file is the
   /// answer to "where did this piece come from" — and that held only while the
   /// file name was the one name the app knew (Spec 0054, G3 #2).
+  // The "Untitled book" fallback below stays a plain English literal on
+  // purpose (not an ARB key): it flows through pure model-layer functions
+  // with no `BuildContext` (`splitScore`, `buildLibraryRows`, sort keys) that
+  // ~40 existing tests call directly, and it only fires when a PdfDocument
+  // has neither a `title` nor a usable `originalFileName` — a defensive
+  // default, not a string a musician is expected to see routinely.
   String get displayName {
     final named = title?.trim();
     if (named != null && named.isNotEmpty) return named;

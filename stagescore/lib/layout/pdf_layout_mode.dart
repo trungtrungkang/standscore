@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 
 /// PdfMode reading layout (Specs 0004 / 0013 / 0041 / 0056).
 enum PdfLayoutMode {
@@ -66,14 +67,14 @@ const List<PdfLayoutMode> pickableLayoutModes = [
 extension PdfLayoutModeX on PdfLayoutMode {
   /// Named for what the musician gets, not for how it is computed — "fit" is
   /// a zoom rule these modes stopped implementing when 0036 took the fit over.
-  String get label => switch (this) {
-    PdfLayoutMode.auto => 'Auto',
-    PdfLayoutMode.single => 'One page',
-    PdfLayoutMode.twoPage => 'Two pages',
-    PdfLayoutMode.fitWidth => 'Scroll',
-    PdfLayoutMode.fitHeight => 'Scroll (sideways)',
-    PdfLayoutMode.halfPageTopBottom => 'One page + peek',
-    PdfLayoutMode.halfPageLeftRight => 'One page + side peek',
+  String label(AppLocalizations l10n) => switch (this) {
+    PdfLayoutMode.auto => l10n.pdfLayoutModeAuto,
+    PdfLayoutMode.single => l10n.pdfLayoutModeSingle,
+    PdfLayoutMode.twoPage => l10n.pdfLayoutModeTwoPages,
+    PdfLayoutMode.fitWidth => l10n.pdfLayoutModeScroll,
+    PdfLayoutMode.fitHeight => l10n.pdfLayoutModeScrollSideways,
+    PdfLayoutMode.halfPageTopBottom => l10n.pdfLayoutModeHalfPageTopBottom,
+    PdfLayoutMode.halfPageLeftRight => l10n.pdfLayoutModeHalfPageLeftRight,
   };
 }
 

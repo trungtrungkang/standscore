@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares the languages StageScore ships UI translations for, so Android
+     13+ lists them in Settings > App languages (Spec 0057). -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en"/>
+    <locale android:name="vi"/>
+    <locale android:name="es"/>
+    <locale android:name="fr"/>
+    <locale android:name="de"/>
+    <locale android:name="ja"/>
+    <locale android:name="ko"/>
+    <locale android:name="zh-Hans"/>
+    <locale android:name="zh-Hant"/>
+</locale-config>

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score_library.dart';
 import 'package:stagescore/ui/split_score_screen.dart';
@@ -34,6 +35,8 @@ void main() {
     saved = null;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
@@ -108,7 +111,7 @@ void main() {
           'when the marks were seeded',
     );
 
-    await tester.tap(find.text('Use contents list (3 entries)'));
+    await tester.tap(find.text('Use table of contents (3 entries)'));
     await tester.pumpAndSettle();
 
     expect(find.text('3 pieces'), findsOneWidget);
@@ -129,7 +132,7 @@ void main() {
     );
 
     expect(
-      find.text('Use contents list (2 entries)'),
+      find.text('Use table of contents (2 entries)'),
       findsOneWidget,
       reason: 'the count is the evidence: 2 on a 148-page book warns by itself',
     );
@@ -141,7 +144,7 @@ void main() {
   ) async {
     await pumpSplit(tester);
 
-    expect(find.textContaining('Use contents list'), findsNothing);
+    expect(find.textContaining('Use table of contents'), findsNothing);
   });
 
   testWidgets('tapping a page adds a piece, tapping it again takes it away', (
@@ -164,7 +167,10 @@ void main() {
 
       await tapPage(tester, 3);
 
-      expect(find.text('Pages 1–2 are not in any piece.'), findsOneWidget);
+      expect(
+        find.text("Pages 1–2 are front matter and won't belong to any piece."),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a single excluded page is said in the singular', (
@@ -174,7 +180,10 @@ void main() {
 
       await tapPage(tester, 2);
 
-      expect(find.text('Page 1 is not in any piece.'), findsOneWidget);
+      expect(
+        find.text("Page 1 is front matter and won't belong to any piece."),
+        findsOneWidget,
+      );
     });
 
     testWidgets('marking page 1 means nothing is left out', (tester) async {
@@ -182,7 +191,10 @@ void main() {
 
       await tapPage(tester, 1);
 
-      expect(find.textContaining('not in any piece'), findsNothing);
+      expect(
+        find.textContaining("won't belong to any piece"),
+        findsNothing,
+      );
     });
 
     testWidgets('the first piece starts where the first mark is', (
@@ -212,7 +224,7 @@ void main() {
         (startPage: 5, title: 'Three'),
       ],
     );
-    await tester.tap(find.text('Use contents list (3 entries)'));
+    await tester.tap(find.text('Use table of contents (3 entries)'));
     await tester.pumpAndSettle();
     expect(find.text('3 pieces'), findsOneWidget);
 
@@ -228,7 +240,7 @@ void main() {
           'proposal at all',
     );
     expect(
-      find.text('Use contents list (3 entries)'),
+      find.text('Use table of contents (3 entries)'),
       findsOneWidget,
       reason: 'clearing says the proposal was wrong, not that it is unwanted',
     );
@@ -303,12 +315,12 @@ void main() {
     );
 
     expect(
-      find.text('Use contents list (1 entry)'),
+      find.text('Use table of contents (1 entry)'),
       findsOneWidget,
       reason: 'the offer counts what this file can hold, not what it was given',
     );
 
-    await tester.tap(find.text('Use contents list (1 entry)'));
+    await tester.tap(find.text('Use table of contents (1 entry)'));
     await tester.pumpAndSettle();
 
     expect(find.text('1 piece'), findsOneWidget);

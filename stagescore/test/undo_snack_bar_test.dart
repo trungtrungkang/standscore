@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/undo_snack_bar.dart';
 
 void main() {
@@ -9,12 +10,18 @@ void main() {
   }) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (context) => Center(
               child: ElevatedButton(
                 onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  undoSnackBar(message: 'chrome hidden', onUndo: onUndo),
+                  undoSnackBar(
+                    l10n: AppLocalizations.of(context),
+                    message: 'chrome hidden',
+                    onUndo: onUndo,
+                  ),
                 ),
                 child: const Text('apply'),
               ),

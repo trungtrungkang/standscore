@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 
@@ -21,9 +22,9 @@ class _PageOrderEditorScreenState extends State<PageOrderEditorScreen> {
     _order = widget.initial;
   }
 
-  String _label(PageOrderEntry entry, int index) {
-    if (entry.isBlank) return '${index + 1}. Blank';
-    return '${index + 1}. PDF page ${entry.sourcePage}';
+  String _label(AppLocalizations l10n, PageOrderEntry entry, int index) {
+    if (entry.isBlank) return l10n.pageOrderEditorEntryBlank(index + 1);
+    return l10n.pageOrderEditorEntryPdfPage(index + 1, entry.sourcePage!);
   }
 
   void _applyRowAction(int index, String value) {
@@ -44,21 +45,20 @@ class _PageOrderEditorScreenState extends State<PageOrderEditorScreen> {
 
   Future<void> _reset() async {
     if (_order.isIdentity) return;
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset to original?'),
-        content: const Text(
-          'Restore the PDF page order and remove blanks and duplicates?',
-        ),
+        title: Text(l10n.pageOrderEditorResetTitle),
+        content: Text(l10n.pageOrderEditorResetBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Reset'),
+            child: Text(l10n.pageOrderEditorReset),
           ),
         ],
       ),
@@ -70,22 +70,23 @@ class _PageOrderEditorScreenState extends State<PageOrderEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Page order'),
+        title: Text(l10n.pageOrderEditorAppBarTitle),
         actions: [
           TextButton(
             onPressed: _order.isIdentity ? null : _reset,
-            child: const Text('Reset'),
+            child: Text(l10n.pageOrderEditorReset),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(_order),
-            child: const Text('Done'),
+            child: Text(l10n.actionDone),
           ),
         ],
       ),
       body: _order.length == 0
-          ? const Center(child: Text('No pages'))
+          ? Center(child: Text(l10n.pageOrderEditorNoPages))
           : ReorderableListView.builder(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               itemCount: _order.length,
@@ -97,25 +98,25 @@ class _PageOrderEditorScreenState extends State<PageOrderEditorScreen> {
                 return ListTile(
                   key: ValueKey(entry.id),
                   leading: const Icon(Icons.drag_handle),
-                  title: Text(_label(entry, index)),
+                  title: Text(_label(l10n, entry, index)),
                   // ExcludeFocus: arrow keys after the ⋯ menu must not hit a
                   // disposing InkWell (deactivated ancestor assertion).
                   trailing: ExcludeFocus(
                     child: PopupMenuButton<String>(
                       onSelected: (value) => _applyRowAction(index, value),
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'duplicate',
-                          child: Text('Duplicate'),
+                          child: Text(l10n.pageOrderEditorDuplicate),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'blank',
-                          child: Text('Insert blank'),
+                          child: Text(l10n.pageOrderEditorInsertBlank),
                         ),
                         PopupMenuItem(
                           value: 'remove',
                           enabled: _order.length > 1,
-                          child: const Text('Remove'),
+                          child: Text(l10n.pageOrderEditorRemove),
                         ),
                       ],
                     ),

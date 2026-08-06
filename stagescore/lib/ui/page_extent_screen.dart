@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score_thumbnails.dart';
 import 'package:stagescore/theme/app_tokens.dart';
@@ -73,17 +74,18 @@ class _PageExtentScreenState extends State<PageExtentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final pages = _extent.length;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pages'),
+        title: Text(l10n.pageExtentScreenTitle),
         actions: [
           TextButton(
             onPressed: _changed
                 ? () => Navigator.of(context).pop(_extent)
                 : null,
-            child: const Text('Save'),
+            child: Text(l10n.actionSave),
           ),
         ],
       ),
@@ -99,13 +101,13 @@ class _PageExtentScreenState extends State<PageExtentScreen> {
             child: Row(
               children: [
                 ChoiceChip(
-                  label: Text('First page: $_first'),
+                  label: Text(l10n.pageExtentScreenFirstPage(_first)),
                   selected: _editing == _Edge.first,
                   onSelected: (_) => setState(() => _editing = _Edge.first),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 ChoiceChip(
-                  label: Text('Last page: $_last'),
+                  label: Text(l10n.pageExtentScreenLastPage(_last)),
                   selected: _editing == _Edge.last,
                   onSelected: (_) => setState(() => _editing = _Edge.last),
                 ),
@@ -114,7 +116,7 @@ class _PageExtentScreenState extends State<PageExtentScreen> {
           ),
           Expanded(
             child: widget.pageCount < 1
-                ? const Center(child: Text('This PDF has no pages.'))
+                ? Center(child: Text(l10n.pageExtentScreenNoPages))
                 : PdfPageGrid(
                     pdf: widget.pdf,
                     pageCount: widget.pageCount,
@@ -123,9 +125,11 @@ class _PageExtentScreenState extends State<PageExtentScreen> {
                     onTap: _setEdge,
                     isSelected: _extent.contains,
                     badgeFor: (page) {
-                      if (page == _first && page == _last) return 'Only';
-                      if (page == _first) return 'First';
-                      if (page == _last) return 'Last';
+                      if (page == _first && page == _last) {
+                        return l10n.pageExtentScreenBadgeOnly;
+                      }
+                      if (page == _first) return l10n.pageExtentScreenBadgeFirst;
+                      if (page == _last) return l10n.pageExtentScreenBadgeLast;
                       return null;
                     },
                   ),
@@ -145,14 +149,12 @@ class _PageExtentScreenState extends State<PageExtentScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '“${widget.scoreTitle}” · $pages '
-                '${pages == 1 ? 'page' : 'pages'}',
+                l10n.pageExtentScreenSummary(widget.scoreTitle, pages),
                 style: theme.textTheme.titleSmall,
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Tap a page to move the highlighted end. '
-                'Annotations outside these pages are kept, just not shown.',
+                l10n.pageExtentScreenHint,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

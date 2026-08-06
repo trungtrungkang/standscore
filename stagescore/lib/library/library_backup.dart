@@ -5,6 +5,7 @@ import 'dart:isolate';
 
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/library_migration.dart';
 
 /// Progress update for backup / restore (Spec 0050).
@@ -119,7 +120,10 @@ class LibraryBackup {
     LibraryBackupCancelToken? cancelToken,
   }) async {
     if (!await zipFile.exists()) {
-      throw const LibraryBackupException('Backup file not found.');
+      throw const LibraryBackupException(
+        'Backup file not found.',
+        code: LibraryBackupErrorCode.fileNotFound,
+      );
     }
 
     final parent = libraryRoot.parent;
@@ -176,6 +180,8 @@ class LibraryBackup {
       if (status == 'error') {
         throw LibraryBackupException(
           result['message'] as String? ?? 'Backup failed.',
+          code: _errorCodeFromName(result['code'] as String?),
+          detail: result['detail'] as String?,
         );
       }
     } finally {
@@ -274,11 +280,16 @@ Future<Map<String, Object?>> _createBackupWorker(Map<String, Object?> args) asyn
     } on LibraryBackupException catch (e) {
       await _safeCloseEncoder(encoder);
       await _deleteIfExists(partPath);
-      return {'status': 'error', 'message': e.message};
+      return {'status': 'error', 'message': e.message, 'code': e.code.name};
     } catch (e) {
       await _safeCloseEncoder(encoder);
       await _deleteIfExists(partPath);
-      return {'status': 'error', 'message': 'Could not create backup: $e'};
+      return {
+        'status': 'error',
+        'message': 'Could not create backup: $e',
+        'code': LibraryBackupErrorCode.createFailed.name,
+        'detail': '$e',
+      };
     }
   });
 }
@@ -402,14 +413,19 @@ Future<Map<String, Object?>> _restoreBackupWorker(Map<String, Object?> args) asy
         stagingPath: stagingPath,
         asidePath: asidePath,
       );
-      return {'status': 'error', 'message': e.message};
+      return {'status': 'error', 'message': e.message, 'code': e.code.name};
     } catch (e) {
       await _rollbackRestore(
         libraryRootPath: libraryRootPath,
         stagingPath: stagingPath,
         asidePath: asidePath,
       );
-      return {'status': 'error', 'message': 'Could not restore backup: $e'};
+      return {
+        'status': 'error',
+        'message': 'Could not restore backup: $e',
+        'code': LibraryBackupErrorCode.restoreFailed.name,
+        'detail': '$e',
+      };
     }
   });
 }
@@ -549,6 +565,7 @@ Future<void> _validateMarkerAt(Directory root) async {
   if (!await marker.exists()) {
     throw const LibraryBackupException(
       'Not a StageScore backup (missing marker).',
+      code: LibraryBackupErrorCode.missingMarker,
     );
   }
   try {
@@ -557,6 +574,7 @@ Future<void> _validateMarkerAt(Directory root) async {
     if (json['format'] != LibraryBackup.formatId) {
       throw const LibraryBackupException(
         'Not a StageScore backup (unknown format).',
+        code: LibraryBackupErrorCode.unknownFormat,
       );
     }
     final version = json['version'];
@@ -565,6 +583,7 @@ Future<void> _validateMarkerAt(Directory root) async {
         version > LibraryBackup.formatVersion) {
       throw const LibraryBackupException(
         'Unsupported StageScore backup version.',
+        code: LibraryBackupErrorCode.unsupportedVersion,
       );
     }
   } on LibraryBackupException {
@@ -572,8 +591,16 @@ Future<void> _validateMarkerAt(Directory root) async {
   } catch (_) {
     throw const LibraryBackupException(
       'Not a StageScore backup (corrupt marker).',
+      code: LibraryBackupErrorCode.corruptMarker,
     );
   }
+}
+
+LibraryBackupErrorCode _errorCodeFromName(String? name) {
+  for (final code in LibraryBackupErrorCode.values) {
+    if (code.name == name) return code;
+  }
+  return LibraryBackupErrorCode.generic;
 }
 
 Map<String, String> _titlesFromArchive(Archive archive) {
@@ -623,11 +650,64 @@ String? _labelForRelativePath(String rel, Map<String, String> titles) {
   return p.basename(rel);
 }
 
-class LibraryBackupException implements Exception {
-  const LibraryBackupException(this.message);
+/// Machine-readable reason, so the UI can show a localized message instead of
+/// the English [LibraryBackupException.message] baked in from a worker
+/// isolate (no `BuildContext`/`AppLocalizations` crosses an `Isolate.run`
+/// boundary, so the message text itself cannot carry the locale).
+enum LibraryBackupErrorCode {
+  fileNotFound,
+  missingMarker,
+  unknownFormat,
+  unsupportedVersion,
+  corruptMarker,
+  createFailed,
+  restoreFailed,
+  generic,
+}
 
+class LibraryBackupException implements Exception {
+  const LibraryBackupException(
+    this.message, {
+    this.code = LibraryBackupErrorCode.generic,
+    this.detail,
+  });
+
+  /// English message, kept for logs and existing tests — not for UI display.
   final String message;
+  final LibraryBackupErrorCode code;
+
+  /// Raw lower-level error text for [LibraryBackupErrorCode.createFailed] /
+  /// [LibraryBackupErrorCode.restoreFailed] — unavoidably unlocalized (it may
+  /// come from the OS or a third-party package), but the sentence around it
+  /// is.
+  final String? detail;
 
   @override
   String toString() => message;
+}
+
+/// UI-facing message for [exception] — the one place `.message` (English,
+/// isolate-safe) turns into the locale the musician is reading.
+String libraryBackupErrorMessage(
+  AppLocalizations l10n,
+  LibraryBackupException exception,
+) {
+  switch (exception.code) {
+    case LibraryBackupErrorCode.fileNotFound:
+      return l10n.libraryBackupFileNotFound;
+    case LibraryBackupErrorCode.missingMarker:
+      return l10n.libraryBackupMissingMarker;
+    case LibraryBackupErrorCode.unknownFormat:
+      return l10n.libraryBackupUnknownFormat;
+    case LibraryBackupErrorCode.unsupportedVersion:
+      return l10n.libraryBackupUnsupportedVersion;
+    case LibraryBackupErrorCode.corruptMarker:
+      return l10n.libraryBackupCorruptMarker;
+    case LibraryBackupErrorCode.createFailed:
+      return l10n.libraryBackupCreateFailed(exception.detail ?? exception.message);
+    case LibraryBackupErrorCode.restoreFailed:
+      return l10n.libraryBackupRestoreFailed(exception.detail ?? exception.message);
+    case LibraryBackupErrorCode.generic:
+      return l10n.libraryBackupFailedGeneric;
+  }
 }

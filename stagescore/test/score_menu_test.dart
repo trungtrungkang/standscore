@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/stage_preset.dart';
 import 'package:stagescore/ui/score_menu.dart';
 import 'package:stagescore/ui/score_menu_sheet.dart';
+
+import 'support/test_l10n.dart';
+
+late AppLocalizations _l10n;
 
 List<ScoreMenuGroup> menu({
   PdfLayoutMode layoutMode = PdfLayoutMode.single,
@@ -17,6 +22,7 @@ List<ScoreMenuGroup> menu({
   StagePresetDirection stagePreset = StagePresetDirection.play,
 }) {
   return buildScoreMenu(
+    l10n: _l10n,
     layoutMode: layoutMode,
     resolvedLayout: resolvedLayout ?? layoutMode,
     colorFilter: colorFilter,
@@ -34,7 +40,21 @@ Iterable<ScoreMenuEntry> entriesOf(List<ScoreMenuGroup> groups) =>
 ScoreMenuEntry entryFor(List<ScoreMenuGroup> groups, ScoreMenuAction action) =>
     entriesOf(groups).firstWhere((e) => e.action == action);
 
+/// [MaterialApp] with localization wired, for widgets under test that call
+/// `AppLocalizations.of(context)` (`_ScoreMenuSheet`).
+Widget _app(Widget home) {
+  return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  );
+}
+
 void main() {
+  setUpAll(() async {
+    _l10n = await testL10n();
+  });
+
   group('buildScoreMenu', () {
     test('every action is placed in exactly one group', () {
       final actions = entriesOf(menu()).map((e) => e.action).toList();
@@ -97,7 +117,7 @@ void main() {
       final on = menu(colorFilter: PageColorFilterMode.sepia, zoomLocked: true);
       expect(
         entryFor(on, ScoreMenuAction.colorFilter).value,
-        PageColorFilterMode.sepia.label,
+        PageColorFilterMode.sepia.label(_l10n),
       );
       expect(entryFor(on, ScoreMenuAction.pageScale).value, 'Locked');
     });
@@ -149,8 +169,8 @@ void main() {
       ScoreMenuAction? chosen;
       var opened = false;
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        _app(
+          Scaffold(
             body: Builder(
               builder: (context) => TextButton(
                 onPressed: () async {
@@ -190,8 +210,8 @@ void main() {
       var chosen = ScoreMenuAction.bookmarks;
       var closed = false;
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        _app(
+          Scaffold(
             body: Builder(
               builder: (context) => TextButton(
                 onPressed: () async {
@@ -231,8 +251,8 @@ void main() {
     testWidgets('a disabled entry cannot be chosen', (tester) async {
       ScoreMenuAction? chosen;
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        _app(
+          Scaffold(
             body: Builder(
               builder: (context) => TextButton(
                 onPressed: () async {

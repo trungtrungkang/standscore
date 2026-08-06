@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
 import 'package:stagescore/ui/layout_settings_sheet.dart';
@@ -17,6 +18,8 @@ Future<PdfLayoutPrefs?> _openSheet(
   PdfLayoutPrefs? changed;
   await tester.pumpWidget(
     MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(
           builder: (context) => TextButton(

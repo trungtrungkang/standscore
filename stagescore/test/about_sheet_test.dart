@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stagescore/brand/brand.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/about_sheet.dart';
 
 /// The About sheet (Spec 0042): who makes this, which build it is, and three
@@ -21,6 +22,8 @@ void main() {
   }) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (context) => TextButton(
@@ -87,9 +90,9 @@ void main() {
   testWidgets('each row opens its own destination', (tester) async {
     await openSheet(tester);
 
-    await tester.tap(find.text('backingscore.com'));
+    await tester.tap(find.text('Website'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Privacy policy'));
+    await tester.tap(find.text('Privacy'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Support'));
     await tester.pumpAndSettle();
@@ -108,7 +111,7 @@ void main() {
     launchSucceeds = false;
     await openSheet(tester);
 
-    await tester.tap(find.text('backingscore.com'));
+    await tester.tap(find.text('Website'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Could not open'), findsOneWidget);

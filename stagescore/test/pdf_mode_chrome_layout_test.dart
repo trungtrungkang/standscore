@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/ui/page_nav_bar.dart';
 import 'package:stagescore/ui/pdf_mode_screen.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
@@ -22,6 +23,8 @@ Widget _shell({
     title: const Text('Score'),
   );
   return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     builder: (context, child) => MediaQuery(
       // Notch + home indicator, as on the iPhone this Spec was demoed on.
       data: MediaQuery.of(context).copyWith(padding: insets),
@@ -163,6 +166,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           bottomNavigationBar: PageNavBar(
             pageNumber: 1,

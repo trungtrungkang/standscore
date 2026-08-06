@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
@@ -88,6 +89,8 @@ void main() {
   Future<void> pumpLibrary(WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: LibraryScreen(library: library, thumbnails: fakeThumbnails()),
       ),
     );
@@ -299,6 +302,8 @@ void main() {
     final opened = <Uri>[];
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: LibraryScreen(
           library: library,
           thumbnails: fakeThumbnails(),
@@ -321,7 +326,7 @@ void main() {
     expect(find.text('Part of Backing & Score'), findsOneWidget);
     expect(find.text('Version 9.9.9 (42)'), findsOneWidget);
 
-    await tester.tap(find.text('backingscore.com'));
+    await tester.tap(find.text('Website'));
     await tester.pumpAndSettle();
     expect(opened.single.toString(), 'https://backingscore.com');
   });

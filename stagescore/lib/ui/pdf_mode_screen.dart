@@ -18,6 +18,7 @@ import 'package:stagescore/bookmark/bookmark_store.dart';
 import 'package:stagescore/jumplink/jump_link.dart';
 import 'package:stagescore/jumplink/jump_link_geometry.dart';
 import 'package:stagescore/jumplink/jump_link_store.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/display_prefs.dart';
 import 'package:stagescore/layout/display_prefs_store.dart';
 import 'package:stagescore/layout/layout_fit.dart';
@@ -629,9 +630,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     if (_exporting || !_prefsReady) return;
     setState(() => _exporting = true);
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Exporting PDF…')));
+      ..showSnackBar(
+        SnackBar(content: Text(l10n.pdfModeScreenExporting)),
+      );
     try {
       final doc = await PdfDocument.openFile(_filePath);
       try {
@@ -666,9 +670,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           messenger
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              const SnackBar(
-                content: Text('Export ready — share sheet opened'),
-              ),
+              SnackBar(content: Text(l10n.pdfModeScreenExportReady)),
             );
         } on MissingPluginException {
           if (!mounted) return;
@@ -677,8 +679,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
             ..showSnackBar(
               SnackBar(
                 content: Text(
-                  'Exported to ${out.path}. Fully restart the app '
-                  '(stop + flutter run) to enable the share sheet.',
+                  l10n.pdfModeScreenExportRestartHint(out.path),
                 ),
                 duration: const Duration(seconds: 6),
               ),
@@ -691,7 +692,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       if (!mounted) return;
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('Export failed: $e')));
+        ..showSnackBar(
+          SnackBar(content: Text(l10n.pdfModeScreenExportFailed('$e'))),
+        );
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -777,7 +780,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                     final piece = session.pieces[index];
                     final selected = index == _scoreIndex;
                     return ListTile(
-                      leading: Text('${index + 1}.'),
+                      leading: Text(
+                        AppLocalizations.of(context).pdfModeScreenPieceIndex(index + 1),
+                      ),
                       title: Text(piece.score.title),
                       trailing: selected
                           ? Icon(
@@ -806,6 +811,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   /// The four ScoreMenu groups 0035 built, rebuilt fresh on every open so the
   /// sheet always shows current state (Layout, Color filter, Page scale…).
   List<ScoreMenuGroup> _scoreMenuGroups() => buildScoreMenu(
+    l10n: AppLocalizations.of(context),
     layoutMode: _layoutPrefs.mode,
     resolvedLayout: _layoutMode,
     colorFilter: _colorFilterMode,
@@ -911,6 +917,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final afterDisplay = StagePreset.applyToDisplay(beforeDisplay, direction);
     final afterScale = StagePreset.applyToScale(beforeScale, direction);
     final changes = StagePreset.changes(
+      l10n: AppLocalizations.of(context),
       beforeDisplay: beforeDisplay,
       beforeScale: beforeScale,
       afterDisplay: afterDisplay,
@@ -925,6 +932,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         undoSnackBar(
+          l10n: AppLocalizations.of(context),
           message: changes.join(' · '),
           onUndo: () => _applyStageSettings(beforeDisplay, beforeScale),
         ),
@@ -946,7 +954,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       context: context,
       prefs: _displayPrefs,
       onChanged: _saveDisplayPrefs,
-      performanceModeHint: gestureMapRevealHint(_pageTurnPrefs.gestureMap),
+      performanceModeHint: gestureMapRevealHint(
+        AppLocalizations.of(context),
+        _pageTurnPrefs.gestureMap,
+      ),
     );
   }
 
@@ -977,19 +988,20 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final selected = await showModalBottomSheet<PageColorFilterMode>(
       context: context,
       builder: (context) {
+        final l10n = AppLocalizations.of(context);
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 title: Text(
-                  'Color filter',
+                  l10n.pdfModeScreenColorFilterTitle,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
               for (final mode in PageColorFilterMode.values)
                 ListTile(
-                  title: Text(mode.label),
+                  title: Text(mode.label(l10n)),
                   trailing: _colorFilterMode == mode
                       ? const Icon(Icons.check)
                       : null,
@@ -1096,9 +1108,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   Future<void> _showHint() async {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tap the right half for next page, left for previous.'),
-        duration: Duration(seconds: 4),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).pdfModeScreenTapHint),
+        duration: const Duration(seconds: 4),
       ),
     );
     await _savePageTurnPrefs(_pageTurnPrefs.copyWith(hintShown: true));
@@ -1108,7 +1120,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(gestureMapRevealHint(_pageTurnPrefs.gestureMap)),
+        content: Text(
+          gestureMapRevealHint(
+            AppLocalizations.of(context),
+            _pageTurnPrefs.gestureMap,
+          ),
+        ),
         duration: const Duration(seconds: 5),
       ),
     );
@@ -1474,11 +1491,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   /// than opening something, so it needs to say what it does at a glance.
   Widget _buildPieceNotesToggle() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final tint = !_prefsReady
         ? theme.disabledColor
         : (_showPieceNotes ? theme.colorScheme.primary : null);
     return IconButton(
-      tooltip: _showPieceNotes ? 'Hide piece notes' : 'Show piece notes',
+      tooltip: _showPieceNotes
+          ? l10n.pdfModeScreenHidePieceNotes
+          : l10n.pdfModeScreenShowPieceNotes,
       onPressed: _prefsReady
           ? () => _setShowPieceNotes(!_showPieceNotes)
           : null,
@@ -1492,7 +1512,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           ),
           const SizedBox(height: kQuickBarLabelGap),
           Text(
-            'Piece notes',
+            l10n.pdfModeScreenPieceNotes,
             style: theme.textTheme.labelSmall?.copyWith(color: tint),
           ),
         ],
@@ -1553,7 +1573,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _announcedLayout = resolved;
     // First build has nothing to compare against, and nothing to explain.
     if (previous == null || !_prefsReady) return;
-    _layoutNotice = resolved.label;
+    _layoutNotice = resolved.label(AppLocalizations.of(context));
     _layoutNoticeSeq++;
   }
 
@@ -1578,7 +1598,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         // space. `⋯` is the one action still worth keeping up here — it is
         // reached the same way whether the chrome is fading in or settled.
         IconButton(
-          tooltip: 'More',
+          tooltip: AppLocalizations.of(context).actionMore,
           onPressed: _prefsReady ? _openScoreMenu : null,
           icon: const Icon(Icons.more_vert),
         ),

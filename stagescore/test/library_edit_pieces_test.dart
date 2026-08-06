@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
 import 'package:stagescore/ui/library_screen.dart';
@@ -54,7 +55,13 @@ void main() {
   }
 
   Future<void> pumpLibrary(WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: LibraryScreen(library: library)));
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LibraryScreen(library: library),
+      ),
+    );
     await settle(tester);
   }
 
@@ -138,7 +145,7 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Save'));
     await settle(tester);
 
-    expect(find.text('Updated 2 pieces'), findsOneWidget);
+    expect(find.text('Updated to 2 pieces.'), findsOneWidget);
   });
 
   testWidgets('Edit pieces is also reachable from the Pieces screen app bar', (
@@ -178,7 +185,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(TextButton, 'Save'));
     await settle(tester);
-    expect(find.text('Updated 2 pieces'), findsOneWidget);
+    expect(find.text('Updated to 2 pieces.'), findsOneWidget);
   });
 
   testWidgets("a piece whose page range doesn't change keeps its id", (
@@ -240,8 +247,8 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Save'));
     await settle(tester);
 
-    expect(find.text('Edit pieces?'), findsNothing);
-    expect(find.text('Updated 2 pieces'), findsOneWidget);
+    expect(find.text('Remove piece data?'), findsNothing);
+    expect(find.text('Updated to 2 pieces.'), findsOneWidget);
 
     final scores = await io(tester, library.listScores);
     final pieces = scores.where((s) => s.parentId != null).toList();
@@ -276,7 +283,7 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Save'));
     await settle(tester);
 
-    expect(find.text('Edit pieces?'), findsOneWidget);
+    expect(find.text('Remove piece data?'), findsOneWidget);
     expect(find.textContaining('Two'), findsWidgets);
 
     await tester.tap(find.widgetWithText(TextButton, 'Cancel'));

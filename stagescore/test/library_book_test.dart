@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
 import 'package:stagescore/ui/library_screen.dart';
@@ -46,7 +47,13 @@ void main() {
   }
 
   Future<void> pumpLibrary(WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: LibraryScreen(library: library)));
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LibraryScreen(library: library),
+      ),
+    );
     await settle(tester);
   }
 

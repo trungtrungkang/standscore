@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/page_scale.dart';
 import 'package:stagescore/layout/page_scale_prefs_store.dart';
 import 'package:stagescore/library/outline_split.dart';
@@ -73,6 +74,8 @@ void main() {
   }) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: LibraryScreen(
           library: library,
           loadOutline: outline == null ? null : (path) async => outline,
@@ -110,7 +113,7 @@ void main() {
     await tester.tap(find.text('Split into pieces…'));
     await settle(tester);
     if (useOutline) {
-      await tester.tap(find.textContaining('Use contents list'));
+      await tester.tap(find.textContaining('Use table of contents'));
       await tester.pumpAndSettle();
     }
     for (final page in pages) {
@@ -239,7 +242,7 @@ void main() {
     expect(find.text('No pieces yet'), findsOneWidget);
     expect(find.text('Op. 10 No. 2'), findsNothing);
 
-    await tester.tap(find.text('Use contents list (3 entries)'));
+    await tester.tap(find.text('Use table of contents (3 entries)'));
     await tester.pumpAndSettle();
 
     expect(find.text('3 pieces'), findsOneWidget);
@@ -404,7 +407,10 @@ void main() {
       await pumpLibrary(tester);
 
       await narrowLastPageTo(tester, 4);
-      expect(find.textContaining('2 slots in the page order'), findsOneWidget);
+      expect(
+        find.textContaining('will drop 2 pages from its page order'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
       await settle(tester);
@@ -424,7 +430,7 @@ void main() {
       await pumpLibrary(tester);
 
       await narrowLastPageTo(tester, 5);
-      await tester.tap(find.widgetWithText(FilledButton, 'Change pages'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Change'));
       await settle(tester);
 
       final scores = await io(tester, library.listScores);

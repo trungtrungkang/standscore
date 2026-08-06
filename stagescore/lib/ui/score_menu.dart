@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/stage_preset.dart';
@@ -82,14 +83,16 @@ class ScoreMenuGroup {
 /// Auto is only honest if it admits what it picked, and a spread that could
 /// not fit has to say so where the musician is already looking.
 String layoutMenuValue({
+  required AppLocalizations l10n,
   required PdfLayoutMode stored,
   required PdfLayoutMode resolved,
 }) {
-  if (stored == resolved) return stored.label;
-  return '${stored.label} · ${resolved.label}';
+  if (stored == resolved) return stored.label(l10n);
+  return l10n.scoreMenuLayoutValueBoth(stored.label(l10n), resolved.label(l10n));
 }
 
 List<ScoreMenuGroup> buildScoreMenu({
+  required AppLocalizations l10n,
   required PdfLayoutMode layoutMode,
   required PdfLayoutMode resolvedLayout,
   required PageColorFilterMode colorFilter,
@@ -101,32 +104,34 @@ List<ScoreMenuGroup> buildScoreMenu({
 }) {
   return [
     ScoreMenuGroup(
-      title: 'Go to',
-      entries: const [
+      title: l10n.scoreMenuGoTo,
+      entries: [
         ScoreMenuEntry(
           action: ScoreMenuAction.bookmarks,
-          label: 'Bookmarks',
+          label: l10n.scoreMenuBookmarks,
           icon: kBookmarksIcon,
         ),
         ScoreMenuEntry(
           action: ScoreMenuAction.jumpLinks,
-          label: 'Jump Links',
+          label: l10n.scoreMenuJumpLinks,
           icon: kJumpLinksIcon,
         ),
         // Here rather than under View: it changes what "next page" means.
         ScoreMenuEntry(
           action: ScoreMenuAction.pageOrder,
-          label: 'Page order…',
+          label: l10n.scoreMenuPageOrder,
           icon: kPageOrderIcon,
         ),
       ],
     ),
     ScoreMenuGroup(
-      title: 'Marks',
+      title: l10n.scoreMenuMarks,
       entries: [
         ScoreMenuEntry(
           action: ScoreMenuAction.toggleAnnotations,
-          label: annotationsVisible ? 'Hide annotations' : 'Show annotations',
+          label: annotationsVisible
+              ? l10n.scoreMenuHideAnnotations
+              : l10n.scoreMenuShowAnnotations,
           // Reads as current state, same as the AppBar's own View shortcut:
           // the label says what tapping does, the icon says what is true now.
           icon: annotationsVisible
@@ -135,60 +140,68 @@ List<ScoreMenuGroup> buildScoreMenu({
         ),
         ScoreMenuEntry(
           action: ScoreMenuAction.exportAnnotated,
-          label: exporting ? 'Exporting…' : 'Export PDF with annotations',
+          label: exporting
+              ? l10n.scoreMenuExporting
+              : l10n.scoreMenuExportAnnotated,
           icon: kExportAnnotatedIcon,
           enabled: !exporting,
         ),
       ],
     ),
     ScoreMenuGroup(
-      title: 'View',
+      title: l10n.scoreMenuView,
       entries: [
         ScoreMenuEntry(
           action: ScoreMenuAction.layout,
-          label: 'Layout',
+          label: l10n.scoreMenuLayout,
           icon: kLayoutIcon,
-          value: layoutMenuValue(stored: layoutMode, resolved: resolvedLayout),
+          value: layoutMenuValue(
+            l10n: l10n,
+            stored: layoutMode,
+            resolved: resolvedLayout,
+          ),
         ),
-        const ScoreMenuEntry(
+        ScoreMenuEntry(
           action: ScoreMenuAction.display,
-          label: 'Display…',
+          label: l10n.scoreMenuDisplay,
           icon: kDisplayIcon,
         ),
         ScoreMenuEntry(
           action: ScoreMenuAction.colorFilter,
-          label: 'Color filter…',
+          label: l10n.scoreMenuColorFilter,
           icon: kColorFilterIcon,
           value: colorFilter == PageColorFilterMode.off
               ? null
-              : colorFilter.label,
+              : colorFilter.label(l10n),
         ),
         ScoreMenuEntry(
           action: ScoreMenuAction.pageScale,
-          label: 'Page scale…',
+          label: l10n.scoreMenuPageScale,
           icon: kPageScaleIcon,
-          value: zoomLocked ? 'Locked' : null,
+          value: zoomLocked ? l10n.scoreMenuLocked : null,
         ),
       ],
     ),
     ScoreMenuGroup(
-      title: 'Playing',
+      title: l10n.scoreMenuPlaying,
       entries: [
         // One entry, both directions: the label is read off the current prefs
         // rather than a mode the musician could contradict (Spec 0036).
         ScoreMenuEntry(
           action: ScoreMenuAction.stagePreset,
-          label: StagePreset.labelFor(stagePreset),
+          label: StagePreset.labelFor(l10n, stagePreset),
           icon: kStagePresetIcon,
         ),
         ScoreMenuEntry(
           action: ScoreMenuAction.metronome,
-          label: metronomeRunning ? 'Metronome (running)…' : 'Metronome…',
+          label: metronomeRunning
+              ? l10n.scoreMenuMetronomeRunning
+              : l10n.scoreMenuMetronome,
           icon: kMetronomeIcon,
         ),
-        const ScoreMenuEntry(
+        ScoreMenuEntry(
           action: ScoreMenuAction.pageTurnSettings,
-          label: 'Page turn settings',
+          label: l10n.scoreMenuPageTurnSettings,
           icon: kPageTurnSettingsIcon,
         ),
       ],

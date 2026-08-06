@@ -1,3 +1,5 @@
+import 'package:stagescore/l10n/gen/app_localizations.dart';
+
 /// Non–PageTurn gesture assignments (Spec 0015 / P1.2).
 ///
 /// Draw is deliberately absent: dropping into Draw from a stray tap was a
@@ -76,20 +78,20 @@ GestureMapAction _actionFromName(String? name) {
 bool validateGestureMap(GestureMap map) => map.hasShowChrome;
 
 /// Sentence naming the inputs that reveal chrome in PerformanceMode (0034).
-String gestureMapRevealHint(GestureMap map) {
+String gestureMapRevealHint(AppLocalizations l10n, GestureMap map) {
   final inputs = [
-    if (map.longPress == GestureMapAction.showChrome) 'long-press',
-    if (map.topEdge == GestureMapAction.showChrome) 'tap the top edge',
-    if (map.bottomEdge == GestureMapAction.showChrome) 'tap the bottom edge',
+    if (map.longPress == GestureMapAction.showChrome) l10n.gestureMapLongPress,
+    if (map.topEdge == GestureMapAction.showChrome) l10n.gestureMapTapTopEdge,
+    if (map.bottomEdge == GestureMapAction.showChrome)
+      l10n.gestureMapTapBottomEdge,
   ];
   if (inputs.isEmpty) {
-    return 'Set a gesture to Show menu / chrome to reveal it.';
+    return l10n.gestureMapEmptyHint;
   }
   final joined = inputs.length == 1
       ? inputs.single
-      : '${inputs.take(inputs.length - 1).join(', ')} or ${inputs.last}';
-  return 'Hide the toolbar and page bar while you play. '
-      'To bring them back, $joined.';
+      : '${inputs.take(inputs.length - 1).join(', ')} ${l10n.commonOr} ${inputs.last}';
+  return l10n.gestureMapRevealHint(joined);
 }
 
 /// Thickness of each vertical edge band for [viewerHeight].

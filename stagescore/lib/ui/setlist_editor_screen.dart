@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/theme/app_tokens.dart';
@@ -45,8 +46,9 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
   Future<void> _addScores() async {
     final available = widget.libraryScores;
     if (available.isEmpty) {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Import PDFs into the library first.')),
+        SnackBar(content: Text(l10n.setlistEditorImportFirst)),
       );
       return;
     }
@@ -66,22 +68,26 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
   }
 
   void _done() {
+    final l10n = AppLocalizations.of(context);
     final title = _titleController.text.trim();
-    final result = _setlist.rename(title.isEmpty ? 'Setlist' : title);
+    final result = _setlist.rename(
+      title.isEmpty ? l10n.setlistEditorDefaultTitle : title,
+    );
     Navigator.of(context).pop(result);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit setlist'),
-        actions: [TextButton(onPressed: _done, child: const Text('Done'))],
+        title: Text(l10n.setlistEditorAppBarTitle),
+        actions: [TextButton(onPressed: _done, child: Text(l10n.actionDone))],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addScores,
         icon: const Icon(Icons.add),
-        label: const Text('Add scores'),
+        label: Text(l10n.setlistEditorAddScores),
       ),
       body: Column(
         children: [
@@ -94,16 +100,16 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
             ),
             child: TextField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Setlist title',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.setlistEditorTitleFieldLabel,
+                border: const OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.done,
             ),
           ),
           Expanded(
             child: _setlist.scoreIds.isEmpty
-                ? const Center(child: Text('No scores yet — tap Add scores.'))
+                ? Center(child: Text(l10n.setlistEditorEmpty))
                 : ReorderableListView.builder(
                     padding: const EdgeInsets.only(bottom: kFabScrollClearance),
                     itemCount: _setlist.scoreIds.length,
@@ -115,19 +121,20 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
                     itemBuilder: (context, index) {
                       final id = _setlist.scoreIds[index];
                       final score = _scoreById(id);
-                      final title = score?.title ?? 'Missing score';
+                      final title =
+                          score?.title ?? l10n.setlistEditorMissingScore;
                       return ListTile(
                         key: ValueKey('$id-$index'),
                         leading: Text('${index + 1}.'),
                         title: Text(title),
                         subtitle: score == null
-                            ? const Text('Removed from library')
+                            ? Text(l10n.setlistEditorRemovedFromLibrary)
                             : null,
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              tooltip: 'Remove',
+                              tooltip: l10n.setlistEditorRemoveTooltip,
                               onPressed: () {
                                 setState(
                                   () => _setlist = _setlist.removeAt(index),
@@ -167,6 +174,7 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final height = MediaQuery.sizeOf(context).height * 0.7;
     final roots = rootsOnly(widget.scores);
     Score? drilling;
@@ -198,13 +206,15 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
               children: [
                 if (drilling != null)
                   IconButton(
-                    tooltip: 'Back',
+                    tooltip: l10n.actionBack,
                     onPressed: () => setState(() => _drillRootId = null),
                     icon: const Icon(Icons.arrow_back),
                   ),
                 Expanded(
                   child: Text(
-                    drilling == null ? 'Add scores' : drilling.title,
+                    drilling == null
+                        ? l10n.setlistEditorAddScores
+                        : drilling.title,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -212,7 +222,7 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
                   onPressed: _selected.isEmpty
                       ? null
                       : () => Navigator.pop(context, _selected.toList()),
-                  child: Text('Add (${_selected.length})'),
+                  child: Text(l10n.setlistEditorAddCount(_selected.length)),
                 ),
               ],
             ),
@@ -230,9 +240,7 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
                 if (drilling == null && childCount > 0) {
                   return ListTile(
                     title: Text(score.title),
-                    subtitle: Text(
-                      '$childCount ${childCount == 1 ? 'piece' : 'pieces'}',
-                    ),
+                    subtitle: Text(l10n.setlistEditorPieceCount(childCount)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -249,7 +257,7 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
                           },
                         ),
                         IconButton(
-                          tooltip: 'Pieces',
+                          tooltip: l10n.setlistEditorPiecesTooltip,
                           icon: const Icon(Icons.chevron_right),
                           onPressed: () =>
                               setState(() => _drillRootId = score.id),

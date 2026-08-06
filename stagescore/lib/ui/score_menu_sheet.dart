@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/metronome_icon.dart';
 import 'package:stagescore/ui/score_menu.dart';
@@ -34,6 +35,7 @@ class _ScoreMenuSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: ConstrainedBox(
         // Same shape as the Layout / Page turn sheets: a Done row means the
@@ -60,7 +62,7 @@ class _ScoreMenuSheet extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Menu', style: theme.textTheme.titleLarge),
+                          Text(l10n.scoreMenuSheetTitle, style: theme.textTheme.titleLarge),
                           if (subtitle != null)
                             Text(
                               subtitle!,
@@ -76,7 +78,7 @@ class _ScoreMenuSheet extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Done'),
+                    child: Text(l10n.actionDone),
                   ),
                 ],
               ),
