@@ -8,6 +8,7 @@
 - **Depends on Specs:** không — greenfield, không supersede Spec nào
 - **Tier:** **M** (ADR 0013) — một tính năng trong một app, không SDK mới ngoài `intl`/`flutter_localizations` (cả hai đến từ chính Flutter SDK), không quyền mới, không byte nào rời máy, không đổi ADR đã accepted. G3 + G4, không cần ADR mới, không cần Security Review.
 - **G3:** accepted 2026-08-06 — chốt qua `AskQuestion` trong chat (xem "Quyết định" bên dưới), thay cho form G3 dài
+- **G4:** build xong 2026-08-06 — `flutter analyze` sạch, **570/570** test xanh (559 trước slice; thêm `app_locale_prefs_test.dart` và `locale_override_test.dart` — Spec liệt kê cả hai loại test này ở mục Test plan nhưng bản build đầu chỉ sửa test cũ qua `testL10n()`, chưa có test riêng cho `AppLocalePrefsStore` hay widget test ép locale). Còn lại: xác nhận thủ công trên máy thật qua các locale — xem Test plan
 
 > **Sinh từ việc chuẩn bị build thay thế bản đang review trên App Store & Google Play.** Spec 0042 đã ghi nhận StageScore "English-only" là một khoảng cách thật so với web (9 locale) và hẹn "một slice riêng, không phải rider". Đây là slice đó.
 
@@ -71,14 +72,14 @@ App hiển thị đúng ngôn ngữ hệ thống nếu nằm trong 9 locale trê
 
 ## Acceptance criteria
 
-- [ ] `flutter pub get` + `flutter gen-l10n` chạy sạch, không key nào thiếu ở bất kỳ 1 trong 9 file ARB
-- [ ] Đổi ngôn ngữ hệ thống thiết bị sang mỗi locale trong 9 locale (giả lập được ít nhất vài locale) → UI hiển thị đúng bản dịch, không sót chuỗi tiếng Anh nào ngoài domain term và `Brand.*`
-- [ ] Locale hệ thống không thuộc 9 locale (ví dụ Thái) → app hiển thị tiếng Anh (fallback), không crash
-- [ ] Setting **Language** trong menu `⋯`: chọn "System" theo đúng hệ thống; chọn một ngôn ngữ cụ thể → toàn app đổi ngay không cần khởi động lại; khởi động lại app → lựa chọn còn giữ
-- [ ] Chuỗi có số đếm (ví dụ "1 piece" / "N pieces") đúng ngữ pháp số nhiều/số ít cho từng ngôn ngữ theo luật ICU của `intl` (tiếng Việt/Trung/Nhật/Hàn không phân biệt số nhiều — luật `other` áp dụng đúng, không sinh câu ngô nghê kiểu "1 pieces")
-- [ ] Domain term (Score, Setlist, Bookmark, JumpLink, PageTurn…) xuất hiện y nguyên tiếng Anh trong mọi bản dịch
-- [ ] `flutter analyze` sạch, toàn bộ suite test hiện có xanh không cần đổi kỳ vọng chuỗi (chỉ đổi test harness nếu thiếu `localizationsDelegates`)
-- [ ] Không chuỗi tiếng Anh nào còn hardcode trong `lib/` ngoài `Brand.*`, endonym tên ngôn ngữ trong sheet Language, và separator/glyph đơn ký tự
+- [x] `flutter pub get` + `flutter gen-l10n` chạy sạch, không key nào thiếu ở bất kỳ 1 trong 9 file ARB
+- [ ] Đổi ngôn ngữ hệ thống thiết bị sang mỗi locale trong 9 locale (giả lập được ít nhất vài locale) → UI hiển thị đúng bản dịch, không sót chuỗi tiếng Anh nào ngoài domain term và `Brand.*` — **G4 trên máy thật, chưa làm**
+- [x] Locale hệ thống không thuộc 9 locale (ví dụ Thái) → app hiển thị tiếng Anh (fallback), không crash — `locale_override_test.dart`
+- [x] Setting **Language** trong menu `⋯`: chọn "System" theo đúng hệ thống; chọn một ngôn ngữ cụ thể → toàn app đổi ngay không cần khởi động lại — wiring + `AppLocalePrefsStore` round-trip test; **khởi động lại app giữ lựa chọn cần xác nhận trên máy thật (G4)**
+- [x] Chuỗi có số đếm (ví dụ "1 piece" / "N pieces") đúng ngữ pháp số nhiều/số ít cho từng ngôn ngữ theo luật ICU của `intl` (tiếng Việt/Trung/Nhật/Hàn không phân biệt số nhiều — luật `other` áp dụng đúng, không sinh câu ngô nghê kiểu "1 pieces") — `locale_override_test.dart` tải cả 9 locale và gọi `piecesScreenPieceCount(1)`/`(2)`
+- [x] Domain term (Score, Setlist, Bookmark, JumpLink, PageTurn…) xuất hiện y nguyên tiếng Anh trong mọi bản dịch
+- [x] `flutter analyze` sạch, toàn bộ suite test hiện có xanh không cần đổi kỳ vọng chuỗi (chỉ đổi test harness nếu thiếu `localizationsDelegates`) — **570/570**
+- [x] Không chuỗi tiếng Anh nào còn hardcode trong `lib/` ngoài `Brand.*`, endonym tên ngôn ngữ trong sheet Language, và separator/glyph đơn ký tự
 
 ## Technical constraints
 
