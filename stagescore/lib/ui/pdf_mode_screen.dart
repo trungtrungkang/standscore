@@ -1515,6 +1515,39 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     );
   }
 
+  /// Icon over a caption, the same grammar `ScoreMenuQuickBar` uses for
+  /// shortcuts that must explain themselves without a hover tooltip
+  /// mid-performance (Spec 0043) — a bare "layers" glyph reads as nothing on
+  /// its own, and this is the one AppBar action that toggles a mode rather
+  /// than opening something, so it needs to say what it does at a glance.
+  Widget _buildPieceNotesToggle() {
+    final theme = Theme.of(context);
+    final tint = !_prefsReady
+        ? theme.disabledColor
+        : (_showPieceNotes ? theme.colorScheme.primary : null);
+    return IconButton(
+      tooltip: _showPieceNotes ? 'Hide piece notes' : 'Show piece notes',
+      onPressed: _prefsReady
+          ? () => _setShowPieceNotes(!_showPieceNotes)
+          : null,
+      icon: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _showPieceNotes ? Icons.layers : Icons.layers_outlined,
+            color: tint,
+          ),
+          const SizedBox(height: kQuickBarLabelGap),
+          Text(
+            'Piece notes',
+            style: theme.textTheme.labelSmall?.copyWith(color: tint),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _wrapViewerInsets(Widget child) {
     // Inset bands must read as the same surface as the viewer gutter — with
     // the chrome hidden, a different colour looks like the Score is boxed in
@@ -1586,20 +1619,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       title: _buildTitle(),
       actions: [
         // Session-only: every open of all-pages starts with this off (Spec 0055).
-        if (_canShowPieceNotes)
-          IconButton(
-            tooltip: _showPieceNotes
-                ? 'Hide piece notes'
-                : 'Show piece notes',
-            onPressed: _prefsReady
-                ? () => _setShowPieceNotes(!_showPieceNotes)
-                : null,
-            icon: Icon(
-              _showPieceNotes
-                  ? Icons.layers
-                  : Icons.layers_outlined,
-            ),
-          ),
+        if (_canShowPieceNotes) _buildPieceNotesToggle(),
         // Draw, Metronome and Bookmarks moved down to the ScoreMenuQuickBar in
         // the bottom chrome (Spec 0043): they are the actions wanted mid-piece,
         // and they read fine there without an AppBar row fighting the title for
