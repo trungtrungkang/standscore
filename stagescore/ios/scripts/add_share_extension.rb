@@ -26,7 +26,7 @@ ext = project.new_target(
   :app_extension,
   'ShareExtension',
   :ios,
-  '14.0'
+  '15.0'
 )
 
 # File references
