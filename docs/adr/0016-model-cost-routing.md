@@ -4,6 +4,7 @@ Main session mặc định chạy **Sonnet 5**. **Opus 5** dành cho pha quyết
 
 **Status:** accepted
 **Decided by:** Human Orchestrator (2026-07-28)
+**Amended:** 2026-08-05 — thêm số đo thực tế và luật cắt chat tại G3 (xem *Đo lường*)
 **Relates to:** ADR 0013 (tier triage — cơ chế định tuyến mà ADR này dùng lại), `.cursor/rules/ai-workflow.mdc`, `.cursor/rules/session-hygiene.mdc`
 
 ## Bối cảnh (Context)
@@ -65,6 +66,14 @@ Dùng lại **nguyên danh sách never-downgrade của tier L** trong `ai-workfl
 
 Lý do là sự bất đối xứng: chi phí một model là hữu hạn và biết trước; chi phí một sự cố auth hoặc billing thì không.
 
+### Một chat, một pha (bổ sung 2026-08-05)
+
+Định tuyến theo pha chỉ có tác dụng nếu **mỗi pha ngồi trong một chat riêng**. Nếu pha quyết định và pha hiện thực dùng chung một chat thì pha rẻ nhất chạy trên đống context đắt nhất, và việc chọn model không cứu được gì — số đo bên dưới cho thấy đúng như vậy.
+
+- **G3 accept là ranh giới chat bắt buộc.** Chat vừa chốt Spec không build Spec đó. Chat build là chat mới, mở đầu bằng con trỏ tài liệu theo `session-hygiene.mdc`.
+- **"continue" trên một chat đã dài là tín hiệu cắt chat, không phải lệnh làm tiếp.** Đo được: hai chữ "continue" ở cuối phiên 2026-08-05 tốn 42% chi phí cả chat.
+- Một chat mang tối đa **một** Spec đi hết vòng. Bug report giữa chừng và thảo luận thiết kế cho Spec kế tiếp đều mở chat riêng.
+
 ### Leo thang theo tín hiệu, không theo mặc định
 
 Bắt đầu ở model mặc định của pha. Chỉ nâng khi có tín hiệu thật:
@@ -76,10 +85,34 @@ Bắt đầu ở model mặc định của pha. Chỉ nâng khi có tín hiệu 
 
 Việc leo thang được ghi một dòng vào worklog, để **mẫu hình lộ ra**: nếu một Spec liên tục cần leo thang, khuyết điểm nằm ở Spec đó.
 
+## Đo lường (Measurement) — 2026-08-05
+
+ADR này tự hẹn một lần xem lại sau khi có số thực. Đây là số đó, lấy từ transcript của ngày 2026-08-05 (ba lần bị charge, mỗi lần trên 100 USD).
+
+Chat đắt nhất chạy 13:34–17:42: **270 lượt agent, 11 tin nhắn của người, ~23 triệu token đầu vào**, context cuối phiên ~145 nghìn token. Nó gánh ba việc: build 0053, quyết định 0054, build 0054.
+
+| Pha trong chat đó | Lượt | % chi phí |
+|---|---|---|
+| Trả lời G3 spec 0053 | 20 | 1.2% |
+| Accept + build 0053 | 54 | 7.9% |
+| Bug report | 3 | 0.6% |
+| Thảo luận thiết kế 0054 | 5 | 1.2% |
+| Build 0054 | 114 | 47.1% |
+| Hai lần "continue" | 74 | 42.1% |
+
+**Giả thuyết ban đầu sai chỗ.** ADR này đoán tiền tập trung ở pha khám phá; thực tế khám phá gần như không xuất hiện, còn **89% nằm ở pha hiện thực chạy trong một chat dài**. Phần phán đoán đắt tiền mà ADR này cố ý trả giá Opus — G3, thảo luận thiết kế — chỉ chiếm **2.4%**. Kết luận: **giữ Opus cho pha quyết định là quyết định rẻ**, và nó không phải chỗ cần tối ưu.
+
+Luật subagent thì đúng nhưng chưa được thi hành: cả ngày có **250 lượt `Read`/`Grep`/`Shell` nằm thẳng trong context chính và 4 lượt gọi subagent**. Mỗi file đọc vào ở lượt 30 vẫn bị gửi lại ở lượt 270.
+
+Tính ngược trên chính khối lượng công việc đó: nếu build 0054 khởi động bằng chat mới đọc từ Spec thì tốn **53%** số token; cộng thêm việc hạ pha build về Sonnet theo đúng bảng trên thì còn khoảng **10%**. Không dòng code nào phải đổi để có mức đó.
+
+Còn một tín hiệu nữa cần đọc đúng: ngay cả khi tách chat, riêng build 0054 vẫn tự sinh 10.8 triệu token qua 193 lượt với 124 lần sửa file. Đó không phải vấn đề model mà là **Spec quá to** — 0054 gộp đặt tên book, resplit và grouping. Cắt Spec nhỏ hơn ở G3 là đòn bẩy rẻ nhất vì nó tác động lên cả ba nguồn chi phí cùng lúc.
+
 ## Hệ quả (Consequences)
 
 - `ai-workflow.mdc` nhận bảng cụ thể ở trên. Chính sách subagent cũ được giữ và mạnh thêm: khám phá **luôn** dùng model rẻ, không phải "cùng tier hoặc rẻ hơn".
 - Dòng công bố tier của ADR 0013 nay mang thêm model: *"Task M (apps/web, ~6 file, không vùng nhạy cảm) → Sonnet 5, viết spec trước."* Model được nói to cũng là một quyết định người khác thấy được.
-- **Chính sách này là một giả thuyết, chưa phải kết luận.** Chưa ai xem phân bố chi phí thực tế, nên chưa biết tiền đang tập trung ở vài session khám phá dài hay rải đều. Xem usage dashboard rồi xem lại ADR này; nếu chi phí tập trung ở khám phá thì riêng luật subagent đã giải quyết phần lớn và bảng còn lại là phụ.
+- ~~**Chính sách này là một giả thuyết, chưa phải kết luận.**~~ Đã đo ngày 2026-08-05, xem *Đo lường*. Giả thuyết "tiền tập trung ở khám phá" **sai**; tiền tập trung ở context tích luỹ của pha hiện thực trong chat dài. Bảng định tuyến theo pha vẫn đúng, nhưng nó chỉ phát huy tác dụng khi đi kèm luật *Một chat, một pha* — thiếu luật đó thì việc chọn model gần như vô nghĩa.
+- Thước đo cần nhìn từ nay là **số lượt agent trong một chat**, không phải tên model. Một chat vượt khoảng 100 lượt đã tự nó thành khoản chi lớn nhất trong ngày, bất kể chạy model nào.
 - Tên model cụ thể sẽ cũ đi nhanh hơn phần còn lại của ADR. Phần bền là **cấu trúc** — pha, sàn, tín hiệu leo thang; còn "Sonnet 5" hay "Opus 5" chỉ là tên của hạng model tại 2026-07. Đổi tên trong `ai-workflow.mdc` là việc tier S.
 - Rủi ro cần nói thẳng: cách này chuyển một phần gánh nặng sang Orchestrator, vì với văn xuôi thì con người là bộ phát hiện duy nhất. Nếu thấy chất lượng ADR hay Spec tụt, hãy đọc đó là tín hiệu sàn của pha quyết định bị hạ quá thấp, không phải tín hiệu SDO thất bại.
