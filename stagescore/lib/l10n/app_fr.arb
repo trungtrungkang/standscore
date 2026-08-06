@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "Signets",
   "scoreMenuJumpLinks": "Renvois",
   "scoreMenuPageOrder": "Ordre des pages…",
+  "scoreMenuGoToMeasure": "Aller à la mesure…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "Annotations",
   "scoreMenuHideAnnotations": "Masquer les annotations",
   "scoreMenuShowAnnotations": "Afficher les annotations",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "Tous",
   "libraryFilterSheetModeUntagged": "Sans libellé",
   "libraryFilterSheetUntaggedHint": "Partitions sans libellé",
-  "libraryFilterSheetEmptyLabels": "Aucun libellé disponible pour filtrer"
+  "libraryFilterSheetEmptyLabels": "Aucun libellé disponible pour filtrer",
+  "measureMapMeasureCountTitle": "Combien de MeasureBoxes ?",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "Aller à la mesure",
+  "measureMapGoToLabel": "Numéro de mesure",
+  "measureMapGoToMissing": "La mesure {number} n’est pas encore cartographiée",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "Tempo et signature",
+  "measureMapTimeSignatureLabel": "Signature rythmique",
+  "measureMapTempoLabel": "Tempo",
+  "measureMapMetaScopeTitle": "Appliquer à",
+  "measureMapScopeThisMeasure": "Cette mesure seulement",
+  "measureMapScopeThisSystem": "Ce system",
+  "measureMapScopeThisPage": "Cette page",
+  "measureMapScopeRestOfScore": "Reste du Score",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "Nombre de mesures",
+  "measureMapClearTitle": "Effacer le MeasureMap ?",
+  "measureMapClearBody": "Supprime tous les SystemBox et MeasureBox de ce Score. Irréversible.",
+  "measureMapClearConfirm": "Effacer",
+  "measureMapDeleteSystemTitle": "Supprimer le system ?",
+  "measureMapDeleteSystemBody": "Supprime ce SystemBox et tous ses MeasureBoxes.",
+  "measureMapCopyFromPageTitle": "Copier la mise en page depuis la page",
+  "measureMapCopyFromPageLabel": "Page source",
+  "measureMapCopyPrevious": "Copier la page précédente",
+  "measureMapEmptyHint": "Dessinez un system — l’app demandera combien de mesures",
+  "measureMapDone": "Terminé",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "Définir le nombre de mesures…",
+  "measureMapDeleteSystem": "Supprimer le system",
+  "measureMapDeleteMeasure": "Supprimer la mesure",
+  "measureMapEditMeta": "Tempo et signature…",
+  "measureMapClearAll": "Effacer le MeasureMap…"
 }

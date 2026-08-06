@@ -336,6 +336,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get scoreMenuPageOrder => 'Ordre des pages…';
 
   @override
+  String get scoreMenuGoToMeasure => 'Aller à la mesure…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => 'Annotations';
 
   @override
@@ -1699,4 +1705,103 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get libraryFilterSheetEmptyLabels =>
       'Aucun libellé disponible pour filtrer';
+
+  @override
+  String get measureMapMeasureCountTitle => 'Combien de MeasureBoxes ?';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => 'Aller à la mesure';
+
+  @override
+  String get measureMapGoToLabel => 'Numéro de mesure';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return 'La mesure $number n’est pas encore cartographiée';
+  }
+
+  @override
+  String get measureMapMetaTitle => 'Tempo et signature';
+
+  @override
+  String get measureMapTimeSignatureLabel => 'Signature rythmique';
+
+  @override
+  String get measureMapTempoLabel => 'Tempo';
+
+  @override
+  String get measureMapMetaScopeTitle => 'Appliquer à';
+
+  @override
+  String get measureMapScopeThisMeasure => 'Cette mesure seulement';
+
+  @override
+  String get measureMapScopeThisSystem => 'Ce system';
+
+  @override
+  String get measureMapScopeThisPage => 'Cette page';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Reste du Score';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => 'Nombre de mesures';
+
+  @override
+  String get measureMapClearTitle => 'Effacer le MeasureMap ?';
+
+  @override
+  String get measureMapClearBody =>
+      'Supprime tous les SystemBox et MeasureBox de ce Score. Irréversible.';
+
+  @override
+  String get measureMapClearConfirm => 'Effacer';
+
+  @override
+  String get measureMapDeleteSystemTitle => 'Supprimer le system ?';
+
+  @override
+  String get measureMapDeleteSystemBody =>
+      'Supprime ce SystemBox et tous ses MeasureBoxes.';
+
+  @override
+  String get measureMapCopyFromPageTitle =>
+      'Copier la mise en page depuis la page';
+
+  @override
+  String get measureMapCopyFromPageLabel => 'Page source';
+
+  @override
+  String get measureMapCopyPrevious => 'Copier la page précédente';
+
+  @override
+  String get measureMapEmptyHint =>
+      'Dessinez un system — l’app demandera combien de mesures';
+
+  @override
+  String get measureMapDone => 'Terminé';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => 'Définir le nombre de mesures…';
+
+  @override
+  String get measureMapDeleteSystem => 'Supprimer le system';
+
+  @override
+  String get measureMapDeleteMeasure => 'Supprimer la mesure';
+
+  @override
+  String get measureMapEditMeta => 'Tempo et signature…';
+
+  @override
+  String get measureMapClearAll => 'Effacer le MeasureMap…';
 }

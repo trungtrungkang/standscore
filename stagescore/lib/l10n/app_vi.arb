@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "Bookmarks",
   "scoreMenuJumpLinks": "Jump Links",
   "scoreMenuPageOrder": "Thứ tự trang…",
+  "scoreMenuGoToMeasure": "Tới ô nhịp…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "Đánh dấu",
   "scoreMenuHideAnnotations": "Ẩn chú thích",
   "scoreMenuShowAnnotations": "Hiện chú thích",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "Tất cả",
   "libraryFilterSheetModeUntagged": "Chưa gắn Label",
   "libraryFilterSheetUntaggedHint": "Score chưa gắn Label nào",
-  "libraryFilterSheetEmptyLabels": "Chưa có Label nào để lọc"
+  "libraryFilterSheetEmptyLabels": "Chưa có Label nào để lọc",
+  "measureMapMeasureCountTitle": "Bao nhiêu MeasureBoxes?",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "Tới ô nhịp",
+  "measureMapGoToLabel": "Số ô nhịp",
+  "measureMapGoToMissing": "Ô nhịp {number} chưa được map",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "Tempo & time signature",
+  "measureMapTimeSignatureLabel": "Time signature",
+  "measureMapTempoLabel": "Tempo",
+  "measureMapMetaScopeTitle": "Áp dụng cho",
+  "measureMapScopeThisMeasure": "Chỉ ô này",
+  "measureMapScopeThisSystem": "System này",
+  "measureMapScopeThisPage": "Trang này",
+  "measureMapScopeRestOfScore": "Phần còn lại của Score",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "Số ô nhịp",
+  "measureMapClearTitle": "Xoá MeasureMap?",
+  "measureMapClearBody": "Xoá mọi SystemBox và MeasureBox của Score này. Không hoàn tác được.",
+  "measureMapClearConfirm": "Xoá",
+  "measureMapDeleteSystemTitle": "Xoá system?",
+  "measureMapDeleteSystemBody": "Xoá SystemBox này và mọi MeasureBox trong đó.",
+  "measureMapCopyFromPageTitle": "Chép layout từ trang",
+  "measureMapCopyFromPageLabel": "Trang nguồn",
+  "measureMapCopyPrevious": "Chép trang trước",
+  "measureMapEmptyHint": "Vẽ một dòng nhạc — app sẽ hỏi bao nhiêu ô",
+  "measureMapDone": "Xong",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "Đặt số ô…",
+  "measureMapDeleteSystem": "Xoá system",
+  "measureMapDeleteMeasure": "Xoá ô nhịp",
+  "measureMapEditMeta": "Tempo & time signature…",
+  "measureMapClearAll": "Xoá MeasureMap…"
 }

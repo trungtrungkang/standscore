@@ -49,6 +49,22 @@ _Avoid_: Classic mode, ScorePDF mode
 Chế độ xem Score dựng MusicXmlDocument (ví dụ qua Verovio), kèm các tính năng phát nhạc và luyện tập.
 _Avoid_: MusicXML mode, Verovio mode (engine name ≠ product mode)
 
+**MeasureMap**:
+Hình học ô nhịp trên trang của **một** Score — SystemBox → MeasureBox → BeatBox. Biết *chỗ nào trên giấy*, không phải *khi nào trong thời gian*. Một Score ↔ đúng một MeasureMap; bản đồ chưa đầy đủ vẫn hợp lệ. Neo theo số trang tuyệt đối của PdfDocument (cùng không gian với annotation).
+_Avoid_: MeasureAnchor (rút bởi ADR 0019), RowBox (dùng SystemBox), sync file, bar map
+
+**SystemBox**:
+Một *system* (dòng nhạc) trên trang trong MeasureMap. Không lưu riêng trên đĩa — dựng lại bằng cách gom MeasureBox theo `systemIndex`.
+_Avoid_: RowBox, staff system box, line box
+
+**MeasureBox**:
+Một ô nhịp trên trang: hình chữ nhật chuẩn hoá 0–1, `measureNumber` liên tục trong Score, tuỳ chọn time signature / tempo (kế thừa), và `beatSplits`. Trùng **tên** với repo web; hình học phách trên đĩa **khác hình dạng wire** — xem BeatBox.
+_Avoid_: bar box, measure rect, MeasureAnchor
+
+**BeatBox**:
+Một phách trong MeasureBox. Trên đĩa StageScore: `beatSplits` = **N mốc nội tại** (một tỉ lệ 0..1 cho mỗi phách, không tính hai vạch nhịp mép ô; mặc định tâm lát `(i+0.5)/N`) — kéo khớp nốt in. Wire web: cùng tên field nhưng **N−1 biên** giữa phách; dịch centres ↔ midpoints lúc encode/decode (Spec 0058 rev. 2). UI mặc định ẩn đến *Edit beats*. **Vị trí trên giấy ≠ thời lượng** — thời lượng thuộc SyncMap (tempo + time signature).
+_Avoid_: beat rect, subdivision box, N−1 interior dividers (đó là hình dạng web, không phải store StageScore)
+
 **PerformanceMode**:
 Một trạng thái xem của PdfMode, trong đó chrome của app bị ẩn cho tới khi một GestureMap gọi nó ra, chỉ để lại Score.
 _Avoid_: Immersive mode, fullscreen (system-level), presentation mode
@@ -111,7 +127,7 @@ Một bản thu âm (bản mix đầy đủ hoặc một stem) mà người dùn
 _Avoid_: Soundtrack, accompaniment file, band track (UI copy ok), MP3 (format ≠ concept)
 
 **SyncMap**:
-Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và thời gian audio trên một hay nhiều BackingTrack.
+Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và một dòng thời gian phát — có thể gắn một hay nhiều BackingTrack, hoặc chỉ metronome / thời gian nhạc thuần (không bắt buộc có audio).
 _Avoid_: Offset alone, BPM (too narrow), sync file (may be a serialization of SyncMap)
 
 **AutoPlay**:

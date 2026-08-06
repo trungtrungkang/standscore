@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "ブックマーク",
   "scoreMenuJumpLinks": "ジャンプリンク",
   "scoreMenuPageOrder": "ページ順…",
+  "scoreMenuGoToMeasure": "小節へ移動…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "マーク",
   "scoreMenuHideAnnotations": "注釈を隠す",
   "scoreMenuShowAnnotations": "注釈を表示",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "すべて",
   "libraryFilterSheetModeUntagged": "ラベルなし",
   "libraryFilterSheetUntaggedHint": "ラベルが付いていない楽譜",
-  "libraryFilterSheetEmptyLabels": "絞り込めるラベルがまだありません"
+  "libraryFilterSheetEmptyLabels": "絞り込めるラベルがまだありません",
+  "measureMapMeasureCountTitle": "MeasureBox はいくつ？",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "小節へ移動",
+  "measureMapGoToLabel": "小節番号",
+  "measureMapGoToMissing": "小節 {number} はまだマップされていません",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "テンポと拍子",
+  "measureMapTimeSignatureLabel": "拍子",
+  "measureMapTempoLabel": "テンポ",
+  "measureMapMetaScopeTitle": "適用範囲",
+  "measureMapScopeThisMeasure": "この小節のみ",
+  "measureMapScopeThisSystem": "この System",
+  "measureMapScopeThisPage": "このページ",
+  "measureMapScopeRestOfScore": "Score の残り",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "小節数",
+  "measureMapClearTitle": "MeasureMap を消去しますか？",
+  "measureMapClearBody": "この Score のすべての SystemBox と MeasureBox を削除します。元に戻せません。",
+  "measureMapClearConfirm": "消去",
+  "measureMapDeleteSystemTitle": "System を削除しますか？",
+  "measureMapDeleteSystemBody": "この SystemBox とその MeasureBox をすべて削除します。",
+  "measureMapCopyFromPageTitle": "ページからレイアウトをコピー",
+  "measureMapCopyFromPageLabel": "元ページ",
+  "measureMapCopyPrevious": "前のページをコピー",
+  "measureMapEmptyHint": "System を描くと、小節数を尋ねます",
+  "measureMapDone": "完了",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "小節数を設定…",
+  "measureMapDeleteSystem": "System を削除",
+  "measureMapDeleteMeasure": "小節を削除",
+  "measureMapEditMeta": "テンポと拍子…",
+  "measureMapClearAll": "MeasureMap を消去…"
 }

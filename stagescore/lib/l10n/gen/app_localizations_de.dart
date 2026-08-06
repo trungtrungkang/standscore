@@ -337,6 +337,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get scoreMenuPageOrder => 'Seitenreihenfolge…';
 
   @override
+  String get scoreMenuGoToMeasure => 'Zur Taktnummer…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => 'Markierungen';
 
   @override
@@ -1699,4 +1705,102 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get libraryFilterSheetEmptyLabels => 'Noch keine Labels zum Filtern';
+
+  @override
+  String get measureMapMeasureCountTitle => 'Wie viele MeasureBoxes?';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => 'Zur Taktnummer';
+
+  @override
+  String get measureMapGoToLabel => 'Taktnummer';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return 'Takt $number ist noch nicht gemappt';
+  }
+
+  @override
+  String get measureMapMetaTitle => 'Tempo & Taktart';
+
+  @override
+  String get measureMapTimeSignatureLabel => 'Taktart';
+
+  @override
+  String get measureMapTempoLabel => 'Tempo';
+
+  @override
+  String get measureMapMetaScopeTitle => 'Anwenden auf';
+
+  @override
+  String get measureMapScopeThisMeasure => 'Nur diesen Takt';
+
+  @override
+  String get measureMapScopeThisSystem => 'Dieses System';
+
+  @override
+  String get measureMapScopeThisPage => 'Diese Seite';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Rest des Scores';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => 'Anzahl Takte';
+
+  @override
+  String get measureMapClearTitle => 'MeasureMap löschen?';
+
+  @override
+  String get measureMapClearBody =>
+      'Löscht alle SystemBox- und MeasureBox-Einträge dieses Scores. Nicht rückgängig.';
+
+  @override
+  String get measureMapClearConfirm => 'Löschen';
+
+  @override
+  String get measureMapDeleteSystemTitle => 'System löschen?';
+
+  @override
+  String get measureMapDeleteSystemBody =>
+      'Löscht diese SystemBox und alle MeasureBoxes darin.';
+
+  @override
+  String get measureMapCopyFromPageTitle => 'Layout von Seite kopieren';
+
+  @override
+  String get measureMapCopyFromPageLabel => 'Quellseite';
+
+  @override
+  String get measureMapCopyPrevious => 'Vorherige Seite kopieren';
+
+  @override
+  String get measureMapEmptyHint =>
+      'Zeichne ein System — die App fragt nach der Taktzahl';
+
+  @override
+  String get measureMapDone => 'Fertig';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => 'Taktanzahl festlegen…';
+
+  @override
+  String get measureMapDeleteSystem => 'System löschen';
+
+  @override
+  String get measureMapDeleteMeasure => 'Takt löschen';
+
+  @override
+  String get measureMapEditMeta => 'Tempo & Taktart…';
+
+  @override
+  String get measureMapClearAll => 'MeasureMap löschen…';
 }

@@ -177,6 +177,8 @@
   "scoreMenuBookmarks": "Bookmarks",
   "scoreMenuJumpLinks": "Jump Links",
   "scoreMenuPageOrder": "Page order…",
+  "scoreMenuGoToMeasure": "Go to measure…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "Marks",
   "scoreMenuHideAnnotations": "Hide annotations",
   "scoreMenuShowAnnotations": "Show annotations",
@@ -1124,5 +1126,43 @@
   "libraryFilterSheetModeAll": "All",
   "libraryFilterSheetModeUntagged": "Untagged",
   "libraryFilterSheetUntaggedHint": "Scores with no Labels",
-  "libraryFilterSheetEmptyLabels": "No Labels to filter by yet"
+  "libraryFilterSheetEmptyLabels": "No Labels to filter by yet",
+  "measureMapMeasureCountTitle": "How many MeasureBoxes?",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "Go to measure",
+  "measureMapGoToLabel": "Measure number",
+  "measureMapGoToMissing": "Measure {number} is not mapped yet",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "Tempo & time signature",
+  "measureMapTimeSignatureLabel": "Time signature",
+  "measureMapTempoLabel": "Tempo",
+  "measureMapMetaScopeTitle": "Apply to",
+  "measureMapScopeThisMeasure": "This measure only",
+  "measureMapScopeThisSystem": "This system",
+  "measureMapScopeThisPage": "This page",
+  "measureMapScopeRestOfScore": "Rest of score",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "Number of measures",
+  "measureMapClearTitle": "Clear MeasureMap?",
+  "measureMapClearBody": "Delete every SystemBox and MeasureBox for this Score. This cannot be undone.",
+  "measureMapClearConfirm": "Clear",
+  "measureMapDeleteSystemTitle": "Delete system?",
+  "measureMapDeleteSystemBody": "Delete this SystemBox and all its MeasureBoxes.",
+  "measureMapCopyFromPageTitle": "Copy layout from page",
+  "measureMapCopyFromPageLabel": "Source page",
+  "measureMapCopyPrevious": "Copy previous page",
+  "measureMapEmptyHint": "Draw a system — the app will ask how many measures",
+  "measureMapDone": "Done",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "Set measure count…",
+  "measureMapDeleteSystem": "Delete system",
+  "measureMapDeleteMeasure": "Delete measure",
+  "measureMapEditMeta": "Tempo & time signature…",
+  "measureMapClearAll": "Clear MeasureMap…"
 }

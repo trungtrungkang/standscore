@@ -31,7 +31,13 @@ import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
 import 'package:stagescore/layout/stage_preset.dart';
 import 'package:stagescore/library/library_root.dart';
+import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score.dart';
+import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
+import 'package:stagescore/measure_map/measure_map_persistence.dart';
+import 'package:stagescore/measure_map/measure_map_selection.dart';
+import 'package:stagescore/measure_map/measure_map_session.dart';
+import 'package:stagescore/measure_map/measure_map_store.dart';
 import 'package:stagescore/metronome/metronome_engine.dart';
 import 'package:stagescore/metronome/metronome_prefs.dart';
 import 'package:stagescore/metronome/metronome_prefs_store.dart';
@@ -47,6 +53,7 @@ import 'package:stagescore/pageturn/page_turn_prefs_store.dart';
 import 'package:stagescore/pageturn/pedal_key_map.dart';
 import 'package:stagescore/pdf/continuous_page_order_view.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
+import 'package:stagescore/pdf/page_measure_map_overlay.dart';
 import 'package:stagescore/pdf/pdf_surface.dart';
 import 'package:stagescore/pdf/single_page_slider.dart';
 import 'package:stagescore/setlist/setlist_nav.dart';
@@ -60,6 +67,8 @@ import 'package:stagescore/ui/jump_link_edit_sheet.dart';
 import 'package:stagescore/ui/jump_link_overlay.dart';
 import 'package:stagescore/ui/jump_links_sheet.dart';
 import 'package:stagescore/ui/layout_settings_sheet.dart';
+import 'package:stagescore/ui/measure_map_dialogs.dart';
+import 'package:stagescore/ui/measure_map_edit_bar.dart';
 import 'package:stagescore/ui/metronome_sheet.dart';
 import 'package:stagescore/ui/page_nav_bar.dart';
 import 'package:stagescore/ui/page_order_editor_screen.dart';
@@ -121,6 +130,16 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   String? _originLine;
   late AnnotationStore _store;
   AnnotationPersistence? _annotationPersistence;
+  MeasureMapPersistence? _measureMapPersistence;
+  MeasureMapStore _measureMap = MeasureMapStore();
+  final MeasureMapSessionDefaults _measureMapSession =
+      MeasureMapSessionDefaults();
+  bool _measureMapEditing = false;
+  MeasureMapSelection _measureMapSelection = MeasureMapSelection.none;
+  String? _highlightedMeasureId;
+  String? _editingBeatsMeasureId;
+  Timer? _highlightTimer;
+  PageExtent? _pageExtent;
   final PdfViewerController _controller = PdfViewerController();
   final SinglePageSliderController _sliderController =
       SinglePageSliderController();
@@ -223,6 +242,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
   @override
   void dispose() {
+    _highlightTimer?.cancel();
     _chrome.removeListener(_onChromeChanged);
     _chrome.dispose();
     HardwareKeyboard.instance.removeHandler(_onHardwareKey);
@@ -289,7 +309,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   bool _onHardwareKey(KeyEvent event) {
     // KeyRepeatEvent is not a KeyDownEvent — still treat as pedal input.
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
-    if (!_prefsReady || _drawEnabled) return false;
+    if (!_prefsReady || _drawEnabled || _measureMapEditing) return false;
     if (_isTypingInTextField()) return false;
     final action = resolvePedalKeyAction(event.logicalKey);
     if (action == null) return false;
@@ -417,9 +437,15 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       root: root,
       scoreId: _score.id,
     );
+    final measureMapPersistence = MeasureMapPersistence(
+      root: root,
+      scoreId: _score.id,
+    );
     final pageOrderStore = PageOrderStore(root: root, scoreId: _score.id);
     final annotationStore = AnnotationStore();
     await annotationPersistence.loadInto(annotationStore);
+    final measureMap = MeasureMapStore();
+    await measureMapPersistence.loadInto(measureMap);
 
     var sourceCount = 0;
     var aspect = _pageAspectRatio;
@@ -451,7 +477,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       _bookmarkStore = bookmarkStore;
       _jumpLinkStore = jumpLinkStore;
       _annotationPersistence = annotationPersistence;
+      _measureMapPersistence = measureMapPersistence;
       _store = annotationStore;
+      _measureMap = measureMap;
+      _pageExtent = extent;
       _pageOrderStore = pageOrderStore;
       _pageOrder = pageOrder;
       _jumpLinks = jumpLinks;
@@ -485,6 +514,11 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     setState(() {
       _prefsReady = false;
       _drawEnabled = false;
+      _measureMapEditing = false;
+      _measureMapSelection = MeasureMapSelection.none;
+      _editingBeatsMeasureId = null;
+      _highlightedMeasureId = null;
+      _measureMapSession.reset();
       _drawTool = DrawTool.pen;
       _pendingStamp = null;
       _pendingStampText = null;
@@ -582,6 +616,13 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _showPieceNotes = false;
         _pieceNotesUnion = null;
       }
+      if (enabled) {
+        // Mutually exclusive with MeasureMap edit (Spec 0058 G3 #7).
+        _measureMapEditing = false;
+        _measureMapSelection = MeasureMapSelection.none;
+        _editingBeatsMeasureId = null;
+        _measureMapSession.reset();
+      }
       _drawEnabled = enabled;
       if (enabled) {
         // Drawing requires seeing marks (Spec 0020 G3).
@@ -592,8 +633,151 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _selectedStampId = null;
       }
     });
-    // Chrome is laid out and pinned for the whole Draw session (0034).
-    _chrome.setDrawing(enabled);
+    // Chrome is laid out and pinned for the whole Draw / MeasureMap session.
+    _chrome.setDrawing(enabled || _measureMapEditing);
+  }
+
+  void _setMeasureMapEditing(bool enabled) {
+    setState(() {
+      _measureMapEditing = enabled;
+      if (enabled) {
+        if (_drawEnabled) {
+          _drawEnabled = false;
+          _pendingStamp = null;
+          _pendingStampText = null;
+          _selectedStampId = null;
+        }
+      } else {
+        _measureMapSelection = MeasureMapSelection.none;
+        _editingBeatsMeasureId = null;
+        _measureMapSession.reset();
+      }
+    });
+    _chrome.setDrawing(_drawEnabled || enabled);
+  }
+
+  Future<void> _onMeasureMapChanged() async {
+    if (!mounted) return;
+    setState(() {});
+    await _measureMapPersistence?.save(_measureMap);
+  }
+
+  void _setMeasureMapSelection(MeasureMapSelection next) {
+    setState(() {
+      _measureMapSelection = next;
+      final measureId = next.measureId;
+      if (measureId == null || measureId != _editingBeatsMeasureId) {
+        _editingBeatsMeasureId = null;
+      }
+    });
+  }
+
+  MeasureMapOverlayConfig? _measureMapConfig() {
+    if (!_prefsReady) return null;
+    if (!_measureMapEditing && _highlightedMeasureId == null) return null;
+    return MeasureMapOverlayConfig(
+      store: _measureMap,
+      extent: _pageExtent,
+      editEnabled: _measureMapEditing,
+      selection: _measureMapSelection,
+      highlightedId: _highlightedMeasureId,
+      editingBeatsId: _editingBeatsMeasureId,
+      onSelectionChanged: _setMeasureMapSelection,
+      onChanged: _onMeasureMapChanged,
+      onSystemDrawn: _onSystemDrawn,
+      onMeasureLongPress: (id) {
+        final box = _measureMap.byId(id);
+        if (box == null) return;
+        _setMeasureMapSelection(
+          MeasureMapSelectionSystem(
+            pageNumber: box.pageNumber,
+            systemIndex: box.systemIndex,
+          ),
+        );
+      },
+    );
+  }
+
+  /// Anchor measure id for the currently selected system (first box).
+  String? _selectedSystemAnchorId() {
+    final key = _measureMapSelection.systemKey;
+    if (key == null) return null;
+    final sys = _measureMap.boxesInSystem(
+      pageNumber: key.pageNumber,
+      systemIndex: key.systemIndex,
+    );
+    if (sys.isEmpty) return null;
+    return sys.first.id;
+  }
+
+  Future<void> _setMeasureCountForSelectedSystem() async {
+    final id = _selectedSystemAnchorId();
+    if (id == null) return;
+    final box = _measureMap.byId(id);
+    if (box == null) return;
+    final current = _measureMap
+        .boxesInSystem(
+          pageNumber: box.pageNumber,
+          systemIndex: box.systemIndex,
+        )
+        .length;
+    final n = await showMeasureCountDialog(
+      context: context,
+      initialCount: current,
+      title: AppLocalizations.of(context).measureMapSetMeasureCount,
+    );
+    if (n == null || !mounted) return;
+    _measureMap.setMeasureCount(id, n);
+    await _onMeasureMapChanged();
+  }
+
+  Future<void> _onSystemDrawn(int pageNumber, Rect normalizedRect) async {
+    final count = await showMeasureCountDialog(
+      context: context,
+      initialCount: _measureMapSession.measureCount,
+    );
+    if (!mounted) return;
+    if (count == null) return; // cancel → discard the rubber-band
+    _measureMapSession.remember(count);
+    _measureMap.addSystem(
+      pageNumber: pageNumber,
+      x: normalizedRect.left,
+      y: normalizedRect.top,
+      width: normalizedRect.width,
+      height: normalizedRect.height,
+      measureCount: count,
+    );
+    await _onMeasureMapChanged();
+  }
+
+  Future<void> _goToMeasure() async {
+    final number = await showGoToMeasureDialog(context: context);
+    if (!mounted || number == null) return;
+    final box = _measureMap.byMeasureNumber(number);
+    if (box == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).measureMapGoToMissing(number),
+          ),
+        ),
+      );
+      return;
+    }
+    // Find a PageOrder slot that shows this absolute paper page.
+    final slot = _pageOrder.entries.indexWhere(
+      (e) => e.sourcePage == box.pageNumber,
+    );
+    if (slot >= 0) {
+      await _jumpToPage(slot + 1);
+    }
+    if (!mounted) return;
+    setState(() => _highlightedMeasureId = box.id);
+    _highlightTimer?.cancel();
+    _highlightTimer = Timer(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      setState(() => _highlightedMeasureId = null);
+    });
   }
 
   Future<void> _setShowPieceNotes(bool show) async {
@@ -876,6 +1060,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _openPageTurnSettings();
       case ScoreMenuAction.pageOrder:
         _openPageOrderEditor();
+      case ScoreMenuAction.goToMeasure:
+        _goToMeasure();
+      case ScoreMenuAction.measureMap:
+        _setMeasureMapEditing(true);
       case ScoreMenuAction.toggleAnnotations:
         setState(() => _annotationsVisible = !_annotationsVisible);
       case ScoreMenuAction.exportAnnotated:
@@ -1196,7 +1384,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   bool get _panEnabled {
-    if (_drawEnabled) return false;
+    if (_drawEnabled || _measureMapEditing) return false;
     if (_atFitZoom && _pageTurnPrefs.anySwipeEnabled) return false;
     return true;
   }
@@ -1375,7 +1563,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   void _onInteractionAction(PageTurnAction action, PageTurnInputKind kind) {
-    if (_drawEnabled || !_prefsReady) return;
+    if (_drawEnabled || _measureMapEditing || !_prefsReady) return;
     if (kind == PageTurnInputKind.swipe && !_atFitZoom) return;
     _applyAction(action, kind: kind);
   }
@@ -1399,7 +1587,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     // While drawing, keep PageTurn chrome off the page so ink gestures are not
     // shared with the viewer's scroll arena (which caused the score to scroll).
     // Edge GestureMap strips still work for Show menu / Draw.
-    if (_drawEnabled) {
+    if (_drawEnabled || _measureMapEditing) {
       return _drawModeEdgeGestureChrome();
     }
     return PageTurnInteractionLayer(
@@ -1694,6 +1882,116 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                 ? null
                 : _deleteSelectedStamp,
           ),
+        if (_measureMapEditing)
+          MeasureMapEditBar(
+            systemSelected: _measureMapSelection.isSystem,
+            measureSelected: _measureMapSelection.isMeasure,
+            editingBeats: _editingBeatsMeasureId != null,
+            canCopyPrevious: _currentSourcePage != null &&
+                _currentSourcePage! > 1 &&
+                _measureMap.boxesForPage(_currentSourcePage! - 1).isNotEmpty,
+            onDone: () => _setMeasureMapEditing(false),
+            onCopyPrevious: () async {
+              final page = _currentSourcePage;
+              if (page == null || page <= 1) return;
+              _measureMap.copyLayoutFromPage(
+                fromPage: page - 1,
+                toPage: page,
+              );
+              await _onMeasureMapChanged();
+            },
+            onCopyFromPage: () async {
+              final page = _currentSourcePage;
+              if (page == null) return;
+              final from = await showCopyLayoutPageDialog(
+                context: context,
+                currentPage: page,
+                maxPage: _pageExtent?.lastPage ?? page,
+              );
+              if (from == null || !mounted) return;
+              _measureMap.copyLayoutFromPage(fromPage: from, toPage: page);
+              await _onMeasureMapChanged();
+            },
+            onDeleteMeasure: () async {
+              final id = _measureMapSelection.measureId;
+              if (id == null) return;
+              _measureMap.deleteMeasure(id);
+              setState(() {
+                _measureMapSelection = MeasureMapSelection.none;
+                _editingBeatsMeasureId = null;
+              });
+              await _onMeasureMapChanged();
+            },
+            onSetMeasureCount: _setMeasureCountForSelectedSystem,
+            onDeleteSystem: () async {
+              final key = _measureMapSelection.systemKey;
+              if (key == null) return;
+              final count = _measureMap
+                  .boxesInSystem(
+                    pageNumber: key.pageNumber,
+                    systemIndex: key.systemIndex,
+                  )
+                  .length;
+              if (count > 1) {
+                final ok = await confirmDeleteSystem(context);
+                if (!ok || !mounted) return;
+              }
+              _measureMap.deleteSystem(
+                pageNumber: key.pageNumber,
+                systemIndex: key.systemIndex,
+              );
+              setState(() {
+                _measureMapSelection = MeasureMapSelection.none;
+                _editingBeatsMeasureId = null;
+              });
+              await _onMeasureMapChanged();
+            },
+            onEditMeta: () async {
+              final id = _measureMapSelection.measureId;
+              if (id == null) return;
+              final box = _measureMap.byId(id);
+              if (box == null) return;
+              final meta = _measureMap.resolveMeta(box);
+              final result = await showMeasureMetaDialog(
+                context: context,
+                initialTimeSignature: meta.timeSignature,
+                initialTempo: meta.tempo,
+              );
+              if (result == null || !mounted) return;
+              _measureMap.applyMeta(
+                anchorId: id,
+                scope: result.scope,
+                timeSignature: result.timeSignature,
+                tempo: result.tempo,
+                nextN: result.nextN,
+              );
+              await _onMeasureMapChanged();
+            },
+            onToggleEditBeats: () {
+              final id = _measureMapSelection.measureId;
+              if (id == null) return;
+              // Migrate legacy N−1 / trailing-1.0 payloads so Edit beats
+              // shows N interior anchors (4 lines for 4/4).
+              _measureMap.migrateBeatSplits();
+              setState(() {
+                _editingBeatsMeasureId =
+                    _editingBeatsMeasureId == id ? null : id;
+              });
+              if (_editingBeatsMeasureId != null) {
+                unawaited(_onMeasureMapChanged());
+              }
+            },
+            onClearAll: () async {
+              final ok = await confirmClearMeasureMap(context);
+              if (!ok || !mounted) return;
+              _measureMap.clear();
+              setState(() {
+                _measureMapSelection = MeasureMapSelection.none;
+                _editingBeatsMeasureId = null;
+              });
+              await _onMeasureMapChanged();
+            },
+          ),
         Expanded(
           child: !_prefsReady
               ? const Center(child: CircularProgressIndicator())
@@ -1816,6 +2114,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               allowUserScroll: false,
               reverseDirection: _pageTurnPrefs.reverseDirection,
               initialPage: _pageNumber,
+              measureMap: _measureMapConfig(),
             ),
             _interactionLayer(),
           ],
@@ -1861,6 +2160,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               onAnnotateChanged: _onAnnotationsChanged,
               controller: _orderScrollController,
               initialPage: _pageNumber,
+              measureMap: _measureMapConfig(),
             ),
             _interactionLayer(),
           ],
@@ -1894,8 +2194,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               sizeDelegateProvider: _sizeDelegate,
               onViewSizeChanged: _onViewSizeChanged,
               panEnabled: _panEnabled,
-              scaleEnabled: !_drawEnabled && !_pageScalePrefs.locked,
-              scrollPhysics: _drawEnabled
+              scaleEnabled: !_drawEnabled &&
+                  !_measureMapEditing &&
+                  !_pageScalePrefs.locked,
+              scrollPhysics: _drawEnabled || _measureMapEditing
                   ? const NeverScrollableScrollPhysics()
                   : null,
               layoutPages: layoutPagesFor(layoutMode),
@@ -1909,6 +2211,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                 return [_interactionLayer()];
               },
               pageOverlaysBuilder: (context, pageRect, page) {
+                final measureMap = _measureMapConfig();
                 return [
                   PageAnnotationOverlay(
                     pageRect: pageRect,
@@ -1927,6 +2230,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                     annotationsVisible: _annotationsVisible,
                     onChanged: _onAnnotationsChanged,
                   ),
+                  if (measureMap != null)
+                    PageMeasureMapOverlay(
+                      pageRect: pageRect,
+                      page: page,
+                      config: measureMap,
+                    ),
                 ];
               },
             ),

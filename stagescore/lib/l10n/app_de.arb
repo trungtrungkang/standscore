@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "Lesezeichen",
   "scoreMenuJumpLinks": "Sprungmarken",
   "scoreMenuPageOrder": "Seitenreihenfolge…",
+  "scoreMenuGoToMeasure": "Zur Taktnummer…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "Markierungen",
   "scoreMenuHideAnnotations": "Anmerkungen ausblenden",
   "scoreMenuShowAnnotations": "Anmerkungen einblenden",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "Alle",
   "libraryFilterSheetModeUntagged": "Ohne Label",
   "libraryFilterSheetUntaggedHint": "Stücke ohne Labels",
-  "libraryFilterSheetEmptyLabels": "Noch keine Labels zum Filtern"
+  "libraryFilterSheetEmptyLabels": "Noch keine Labels zum Filtern",
+  "measureMapMeasureCountTitle": "Wie viele MeasureBoxes?",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "Zur Taktnummer",
+  "measureMapGoToLabel": "Taktnummer",
+  "measureMapGoToMissing": "Takt {number} ist noch nicht gemappt",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "Tempo & Taktart",
+  "measureMapTimeSignatureLabel": "Taktart",
+  "measureMapTempoLabel": "Tempo",
+  "measureMapMetaScopeTitle": "Anwenden auf",
+  "measureMapScopeThisMeasure": "Nur diesen Takt",
+  "measureMapScopeThisSystem": "Dieses System",
+  "measureMapScopeThisPage": "Diese Seite",
+  "measureMapScopeRestOfScore": "Rest des Scores",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "Anzahl Takte",
+  "measureMapClearTitle": "MeasureMap löschen?",
+  "measureMapClearBody": "Löscht alle SystemBox- und MeasureBox-Einträge dieses Scores. Nicht rückgängig.",
+  "measureMapClearConfirm": "Löschen",
+  "measureMapDeleteSystemTitle": "System löschen?",
+  "measureMapDeleteSystemBody": "Löscht diese SystemBox und alle MeasureBoxes darin.",
+  "measureMapCopyFromPageTitle": "Layout von Seite kopieren",
+  "measureMapCopyFromPageLabel": "Quellseite",
+  "measureMapCopyPrevious": "Vorherige Seite kopieren",
+  "measureMapEmptyHint": "Zeichne ein System — die App fragt nach der Taktzahl",
+  "measureMapDone": "Fertig",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "Taktanzahl festlegen…",
+  "measureMapDeleteSystem": "System löschen",
+  "measureMapDeleteMeasure": "Takt löschen",
+  "measureMapEditMeta": "Tempo & Taktart…",
+  "measureMapClearAll": "MeasureMap löschen…"
 }

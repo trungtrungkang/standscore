@@ -7,6 +7,7 @@ import 'package:stagescore/annotation/draw_style.dart';
 import 'package:stagescore/annotation/draw_tool.dart';
 import 'package:stagescore/annotation/stamp.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
+import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
 import 'package:stagescore/pdf/shared_zoom.dart';
@@ -44,6 +45,7 @@ class SinglePageSlider extends StatefulWidget {
     this.reverseDirection = false,
     this.onDocumentReady,
     this.initialPage = 1,
+    this.measureMap,
   });
 
   final String filePath;
@@ -77,6 +79,8 @@ class SinglePageSlider extends StatefulWidget {
   /// opens a different file — a layout change or a draw toggle rebuilds the
   /// viewer, and the musician should still be looking at their own page.
   final int initialPage;
+
+  final MeasureMapOverlayConfig? measureMap;
 
   @override
   State<SinglePageSlider> createState() => _SinglePageSliderState();
@@ -352,11 +356,15 @@ class _SinglePageSliderState extends State<SinglePageSlider> {
           transformationController: transform,
           panEnabled:
               !widget.drawEnabled &&
+              !(widget.measureMap?.editEnabled ?? false) &&
               (zoomed ||
                   (widget.resolvePageScale?.call(entry.sourcePage) ??
                           widget.pageScale) >
                       1.01),
-          scaleEnabled: !widget.drawEnabled && !widget.zoomLocked,
+          scaleEnabled: !widget.drawEnabled &&
+              !(widget.measureMap?.editEnabled ?? false) &&
+              !widget.zoomLocked,
+          measureMap: widget.measureMap,
         );
       },
     );

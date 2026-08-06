@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "書籤",
   "scoreMenuJumpLinks": "跳頁連結",
   "scoreMenuPageOrder": "頁面順序…",
+  "scoreMenuGoToMeasure": "跳到小節…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "標記",
   "scoreMenuHideAnnotations": "隱藏註記",
   "scoreMenuShowAnnotations": "顯示註記",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "符合全部",
   "libraryFilterSheetModeUntagged": "未加標籤",
   "libraryFilterSheetUntaggedHint": "沒有標籤的樂譜",
-  "libraryFilterSheetEmptyLabels": "目前沒有可用來篩選的標籤"
+  "libraryFilterSheetEmptyLabels": "目前沒有可用來篩選的標籤",
+  "measureMapMeasureCountTitle": "幾個 MeasureBox？",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "跳到小節",
+  "measureMapGoToLabel": "小節編號",
+  "measureMapGoToMissing": "第 {number} 小節尚未對應",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "速度與拍號",
+  "measureMapTimeSignatureLabel": "拍號",
+  "measureMapTempoLabel": "速度",
+  "measureMapMetaScopeTitle": "套用至",
+  "measureMapScopeThisMeasure": "僅此小節",
+  "measureMapScopeThisSystem": "此 System",
+  "measureMapScopeThisPage": "本頁",
+  "measureMapScopeRestOfScore": "Score 其餘部分",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "小節數",
+  "measureMapClearTitle": "清除 MeasureMap？",
+  "measureMapClearBody": "刪除此 Score 的所有 SystemBox 與 MeasureBox。無法復原。",
+  "measureMapClearConfirm": "清除",
+  "measureMapDeleteSystemTitle": "刪除 System？",
+  "measureMapDeleteSystemBody": "刪除此 SystemBox 及其所有 MeasureBox。",
+  "measureMapCopyFromPageTitle": "從頁面複製版面",
+  "measureMapCopyFromPageLabel": "來源頁",
+  "measureMapCopyPrevious": "複製上一頁",
+  "measureMapEmptyHint": "繪製一行 System — 應用程式會詢問有多少小節",
+  "measureMapDone": "完成",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "設定小節數…",
+  "measureMapDeleteSystem": "刪除 System",
+  "measureMapDeleteMeasure": "刪除小節",
+  "measureMapEditMeta": "速度與拍號…",
+  "measureMapClearAll": "清除 MeasureMap…"
 }

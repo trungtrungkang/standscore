@@ -13,8 +13,10 @@ enum ScoreMenuAction {
   bookmarks,
   jumpLinks,
   pageOrder,
+  goToMeasure,
   toggleAnnotations,
   exportAnnotated,
+  measureMap,
   layout,
   display,
   colorFilter,
@@ -32,6 +34,8 @@ enum ScoreMenuAction {
 const kBookmarksIcon = Icons.bookmarks_outlined;
 const kJumpLinksIcon = Icons.link_outlined;
 const kPageOrderIcon = Icons.reorder_outlined;
+const kGoToMeasureIcon = Icons.music_note_outlined;
+const kMeasureMapIcon = Icons.grid_on_outlined;
 const kAnnotationsVisibleIcon = Icons.visibility_outlined;
 const kAnnotationsHiddenIcon = Icons.visibility_off_outlined;
 const kExportAnnotatedIcon = Icons.ios_share_outlined;
@@ -122,6 +126,11 @@ List<ScoreMenuGroup> buildScoreMenu({
           label: l10n.scoreMenuPageOrder,
           icon: kPageOrderIcon,
         ),
+        ScoreMenuEntry(
+          action: ScoreMenuAction.goToMeasure,
+          label: l10n.scoreMenuGoToMeasure,
+          icon: kGoToMeasureIcon,
+        ),
       ],
     ),
     ScoreMenuGroup(
@@ -145,6 +154,11 @@ List<ScoreMenuGroup> buildScoreMenu({
               : l10n.scoreMenuExportAnnotated,
           icon: kExportAnnotatedIcon,
           enabled: !exporting,
+        ),
+        ScoreMenuEntry(
+          action: ScoreMenuAction.measureMap,
+          label: l10n.scoreMenuMeasureMap,
+          icon: kMeasureMapIcon,
         ),
       ],
     ),

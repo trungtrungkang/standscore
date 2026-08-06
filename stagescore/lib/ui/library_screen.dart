@@ -1130,7 +1130,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   /// Whether [scoreId] holds anything a musician would miss: ink, a bookmark,
-  /// a jump link, a Label, or Setlist membership.
+  /// a jump link, a MeasureMap, a Label, or Setlist membership.
   Future<bool> _pieceHasData(String scoreId) async {
     final root = _library?.root;
     if (root == null) return false;
@@ -1147,6 +1147,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
         if (strokes.isNotEmpty || stamps.isNotEmpty) return true;
       } catch (_) {
         // An unreadable file is not "no data" — better to warn than to lose it.
+        return true;
+      }
+    }
+    final measureMapFile = File(
+      p.join(root.path, 'measure_maps', '$scoreId.json'),
+    );
+    if (await measureMapFile.exists()) {
+      try {
+        final json =
+            jsonDecode(await measureMapFile.readAsString())
+                as Map<String, dynamic>;
+        final measures = json['measures'] as List<dynamic>? ?? const [];
+        if (measures.isNotEmpty) return true;
+      } catch (_) {
         return true;
       }
     }

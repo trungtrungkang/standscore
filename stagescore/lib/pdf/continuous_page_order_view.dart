@@ -8,6 +8,7 @@ import 'package:stagescore/annotation/draw_tool.dart';
 import 'package:stagescore/annotation/stamp.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
+import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/performance_page_slot.dart';
 import 'package:stagescore/pdf/shared_zoom.dart';
@@ -42,6 +43,7 @@ class ContinuousPageOrderView extends StatefulWidget {
     this.pageBorderWidth = 2.0,
     this.pageBorderColor = const Color(0xFF424242),
     this.initialPage = 1,
+    this.measureMap,
   });
 
   final String filePath;
@@ -72,6 +74,8 @@ class ContinuousPageOrderView extends StatefulWidget {
   /// Performance page to scroll to once the document is open — a layout change
   /// builds a new view, and it should start where the reading was.
   final int initialPage;
+
+  final MeasureMapOverlayConfig? measureMap;
 
   @override
   State<ContinuousPageOrderView> createState() =>
@@ -322,7 +326,8 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
         widget.layoutMode == PdfLayoutMode.halfPageLeftRight;
     final twoPage = widget.layoutMode == PdfLayoutMode.twoPage;
 
-    final scrollPhysics = widget.drawEnabled
+    final scrollPhysics = widget.drawEnabled ||
+            (widget.measureMap?.editEnabled ?? false)
         ? const NeverScrollableScrollPhysics()
         : null;
 
@@ -406,8 +411,12 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
             pageBorderWidth: widget.pageBorderWidth,
             pageBorderColor: widget.pageBorderColor,
             transformationController: _transformFor(index),
-            panEnabled: !widget.drawEnabled,
-            scaleEnabled: !widget.drawEnabled && !widget.zoomLocked,
+            measureMap: widget.measureMap,
+            panEnabled: !widget.drawEnabled &&
+                !(widget.measureMap?.editEnabled ?? false),
+            scaleEnabled: !widget.drawEnabled &&
+                !(widget.measureMap?.editEnabled ?? false) &&
+                !widget.zoomLocked,
           ),
         ),
       ),

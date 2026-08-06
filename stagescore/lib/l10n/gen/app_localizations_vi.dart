@@ -335,6 +335,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scoreMenuPageOrder => 'Thứ tự trang…';
 
   @override
+  String get scoreMenuGoToMeasure => 'Tới ô nhịp…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => 'Đánh dấu';
 
   @override
@@ -1693,4 +1699,101 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get libraryFilterSheetEmptyLabels => 'Chưa có Label nào để lọc';
+
+  @override
+  String get measureMapMeasureCountTitle => 'Bao nhiêu MeasureBoxes?';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => 'Tới ô nhịp';
+
+  @override
+  String get measureMapGoToLabel => 'Số ô nhịp';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return 'Ô nhịp $number chưa được map';
+  }
+
+  @override
+  String get measureMapMetaTitle => 'Tempo & time signature';
+
+  @override
+  String get measureMapTimeSignatureLabel => 'Time signature';
+
+  @override
+  String get measureMapTempoLabel => 'Tempo';
+
+  @override
+  String get measureMapMetaScopeTitle => 'Áp dụng cho';
+
+  @override
+  String get measureMapScopeThisMeasure => 'Chỉ ô này';
+
+  @override
+  String get measureMapScopeThisSystem => 'System này';
+
+  @override
+  String get measureMapScopeThisPage => 'Trang này';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Phần còn lại của Score';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => 'Số ô nhịp';
+
+  @override
+  String get measureMapClearTitle => 'Xoá MeasureMap?';
+
+  @override
+  String get measureMapClearBody =>
+      'Xoá mọi SystemBox và MeasureBox của Score này. Không hoàn tác được.';
+
+  @override
+  String get measureMapClearConfirm => 'Xoá';
+
+  @override
+  String get measureMapDeleteSystemTitle => 'Xoá system?';
+
+  @override
+  String get measureMapDeleteSystemBody =>
+      'Xoá SystemBox này và mọi MeasureBox trong đó.';
+
+  @override
+  String get measureMapCopyFromPageTitle => 'Chép layout từ trang';
+
+  @override
+  String get measureMapCopyFromPageLabel => 'Trang nguồn';
+
+  @override
+  String get measureMapCopyPrevious => 'Chép trang trước';
+
+  @override
+  String get measureMapEmptyHint => 'Vẽ một dòng nhạc — app sẽ hỏi bao nhiêu ô';
+
+  @override
+  String get measureMapDone => 'Xong';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => 'Đặt số ô…';
+
+  @override
+  String get measureMapDeleteSystem => 'Xoá system';
+
+  @override
+  String get measureMapDeleteMeasure => 'Xoá ô nhịp';
+
+  @override
+  String get measureMapEditMeta => 'Tempo & time signature…';
+
+  @override
+  String get measureMapClearAll => 'Xoá MeasureMap…';
 }

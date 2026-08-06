@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "Bookmark",
   "scoreMenuJumpLinks": "Jump Link",
   "scoreMenuPageOrder": "Page order…",
+  "scoreMenuGoToMeasure": "跳转到小节…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "标注",
   "scoreMenuHideAnnotations": "隐藏标注",
   "scoreMenuShowAnnotations": "显示标注",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "全部",
   "libraryFilterSheetModeUntagged": "无 Label",
   "libraryFilterSheetUntaggedHint": "没有 Label 的 Score",
-  "libraryFilterSheetEmptyLabels": "暂无可用于筛选的 Label"
+  "libraryFilterSheetEmptyLabels": "暂无可用于筛选的 Label",
+  "measureMapMeasureCountTitle": "多少个 MeasureBox？",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "跳转到小节",
+  "measureMapGoToLabel": "小节号",
+  "measureMapGoToMissing": "第 {number} 小节尚未映射",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "速度与拍号",
+  "measureMapTimeSignatureLabel": "拍号",
+  "measureMapTempoLabel": "速度",
+  "measureMapMetaScopeTitle": "应用于",
+  "measureMapScopeThisMeasure": "仅此小节",
+  "measureMapScopeThisSystem": "此 System",
+  "measureMapScopeThisPage": "本页",
+  "measureMapScopeRestOfScore": "Score 剩余部分",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "小节数",
+  "measureMapClearTitle": "清除 MeasureMap？",
+  "measureMapClearBody": "删除此 Score 的所有 SystemBox 与 MeasureBox。无法撤销。",
+  "measureMapClearConfirm": "清除",
+  "measureMapDeleteSystemTitle": "删除 System？",
+  "measureMapDeleteSystemBody": "删除此 SystemBox 及其所有 MeasureBox。",
+  "measureMapCopyFromPageTitle": "从页面复制布局",
+  "measureMapCopyFromPageLabel": "源页面",
+  "measureMapCopyPrevious": "复制上一页",
+  "measureMapEmptyHint": "绘制一行 System — 应用会询问有多少小节",
+  "measureMapDone": "完成",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "设置小节数…",
+  "measureMapDeleteSystem": "删除 System",
+  "measureMapDeleteMeasure": "删除小节",
+  "measureMapEditMeta": "速度与拍号…",
+  "measureMapClearAll": "清除 MeasureMap…"
 }

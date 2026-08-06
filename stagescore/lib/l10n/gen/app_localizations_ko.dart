@@ -332,6 +332,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get scoreMenuPageOrder => '페이지 순서…';
 
   @override
+  String get scoreMenuGoToMeasure => '마디로 이동…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => '마크';
 
   @override
@@ -1675,4 +1681,100 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get libraryFilterSheetEmptyLabels => '필터링할 라벨이 아직 없어요';
+
+  @override
+  String get measureMapMeasureCountTitle => 'MeasureBox는 몇 개?';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => '마디로 이동';
+
+  @override
+  String get measureMapGoToLabel => '마디 번호';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return '$number번 마디가 아직 맵되지 않았습니다';
+  }
+
+  @override
+  String get measureMapMetaTitle => '템포 및 박자';
+
+  @override
+  String get measureMapTimeSignatureLabel => '박자';
+
+  @override
+  String get measureMapTempoLabel => '템포';
+
+  @override
+  String get measureMapMetaScopeTitle => '적용 범위';
+
+  @override
+  String get measureMapScopeThisMeasure => '이 마디만';
+
+  @override
+  String get measureMapScopeThisSystem => '이 System';
+
+  @override
+  String get measureMapScopeThisPage => '이 페이지';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Score 나머지';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => '마디 수';
+
+  @override
+  String get measureMapClearTitle => 'MeasureMap을 지울까요?';
+
+  @override
+  String get measureMapClearBody =>
+      '이 Score의 모든 SystemBox와 MeasureBox를 삭제합니다. 되돌릴 수 없습니다.';
+
+  @override
+  String get measureMapClearConfirm => '지우기';
+
+  @override
+  String get measureMapDeleteSystemTitle => 'System을 삭제할까요?';
+
+  @override
+  String get measureMapDeleteSystemBody => '이 SystemBox와 모든 MeasureBox를 삭제합니다.';
+
+  @override
+  String get measureMapCopyFromPageTitle => '페이지에서 레이아웃 복사';
+
+  @override
+  String get measureMapCopyFromPageLabel => '원본 페이지';
+
+  @override
+  String get measureMapCopyPrevious => '이전 페이지 복사';
+
+  @override
+  String get measureMapEmptyHint => 'System을 그리면 마디 수를 묻습니다';
+
+  @override
+  String get measureMapDone => '완료';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => '마디 수 설정…';
+
+  @override
+  String get measureMapDeleteSystem => 'System 삭제';
+
+  @override
+  String get measureMapDeleteMeasure => '마디 삭제';
+
+  @override
+  String get measureMapEditMeta => '템포 및 박자…';
+
+  @override
+  String get measureMapClearAll => 'MeasureMap 지우기…';
 }

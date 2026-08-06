@@ -329,6 +329,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scoreMenuPageOrder => 'Page order…';
 
   @override
+  String get scoreMenuGoToMeasure => '跳转到小节…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => '标注';
 
   @override
@@ -1662,6 +1668,102 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get libraryFilterSheetEmptyLabels => '暂无可用于筛选的 Label';
+
+  @override
+  String get measureMapMeasureCountTitle => '多少个 MeasureBox？';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => '跳转到小节';
+
+  @override
+  String get measureMapGoToLabel => '小节号';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return '第 $number 小节尚未映射';
+  }
+
+  @override
+  String get measureMapMetaTitle => '速度与拍号';
+
+  @override
+  String get measureMapTimeSignatureLabel => '拍号';
+
+  @override
+  String get measureMapTempoLabel => '速度';
+
+  @override
+  String get measureMapMetaScopeTitle => '应用于';
+
+  @override
+  String get measureMapScopeThisMeasure => '仅此小节';
+
+  @override
+  String get measureMapScopeThisSystem => '此 System';
+
+  @override
+  String get measureMapScopeThisPage => '本页';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Score 剩余部分';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => '小节数';
+
+  @override
+  String get measureMapClearTitle => '清除 MeasureMap？';
+
+  @override
+  String get measureMapClearBody =>
+      '删除此 Score 的所有 SystemBox 与 MeasureBox。无法撤销。';
+
+  @override
+  String get measureMapClearConfirm => '清除';
+
+  @override
+  String get measureMapDeleteSystemTitle => '删除 System？';
+
+  @override
+  String get measureMapDeleteSystemBody => '删除此 SystemBox 及其所有 MeasureBox。';
+
+  @override
+  String get measureMapCopyFromPageTitle => '从页面复制布局';
+
+  @override
+  String get measureMapCopyFromPageLabel => '源页面';
+
+  @override
+  String get measureMapCopyPrevious => '复制上一页';
+
+  @override
+  String get measureMapEmptyHint => '绘制一行 System — 应用会询问有多少小节';
+
+  @override
+  String get measureMapDone => '完成';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => '设置小节数…';
+
+  @override
+  String get measureMapDeleteSystem => '删除 System';
+
+  @override
+  String get measureMapDeleteMeasure => '删除小节';
+
+  @override
+  String get measureMapEditMeta => '速度与拍号…';
+
+  @override
+  String get measureMapClearAll => '清除 MeasureMap…';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -1987,6 +2089,12 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get scoreMenuPageOrder => '頁面順序…';
+
+  @override
+  String get scoreMenuGoToMeasure => '跳到小節…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
 
   @override
   String get scoreMenuMarks => '標記';
@@ -3322,4 +3430,100 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get libraryFilterSheetEmptyLabels => '目前沒有可用來篩選的標籤';
+
+  @override
+  String get measureMapMeasureCountTitle => '幾個 MeasureBox？';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => '跳到小節';
+
+  @override
+  String get measureMapGoToLabel => '小節編號';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return '第 $number 小節尚未對應';
+  }
+
+  @override
+  String get measureMapMetaTitle => '速度與拍號';
+
+  @override
+  String get measureMapTimeSignatureLabel => '拍號';
+
+  @override
+  String get measureMapTempoLabel => '速度';
+
+  @override
+  String get measureMapMetaScopeTitle => '套用至';
+
+  @override
+  String get measureMapScopeThisMeasure => '僅此小節';
+
+  @override
+  String get measureMapScopeThisSystem => '此 System';
+
+  @override
+  String get measureMapScopeThisPage => '本頁';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Score 其餘部分';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => '小節數';
+
+  @override
+  String get measureMapClearTitle => '清除 MeasureMap？';
+
+  @override
+  String get measureMapClearBody =>
+      '刪除此 Score 的所有 SystemBox 與 MeasureBox。無法復原。';
+
+  @override
+  String get measureMapClearConfirm => '清除';
+
+  @override
+  String get measureMapDeleteSystemTitle => '刪除 System？';
+
+  @override
+  String get measureMapDeleteSystemBody => '刪除此 SystemBox 及其所有 MeasureBox。';
+
+  @override
+  String get measureMapCopyFromPageTitle => '從頁面複製版面';
+
+  @override
+  String get measureMapCopyFromPageLabel => '來源頁';
+
+  @override
+  String get measureMapCopyPrevious => '複製上一頁';
+
+  @override
+  String get measureMapEmptyHint => '繪製一行 System — 應用程式會詢問有多少小節';
+
+  @override
+  String get measureMapDone => '完成';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => '設定小節數…';
+
+  @override
+  String get measureMapDeleteSystem => '刪除 System';
+
+  @override
+  String get measureMapDeleteMeasure => '刪除小節';
+
+  @override
+  String get measureMapEditMeta => '速度與拍號…';
+
+  @override
+  String get measureMapClearAll => '清除 MeasureMap…';
 }

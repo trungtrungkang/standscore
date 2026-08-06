@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "북마크",
   "scoreMenuJumpLinks": "점프 링크",
   "scoreMenuPageOrder": "페이지 순서…",
+  "scoreMenuGoToMeasure": "마디로 이동…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "마크",
   "scoreMenuHideAnnotations": "주석 숨기기",
   "scoreMenuShowAnnotations": "주석 표시",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "모두",
   "libraryFilterSheetModeUntagged": "라벨 없음",
   "libraryFilterSheetUntaggedHint": "라벨이 없는 악보",
-  "libraryFilterSheetEmptyLabels": "필터링할 라벨이 아직 없어요"
+  "libraryFilterSheetEmptyLabels": "필터링할 라벨이 아직 없어요",
+  "measureMapMeasureCountTitle": "MeasureBox는 몇 개?",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "마디로 이동",
+  "measureMapGoToLabel": "마디 번호",
+  "measureMapGoToMissing": "{number}번 마디가 아직 맵되지 않았습니다",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "템포 및 박자",
+  "measureMapTimeSignatureLabel": "박자",
+  "measureMapTempoLabel": "템포",
+  "measureMapMetaScopeTitle": "적용 범위",
+  "measureMapScopeThisMeasure": "이 마디만",
+  "measureMapScopeThisSystem": "이 System",
+  "measureMapScopeThisPage": "이 페이지",
+  "measureMapScopeRestOfScore": "Score 나머지",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "마디 수",
+  "measureMapClearTitle": "MeasureMap을 지울까요?",
+  "measureMapClearBody": "이 Score의 모든 SystemBox와 MeasureBox를 삭제합니다. 되돌릴 수 없습니다.",
+  "measureMapClearConfirm": "지우기",
+  "measureMapDeleteSystemTitle": "System을 삭제할까요?",
+  "measureMapDeleteSystemBody": "이 SystemBox와 모든 MeasureBox를 삭제합니다.",
+  "measureMapCopyFromPageTitle": "페이지에서 레이아웃 복사",
+  "measureMapCopyFromPageLabel": "원본 페이지",
+  "measureMapCopyPrevious": "이전 페이지 복사",
+  "measureMapEmptyHint": "System을 그리면 마디 수를 묻습니다",
+  "measureMapDone": "완료",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "마디 수 설정…",
+  "measureMapDeleteSystem": "System 삭제",
+  "measureMapDeleteMeasure": "마디 삭제",
+  "measureMapEditMeta": "템포 및 박자…",
+  "measureMapClearAll": "MeasureMap 지우기…"
 }

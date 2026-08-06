@@ -98,6 +98,8 @@
   "scoreMenuBookmarks": "Marcadores",
   "scoreMenuJumpLinks": "Enlaces de salto",
   "scoreMenuPageOrder": "Orden de páginas…",
+  "scoreMenuGoToMeasure": "Ir al compás…",
+  "scoreMenuMeasureMap": "Measure map…",
   "scoreMenuMarks": "Marcas",
   "scoreMenuHideAnnotations": "Ocultar anotaciones",
   "scoreMenuShowAnnotations": "Mostrar anotaciones",
@@ -438,5 +440,43 @@
   "libraryFilterSheetModeAll": "Todas",
   "libraryFilterSheetModeUntagged": "Sin etiquetas",
   "libraryFilterSheetUntaggedHint": "Partituras sin etiquetas",
-  "libraryFilterSheetEmptyLabels": "Aún no hay etiquetas por las que filtrar"
+  "libraryFilterSheetEmptyLabels": "Aún no hay etiquetas por las que filtrar",
+  "measureMapMeasureCountTitle": "¿Cuántos MeasureBoxes?",
+  "measureMapMeasureCountLabel": "MeasureBoxes",
+  "measureMapGoToTitle": "Ir al compás",
+  "measureMapGoToLabel": "Número de compás",
+  "measureMapGoToMissing": "El compás {number} aún no está mapeado",
+  "@measureMapGoToMissing": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "measureMapMetaTitle": "Tempo y métrica",
+  "measureMapTimeSignatureLabel": "Métrica",
+  "measureMapTempoLabel": "Tempo",
+  "measureMapMetaScopeTitle": "Aplicar a",
+  "measureMapScopeThisMeasure": "Solo este compás",
+  "measureMapScopeThisSystem": "Este system",
+  "measureMapScopeThisPage": "Esta página",
+  "measureMapScopeRestOfScore": "Resto del Score",
+  "measureMapScopeNextN": "Next N…",
+  "measureMapMetaNextNLabel": "Número de compases",
+  "measureMapClearTitle": "¿Borrar MeasureMap?",
+  "measureMapClearBody": "Borra todos los SystemBox y MeasureBox de este Score. No se puede deshacer.",
+  "measureMapClearConfirm": "Borrar",
+  "measureMapDeleteSystemTitle": "¿Borrar system?",
+  "measureMapDeleteSystemBody": "Borra este SystemBox y todos sus MeasureBoxes.",
+  "measureMapCopyFromPageTitle": "Copiar diseño desde página",
+  "measureMapCopyFromPageLabel": "Página de origen",
+  "measureMapCopyPrevious": "Copiar página anterior",
+  "measureMapEmptyHint": "Dibuja un system — la app preguntará cuántos compases",
+  "measureMapDone": "Listo",
+  "measureMapEditBeats": "Edit beats",
+  "measureMapSetMeasureCount": "Establecer número de compases…",
+  "measureMapDeleteSystem": "Borrar system",
+  "measureMapDeleteMeasure": "Borrar compás",
+  "measureMapEditMeta": "Tempo y métrica…",
+  "measureMapClearAll": "Borrar MeasureMap…"
 }

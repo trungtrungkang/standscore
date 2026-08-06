@@ -332,6 +332,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scoreMenuPageOrder => 'ページ順…';
 
   @override
+  String get scoreMenuGoToMeasure => '小節へ移動…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => 'マーク';
 
   @override
@@ -1672,4 +1678,101 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get libraryFilterSheetEmptyLabels => '絞り込めるラベルがまだありません';
+
+  @override
+  String get measureMapMeasureCountTitle => 'MeasureBox はいくつ？';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => '小節へ移動';
+
+  @override
+  String get measureMapGoToLabel => '小節番号';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return '小節 $number はまだマップされていません';
+  }
+
+  @override
+  String get measureMapMetaTitle => 'テンポと拍子';
+
+  @override
+  String get measureMapTimeSignatureLabel => '拍子';
+
+  @override
+  String get measureMapTempoLabel => 'テンポ';
+
+  @override
+  String get measureMapMetaScopeTitle => '適用範囲';
+
+  @override
+  String get measureMapScopeThisMeasure => 'この小節のみ';
+
+  @override
+  String get measureMapScopeThisSystem => 'この System';
+
+  @override
+  String get measureMapScopeThisPage => 'このページ';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Score の残り';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => '小節数';
+
+  @override
+  String get measureMapClearTitle => 'MeasureMap を消去しますか？';
+
+  @override
+  String get measureMapClearBody =>
+      'この Score のすべての SystemBox と MeasureBox を削除します。元に戻せません。';
+
+  @override
+  String get measureMapClearConfirm => '消去';
+
+  @override
+  String get measureMapDeleteSystemTitle => 'System を削除しますか？';
+
+  @override
+  String get measureMapDeleteSystemBody =>
+      'この SystemBox とその MeasureBox をすべて削除します。';
+
+  @override
+  String get measureMapCopyFromPageTitle => 'ページからレイアウトをコピー';
+
+  @override
+  String get measureMapCopyFromPageLabel => '元ページ';
+
+  @override
+  String get measureMapCopyPrevious => '前のページをコピー';
+
+  @override
+  String get measureMapEmptyHint => 'System を描くと、小節数を尋ねます';
+
+  @override
+  String get measureMapDone => '完了';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => '小節数を設定…';
+
+  @override
+  String get measureMapDeleteSystem => 'System を削除';
+
+  @override
+  String get measureMapDeleteMeasure => '小節を削除';
+
+  @override
+  String get measureMapEditMeta => 'テンポと拍子…';
+
+  @override
+  String get measureMapClearAll => 'MeasureMap を消去…';
 }

@@ -6,8 +6,10 @@ import 'package:stagescore/annotation/draw_tool.dart';
 import 'package:stagescore/annotation/stamp.dart';
 import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
+import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
 import 'package:stagescore/pageorder/page_order.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
+import 'package:stagescore/pdf/page_measure_map_overlay.dart';
 import 'package:stagescore/pdf/pdf_surface.dart';
 
 /// Renders one PageOrder slot: PDF page or blank (Spec 0011).
@@ -37,6 +39,7 @@ class PerformancePageSlot extends StatelessWidget {
     this.pageBorderEnabled = false,
     this.pageBorderWidth = 2.0,
     this.pageBorderColor = const Color(0xFF424242),
+    this.measureMap,
   });
 
   final PdfDocument document;
@@ -66,6 +69,9 @@ class PerformancePageSlot extends StatelessWidget {
   final bool pageBorderEnabled;
   final double pageBorderWidth;
   final Color pageBorderColor;
+
+  /// Optional MeasureMap overlay (Spec 0058).
+  final MeasureMapOverlayConfig? measureMap;
 
   /// Drawn above page pixels — PdfPageView [decoration] sits under the image
   /// and is fully covered, so borders there are invisible.
@@ -172,6 +178,12 @@ class PerformancePageSlot extends StatelessWidget {
                           onSelectedStampChanged: onSelectedStampChanged,
                           annotationsVisible: annotationsVisible,
                         ),
+                        if (measureMap != null)
+                          PageMeasureMapOverlay(
+                            pageRect: pageRect,
+                            page: page,
+                            config: measureMap!,
+                          ),
                         ?_pageBorderOverlay(),
                       ],
                     ),

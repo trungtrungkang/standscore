@@ -338,6 +338,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scoreMenuPageOrder => 'Orden de páginas…';
 
   @override
+  String get scoreMenuGoToMeasure => 'Ir al compás…';
+
+  @override
+  String get scoreMenuMeasureMap => 'Measure map…';
+
+  @override
   String get scoreMenuMarks => 'Marcas';
 
   @override
@@ -1712,4 +1718,102 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get libraryFilterSheetEmptyLabels =>
       'Aún no hay etiquetas por las que filtrar';
+
+  @override
+  String get measureMapMeasureCountTitle => '¿Cuántos MeasureBoxes?';
+
+  @override
+  String get measureMapMeasureCountLabel => 'MeasureBoxes';
+
+  @override
+  String get measureMapGoToTitle => 'Ir al compás';
+
+  @override
+  String get measureMapGoToLabel => 'Número de compás';
+
+  @override
+  String measureMapGoToMissing(int number) {
+    return 'El compás $number aún no está mapeado';
+  }
+
+  @override
+  String get measureMapMetaTitle => 'Tempo y métrica';
+
+  @override
+  String get measureMapTimeSignatureLabel => 'Métrica';
+
+  @override
+  String get measureMapTempoLabel => 'Tempo';
+
+  @override
+  String get measureMapMetaScopeTitle => 'Aplicar a';
+
+  @override
+  String get measureMapScopeThisMeasure => 'Solo este compás';
+
+  @override
+  String get measureMapScopeThisSystem => 'Este system';
+
+  @override
+  String get measureMapScopeThisPage => 'Esta página';
+
+  @override
+  String get measureMapScopeRestOfScore => 'Resto del Score';
+
+  @override
+  String get measureMapScopeNextN => 'Next N…';
+
+  @override
+  String get measureMapMetaNextNLabel => 'Número de compases';
+
+  @override
+  String get measureMapClearTitle => '¿Borrar MeasureMap?';
+
+  @override
+  String get measureMapClearBody =>
+      'Borra todos los SystemBox y MeasureBox de este Score. No se puede deshacer.';
+
+  @override
+  String get measureMapClearConfirm => 'Borrar';
+
+  @override
+  String get measureMapDeleteSystemTitle => '¿Borrar system?';
+
+  @override
+  String get measureMapDeleteSystemBody =>
+      'Borra este SystemBox y todos sus MeasureBoxes.';
+
+  @override
+  String get measureMapCopyFromPageTitle => 'Copiar diseño desde página';
+
+  @override
+  String get measureMapCopyFromPageLabel => 'Página de origen';
+
+  @override
+  String get measureMapCopyPrevious => 'Copiar página anterior';
+
+  @override
+  String get measureMapEmptyHint =>
+      'Dibuja un system — la app preguntará cuántos compases';
+
+  @override
+  String get measureMapDone => 'Listo';
+
+  @override
+  String get measureMapEditBeats => 'Edit beats';
+
+  @override
+  String get measureMapSetMeasureCount => 'Establecer número de compases…';
+
+  @override
+  String get measureMapDeleteSystem => 'Borrar system';
+
+  @override
+  String get measureMapDeleteMeasure => 'Borrar compás';
+
+  @override
+  String get measureMapEditMeta => 'Tempo y métrica…';
+
+  @override
+  String get measureMapClearAll => 'Borrar MeasureMap…';
 }

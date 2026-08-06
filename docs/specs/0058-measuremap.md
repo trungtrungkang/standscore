@@ -1,18 +1,19 @@
 # 0058 — MeasureMap: vẽ SystemBox → MeasureBox → BeatBox; nhảy tới ô nhịp
 
-- **Status:** proposed
+- **Status:** done
 - **Type:** feature
 - **Horizon:** H5 (ADR 0019 quyết định 1 — chỉ cần biết *chỗ nào trên trang*; không cần biết *nốt nào*)
 - **Owner (human):** Orchestrator
 - **Depends on ADRs:** **0019** (`accepted` — quyết định 3, 3a–3e, 6, 11 lớp phủ; revision 7 đổi số), 0005, 0006 (**không mở** OMR), 0008 (H3/H4 vẫn đóng), 0013 (tier), 0014 (phép dịch MeasureBox ↔ web), 0015, 0016
 - **Depends on Specs:** **0052** (PageExtent, số trang tuyệt đối), **0055** (Score gốc/con; lớp phủ theo `scoreId`; all-pages không union MeasureMap từ con), 0017–0019 (lớp vẽ + hệ toạ độ 0–1), 0027 (`LibraryBackup` — MeasureMap phải vào backup), 0035 / 0043 (ScoreMenu IA — lối vào soạn)
 - **Tier:** **L** — dữ liệu tốn công người nhất app từng lưu; công cụ soạn là trần chất lượng cho mọi SongPack sau này (ADR 0019 quyết định 7b); persistence mới theo `scoreId`; chạm sâu PdfMode. Không SDK mới, không quyền mới, không byte rời máy → **Security Review không cần** (ADR 0019: cần cho slice SongPack và thu âm, không cần 1–7)
-- **G3:** chờ Orchestrator
+- **G3:** **accepted 2026-08-06** — câu **1–10** theo khuyến nghị nguyên bản; câu **11–15** chốt trong chat cùng ngày (dialog số ô, xoá/đổi N + hình học giữ trái, tempo/time sig + phạm vi, BeatBox ẩn + *Edit beats*)
+- **Revision 1 (G4 2026-08-07):** câu **16–18** — selection hạng nhất cho SystemBox + tách menu; resize 4 mép / move thân khi system đang chọn
+- **Revision 2 (2026-08-07):** câu **1** — `beatSplits` là **N mốc nội tại** (kéo khớp nốt từng phách; **không** tính hai vạch nhịp mép ô). Mặc định tâm từng lát bằng. Wire web vẫn N−1 biên (đổi centres ↔ midpoints).
+- **G4:** **pass (2026-08-07)** — gồm rev. 1; rev. 2 chờ xác nhận Edit beats (4 vạch trong ô 4/4)
 - **Security Review:** **không cần**
 
-> **Slice 5 của ADR 0019.** Số Spec là `0058` sau revision 7 (0056/0057 bị tiêu thụ bởi Half Page và localization, ngoài ADR). Không mở SyncMap tính ra, không mở metronome theo bài, không mở Transport — những thứ ấy là 0059+. Slice này **tự đứng** trước mắt nhạc công nhờ **nhảy tới ô nhịp**: soạn xong vài trang là dùng được ngay, không phải chờ slice kế.
-
-> **Chuẩn chất lượng:** đây không còn là "đủ để nhạc công map bài của mình" — tác giả bên thứ ba dựng pack **bằng chính công cụ này** (ADR 0019 quyết định 7b + G2 câu 6). Spec phải đặt trần đó từ đầu.
+> **Đóng slice:** G3 + build + rev. 1 + G4 pass. Rev. 2 (N vạch phách) đã vào code — xác nhận Edit beats trên máy. Suite measure_map xanh sau rev. 2.
 
 ---
 
@@ -41,13 +42,13 @@ Từ đó: gõ số ô nhịp → nhảy tới đúng chỗ trên trang. Ngườ
 
 | Tầng | Là gì | Soạn |
 |---|---|---|
-| **SystemBox** | Một dòng nhạc (*system*) trên trang | Vẽ hộp; hoặc chép từ trang trước |
-| **MeasureBox** | Một ô nhịp trong SystemBox | Chia SystemBox; chia đều mặc định; kéo vạch |
-| **BeatBox** | Một phách trong MeasureBox | Chia đều theo time signature; kéo khi in lệch |
+| **SystemBox** | Một dòng nhạc (*system*) trên trang | Vẽ hộp → dialog hỏi số MeasureBox; hoặc chép từ trang trước; **chọn khung** → resize/move / *Set measure count* / *Delete system* (rev. 1) |
+| **MeasureBox** | Một ô nhịp trong SystemBox | Sinh từ dialog lúc tạo SystemBox; chia đều trong hộp; kéo vạch; chọn ô → xoá / tempo·time sig / *Edit beats* |
+| **BeatBox** | Một phách trong MeasureBox | N mốc nội tại theo time signature (ẩn); *Edit beats* hiện **N** vạch để kéo khớp nốt (không tính hai vạch nhịp mép) |
 
 - Hệ toạ độ: **0–1**, gốc góc trên-trái trang; **`pageNumber` 1-based tuyệt đối của PdfDocument** — cùng không gian với annotation / `PageOrderEntry.sourcePage`. Không quy ước tương đối theo PageExtent.
-- Mỗi MeasureBox mang: `id`, `pageNumber`, `measureNumber` (số ô toàn bài, 1-based liên tục trong Score), `systemIndex`, `x/y/width/height`, `timeSignature?`, `tempo?` (kế thừa ô trước; chỉ ghi khi đổi), và hình học phách (xem G3 câu 1).
-- Chiều rộng BeatBox / vị trí vạch chia = **vị trí playhead trên giấy**, **không** phải thời lượng (ADR 0019 quyết định 3b). Thời lượng thuộc SyncMap (slice sau).
+- Mỗi MeasureBox mang: `id`, `pageNumber`, `measureNumber` (số ô toàn bài, 1-based liên tục trong Score — G3 câu 2), `systemIndex`, `x/y/width/height`, `timeSignature?`, `tempo?` (mặc định ô đầu `4/4` + `120`, kế thừa ô trước; chỉ ghi khi đổi — câu 3), và **`beatSplits: number[]`** trên đĩa — **N mốc nội tại** vị trí từng phách (câu 1 / rev. 2; UI gọi BeatBox).
+- Mỗi phần tử `beatSplits` = **vị trí trên giấy** của một phách (playhead / khớp nốt in), **không** phải thời lượng (ADR 0019 quyết định 3b). Thời lượng thuộc SyncMap (**0059**): tempo + time signature → `beatTimestamps`; kéo mốc không đổi timeline.
 - **MeasureMap chưa đầy đủ được phép** (G2 câu 8): thiếu trang / thiếu ô / thiếu phách đều hợp lệ. Mọi đường đọc phải chịu lỗ hổng, không đòi bản đồ trọn vẹn.
 - Vào **backup** cùng cây library (cùng loại annotation). Xoá Score → xoá file MeasureMap của `scoreId` ấy. Cascade xoá gốc → xoá MeasureMap mọi con + gốc.
 - Doc comment trên mọi trường số trang: thuộc không gian **tờ giấy** (tuyệt đối).
@@ -59,22 +60,24 @@ Round-trip không mất mát với:
 | StageScore | Web |
 |---|---|
 | `MeasureBox` (trang, measureNumber, systemIndex, 0..1) | `MeasureBox` (`pageIndex`, …) |
-| hình học phách | `beatSplits` (`number[]`, N−1 tỉ lệ nội tại hộp cho N phách) |
+| hình học phách | `beatSplits`: StageScore **N mốc nội tại**; web **N−1 biên** — dịch centres ↔ midpoints |
 | SystemBox | gom nhóm theo `systemIndex` (web không có type riêng) |
 
 Test thuần: encode → decode → bằng nhau. `noteEvents` / OMR-adjacent bên web **không** nhập slice này.
 
 ### C. Soạn trong PdfMode
 
-- Lối vào: mục trong ScoreMenu / `⋯` (không chiếm slot QuickBar Draw/Metronome/Bookmarks trừ khi G3 quyết khác).
-- Vẽ chồng lên trang bằng cùng đường overlay annotation (`PageAnnotationOverlay` / page slot) — **không** hệ zoom thứ hai.
-- Thao tác tối thiểu: vẽ SystemBox; chia đều thành N MeasureBox; chỉnh vạch; chia BeatBox theo time signature; kéo vạch phách; xoá hộp; **chép layout từ trang trước** (cùng số system, cùng vị trí tương đối; sửa sau).
-- Mutual exclusion với Draw mực (G3 câu 7).
-- Trên **all-pages gốc**: **không** soạn MeasureMap của con; không union MeasureMap con (0055). Soạn trên gốc = MeasureMap của chính gốc (tuỳ chọn; không bắt buộc — ADR 0019: luyện + SyncMap sống ở con).
+- Lối vào: **ScoreMenu / `⋯` → *Measure map…*** (G3 câu 5) — không chiếm QuickBar.
+- Vẽ chồng lên trang bằng cùng đường overlay annotation — **không** hệ zoom thứ hai.
+- Thao tác: vẽ SystemBox → dialog số MeasureBox (câu 11); chỉnh vạch ô; **selection** `none` \| `measure` \| `system` loại trừ lẫn nhau (câu 16); chọn SystemBox (tap khung) → *Set measure count…* / *Delete system* / resize·move (câu 17–18); chọn MeasureBox → xoá ô / tempo·time sig + phạm vi / *Edit beats* (câu 12–15); **chép layout trang liền trước** một tap, chọn trang bất kỳ là lối phụ (câu 4).
+- BeatBox mặc định **ẩn**; *Edit beats* chỉ hiện vạch ô đang chọn (câu 15).
+- **Loại trừ lẫn nhau** với Draw mực (câu 7).
+- All-pages gốc: không union map con; soạn trên gốc được phép nhưng IA nghiêng về piece (câu 8).
+- Xoá hết map: có, confirm một lần (câu 9).
 
 ### D. Nhảy tới ô nhịp (để slice không phải hình-dạng-tầng)
 
-- UI: nhập / chọn `measureNumber` đã có trong map → PdfMode cuộn/lật tới trang và đưa ô đó vào tầm nhìn (highlight ngắn).
+- **Dialog số + xác nhận** (câu 6) → cuộn/lật tới trang và đưa ô vào tầm nhìn (highlight ngắn).
 - Ô chưa map → báo không có, không crash.
 - Không cần SyncMap / audio.
 
@@ -104,27 +107,37 @@ Thêm: **MeasureMap**, **SystemBox**, **MeasureBox**, **BeatBox**. Siết **Sync
 | **MeasureMap** | Hình học ô nhịp trên trang của **một** Score; không phải thời gian |
 | **SystemBox** | Một *system* (dòng nhạc) trên trang — **không** gọi `RowBox` |
 | **MeasureBox** | Ô nhịp; trùng tên/nghĩa với web |
-| **BeatBox** | Phách trong ô; trên đĩa có thể là `beatSplits` (G3 câu 1) |
+| **BeatBox** | Phách trong ô; trên đĩa là `beatSplits` **N mốc nội tại** (rev. 2); UI mặc định ẩn (câu 15) |
 | **PageExtent** / **Score** / **PdfDocument** | Đã có — MeasureMap neo theo trang tuyệt đối trong PageExtent của Score đang mở |
 
 `MeasureAnchor` (ADR 0017) **không** dùng — bị rút bởi 0019.
 
 ---
 
-## Câu hỏi G3 (G3 questions)
+## Câu hỏi G3 (G3 questions) — **đã trả lời 2026-08-06**
 
-| # | Câu hỏi | Khuyến nghị |
+Orchestrator: câu **1–10** theo khuyến nghị; câu **11–15** chốt trong chat.
+
+| # | Câu hỏi | Quyết định |
 |---|---|---|
-| 1 | **BeatBox lưu trên đĩa thế nào?** Object riêng, hay `beatSplits: number[]` như web (N−1 tỉ lệ trong hộp)? | **`beatSplits` như web.** UI vẫn nói BeatBox. Trùng dữ liệu với web = round-trip gần như miễn phí; object riêng buộc phép dịch và hai nguồn sự thật |
-| 2 | **`measureNumber` đánh số thế nào?** Liên tục trong Score từ 1; theo trang; hay cho sửa tay từng ô? | **Liên tục trong Score từ 1**, gán lại khi chèn/xoá ô. Sửa tay từng ô = nguồn lệch với SyncMap sau này |
-| 3 | **Time signature / tempo mặc định khi tạo MeasureBox đầu?** | **`4/4` và `120`**, kế thừa ô trước; sheet nhỏ để đổi tại ô đang chọn. Không đoán từ PDF (OMR) |
-| 4 | **Chép layout: chỉ trang liền trước, hay chọn trang bất kỳ trong bài?** | **Trang liền trước là một tap; chọn trang bất kỳ là lối phụ** (lưới/`PdfPageGrid` đã có). Ca phổ biến là trang kế cùng bố cục |
-| 5 | **Lối vào soạn MeasureMap?** | **Mục ScoreMenu** (*Measure map…*), bật chế độ soạn trong PdfMode — không chiếm QuickBar slot 3 trừ khi G4 thấy thiếu |
-| 6 | **Nhảy tới ô nhịp: UI nào?** | **Dialog số + xác nhận**; nếu map có tên/danh sách ngắn có thể thêm list sau. Không dựng màn hình thứ hai trong slice này |
-| 7 | **MeasureMap mode vs Draw mực?** | **Loại trừ lẫn nhau** — bật cái này tắt cái kia. Hai lớp pointer trên cùng trang là nguồn lỗi đã biết |
-| 8 | **Score gốc (all-pages) có soạn MeasureMap không?** | **Cho phép nhưng không khuyến khích trong IA** — mục soạn hiện bình thường trên mọi Score; copy/empty state nói rõ luyện từng bài nên map trên **piece**. Không union từ con |
-| 9 | **Xoá hết MeasureMap của một Score?** | **Có**, trong chế độ soạn, confirm một lần — dữ liệu tốn buổi chiều |
-| 10 | **Baseline test trước build?** | Đo lại đầu chat build; kỳ vọng ~570 trước slice |
+| 1 | **BeatBox lưu trên đĩa thế nào?** | **Rev. 2:** StageScore lưu **N mốc nội tại** (4/4 → **4** vạch trong ô, không tính hai vạch nhịp mép) để kéo khớp nốt từng phách; mặc định tâm lát bằng. Web wire vẫn N−1 biên. UI vẫn nói BeatBox. *(G3 đầu = N−1 như web — Orchestrator đảo ở G4.)* |
+| 2 | **`measureNumber` đánh số thế nào?** | **Liên tục trong Score từ 1**, gán lại khi chèn/xoá ô |
+| 3 | **Time signature / tempo mặc định ô đầu?** | **`4/4` và `120`**, kế thừa ô trước; chỉ ghi khi khác ô trước. Không đoán từ PDF. Đổi UI: câu 14 |
+| 4 | **Chép layout?** | **Trang liền trước = một tap; chọn trang bất kỳ = lối phụ** |
+| 5 | **Lối vào soạn?** | **ScoreMenu *Measure map…*** — không chiếm QuickBar |
+| 6 | **Nhảy tới ô nhịp?** | **Dialog số + xác nhận** |
+| 7 | **MeasureMap vs Draw mực?** | **Loại trừ lẫn nhau** |
+| 8 | **Soạn trên Score gốc?** | **Cho phép; IA nghiêng về piece**; không union từ con |
+| 9 | **Xoá hết MeasureMap?** | **Có**, confirm một lần |
+| 10 | **Baseline test?** | Đo lại đầu chat build; kỳ vọng ~570 |
+| 11 | **Dialog số MeasureBox khi tạo SystemBox?** | **Có.** Default phiên `4`; sticky theo lần xác nhận gần nhất; thoát soạn → về `4`; huỷ → bỏ SystemBox vừa vẽ; N ≥ `1` |
+| 12 | **Xoá một MeasureBox?** | Chọn ô → Delete. **Ô liền trước mở rộng** (ô đầu → ô sau mở sang trái); không chia đều cả system; ô cuối system → xoá system |
+| 13 | **Đổi số ô (không có hit SystemBox)?** | Ban đầu: từ ô đang chọn. **Rev. 1:** từ **SystemBox đang chọn** → *Set measure count…*. Giảm N: bỏ phải, ô phải mới mở tới mép. Tăng N: cắt đều ô phải nhất. Trái giữ nguyên |
+| 14 | **Đổi tempo / time signature?** | Sheet sửa → **dialog phạm vi**: *This measure only* / *This system* / *This page* / *Rest of score* / *Next N…*. Override cả dải; đổi time sig → beatSplits đều từng ô trong dải |
+| 15 | **BeatBox mặc định ẩn?** | **Ẩn.** *Edit beats* trên ô chọn → hiện/kéo **chỉ ô đó**; Done / chọn ô khác → ẩn. Không hiện mọi ô cùng lúc |
+| 16 | **Select SystemBox?** | **Có** (rev. 1). Selection `none` \| `measure(id)` \| `system(page, systemIndex)`. Tap **khung** SystemBox → chọn system; tap nội thất MeasureBox → chọn measure; tap trống → clear. Long-press measure → select parent system. Không tự promote measure → system |
+| 17 | **Menu theo selection?** | **Tách.** System: *Set measure count…*, *Delete system*. Measure: *Delete measure*, tempo/time sig, *Edit beats*. (Câu 13: *Set measure count* từ system đang chọn, không còn từ measure) |
+| 18 | **Resize / move SystemBox?** | **Có** khi system đang chọn. 4 mép → resize (ngang scale tỉ lệ ô; dọc cùng y/height). Thân → move, clamp trang 0–1. Min size ~0.02×0.01. Mép khi chưa chọn system → select (không resize) |
 
 ---
 
@@ -136,7 +149,7 @@ Thêm: **MeasureMap**, **SystemBox**, **MeasureBox**, **BeatBox**. Siết **Sync
 - `systemIndex` bắt buộc trên mọi MeasureBox — SystemBox dựng lại bằng gom nhóm (ADR 0019 quyết định 3e).
 - Replace PDF / đổi PageExtent: ô ngoài extent **giữ trên đĩa, không hiển thị** (cùng luật annotation 0052) — thu hẹp rồi nới lại không mất map.
 - Mọi chuỗi UI qua `AppLocalizations` (0057). Domain term **MeasureMap / SystemBox / MeasureBox / BeatBox** giữ tiếng Anh trong mọi locale.
-- Comment code tiếng Anh.
+- Sticky số MeasureBox (G3 câu 11): state trong bộ nhớ của phiên soạn PdfMode — **không** ghi vào `measure_maps/<scoreId>.json` hay prefs app.
 
 ---
 
@@ -144,41 +157,54 @@ Thêm: **MeasureMap**, **SystemBox**, **MeasureBox**, **BeatBox**. Siết **Sync
 
 **Người chưa map**
 
-- [ ] Không map → không highlight ô, nhảy tới ô báo trống/không có; UI soạn chỉ hiện khi vào mục menu
+- [x] Không map → không highlight ô, nhảy tới ô báo trống/không có; UI soạn chỉ hiện khi vào mục menu — *code + unit + G4*
 
 **Soạn**
 
-- [ ] Vẽ SystemBox trên trang thuộc PageExtent; chia thành MeasureBox đều; kéo vạch đổi tỉ lệ
-- [ ] Chia BeatBox theo time signature; kéo vạch phách; width = vị trí, không đổi “thời lượng” nào trên đĩa thời gian (chưa có SyncMap)
-- [ ] Chép layout trang trước → trang hiện tại có cùng số system/ô (sửa được)
-- [ ] Map dở (thiếu trang giữa) lưu và mở lại không mất, không crash
-- [ ] Time signature / tempo đổi tại một ô và kế thừa các ô sau cho tới lần đổi kế
+- [x] Vẽ SystemBox → dialog số MeasureBox, default sticky phiên `4` — *logic + UI + G4*
+- [x] Sticky default `3` trong phiên; thoát soạn → về `4` — *unit `MeasureMapSessionDefaults`*
+- [x] Huỷ dialog lúc tạo → không commit SystemBox — *UI path*
+- [x] Xoá MeasureBox: ô liền trước mở rộng / ô đầu → sau mở trái / ô cuối system → xoá system — *unit*
+- [x] *Set measure count…* giữ trái, giảm/tăng N theo G3 #13 — *unit*
+- [x] Tap khung → chọn SystemBox; bar chỉ *Set measure count* / *Delete system* — *UI + G4* (rev. 1)
+- [x] Tap ô → chọn MeasureBox; bar không còn *Delete system* / *Set measure count* — *UI* (rev. 1)
+- [x] Resize 4 mép / move thân khi system chọn; tỉ lệ ngang giữ; min size — *unit + UI + G4* (rev. 1)
+- [x] BeatBox mặc định ẩn; *Edit beats* chỉ ô chọn — *UI*
+- [x] beatSplits theo time signature; kéo khi Edit beats — *unit + UI*
+- [x] Chép layout trang trước không dialog số ô — *unit + UI*
+- [x] Map dở (thiếu trang) load/save không crash — *unit*
+- [x] Tempo / time sig + dialog phạm vi — *store + UI + G4*
 
 **Nhảy tới ô**
 
-- [ ] Nhập `measureNumber` đã map → tới đúng trang và ô trong tầm nhìn
-- [ ] Ô chưa map → thông báo rõ, không nhảy lung tung
+- [x] Ô đã map → nhảy trang + highlight ~1s — *UI + G4*
+- [x] Ô chưa map → snackbar, không nhảy — *UI*
 
 **Persistence / vòng đời**
 
-- [ ] Đóng mở lại Score → map còn
-- [ ] Backup / restore giữ MeasureMap
-- [ ] Xoá Score / cascade gốc → file `measure_maps/<id>.json` biến mất
-- [ ] Round-trip test với hình dạng web `MeasureBox` + `beatSplits` xanh
+- [x] Đóng mở lại Score → map còn — *persistence + load prefs*
+- [x] Backup / restore giữ MeasureMap — *whole-tree ZIP + label `measure_maps`*
+- [x] Xoá Score / cascade → `measure_maps/<id>.json` biến mất — *`score_overlays`*
+- [x] Round-trip web `MeasureBox` + `beatSplits` — *unit*
 
 **Ranh giới**
 
-- [ ] All-pages: không hiện/union MeasureMap của con; soạn chỉ ghi map của Score đang mở
-- [ ] Không có đường nào dò vạch từ ảnh trang
-- [ ] `flutter analyze` sạch; suite xanh; không dependency / quyền mới
+- [x] All-pages: không union map con; soạn theo Score đang mở — *store per scoreId*
+- [x] Không đường OMR — *không có*
+- [x] `flutter analyze` sạch; suite xanh (**595**, baseline **570**; +6 từ rev. 1); không dependency / quyền mới
+
+> G4 thủ công: **pass** (Orchestrator 2026-08-07), gồm rev. 1.
 
 ---
 
 ## Ghi chú UX (UX notes)
 
-- Chia đều là mặc định; kéo vạch là đường sửa — đúng chỗ “không đều” mới tốn công (ADR 0019 quyết định 3).
-- Empty state chế độ soạn: một câu (*vẽ dòng nhạc, rồi chia ô*) + nút chép trang trước nếu trang trước đã có map.
-- Confirm trước khi xoá cả map hoặc xoá system đang chứa nhiều ô.
+- **Tạo SystemBox → dialog số MeasureBox** (G3 câu 11): default sticky trong phiên soạn, khởi điểm `4`. Field số pre-filled và chọn sẵn để sửa bằng bàn phím số ngay. Chia đều trong hộp sau khi xác nhận; kéo vạch là đường sửa chỗ in không đều (ADR 0019 quyết định 3).
+- **Select SystemBox** (rev. 1): mọi system vẽ khung mỏng trong edit mode; khung đậm khi đang chọn. Tap khung = chọn dòng (menu system + resize/move). Tap ô = chọn ô (menu measure). Long-press ô = chọn system chứa nó.
+- **Resize / move** (rev. 1): chỉ khi system đang chọn — kéo mép hoặc thân. Chưa chọn mà chạm mép → chỉ select.
+- **BeatBox** (G3 câu 15 / rev. 2): mặc định ẩn. *Edit beats* trên ô đang chọn → hiện **N** mốc nội tại (4/4 → 4 vạch, không tính hai vạch nhịp mép) để kéo khớp nốt từng phách; thoát thì ẩn.
+- Empty state chế độ soạn: một câu (*vẽ dòng nhạc — app sẽ hỏi bao nhiêu ô*) + nút chép trang trước nếu trang trước đã có map.
+- Confirm trước khi xoá cả map hoặc xoá system đang chứa nhiều ô (lối *Delete system*, khác với xoá từng ô).
 - Nhảy tới ô: highlight tắt sau ~1s hoặc tap — không để khung vĩnh viễn đè nốt.
 
 ---
@@ -188,11 +214,13 @@ Thêm: **MeasureMap**, **SystemBox**, **MeasureBox**, **BeatBox**. Siết **Sync
 **Automated**
 
 - `measure_map_model_test.dart` — JSON round-trip; `beatSplits` mặc định theo time signature; kế thừa tempo/timeSig; measureNumber gán lại khi chèn/xoá
-- `measure_map_web_roundtrip_test.dart` — encode/decode khớp field web (không cần repo web trong CI — fixture JSON)
+- `measure_map_web_roundtrip_test.dart` — encode/decode web: N mốc ↔ N−1 biên (centres ↔ midpoints); fixture JSON, không cần repo web trong CI
 - `measure_map_persistence_test.dart` — load/save theo scoreId; xoá theo scoreId
 - `measure_map_incomplete_test.dart` — thiếu trang giữa vẫn load; jump chỉ tới ô có mặt
 - `measure_map_extent_test.dart` — ô ngoài PageExtent không hiển thị, còn trên đĩa
-- Widget/logic: chia đều SystemBox → N MeasureBox; kéo vạch cập nhật tỉ lệ
+- Widget/logic: chia đều SystemBox → N MeasureBox; kéo vạch cập nhật tỉ lệ; sticky default số ô trong phiên soạn (`4` → user chọn `3` → lần sau `3`; reset khi thoát chế độ soạn)
+- `measure_map_selection_test.dart` — hit khung/mép SystemBox; selection helpers
+- resize/move SystemBox — tỉ lệ ngang; clamp trang; min size (trong `measure_map_model_test.dart`)
 
 **Manual (G4)**
 

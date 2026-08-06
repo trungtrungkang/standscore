@@ -699,6 +699,18 @@ abstract class AppLocalizations {
   /// **'Page order…'**
   String get scoreMenuPageOrder;
 
+  /// No description provided for @scoreMenuGoToMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to measure…'**
+  String get scoreMenuGoToMeasure;
+
+  /// No description provided for @scoreMenuMeasureMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure map…'**
+  String get scoreMenuMeasureMap;
+
   /// No description provided for @scoreMenuMarks.
   ///
   /// In en, this message translates to:
@@ -2761,6 +2773,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Labels to filter by yet'**
   String get libraryFilterSheetEmptyLabels;
+
+  /// No description provided for @measureMapMeasureCountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How many MeasureBoxes?'**
+  String get measureMapMeasureCountTitle;
+
+  /// No description provided for @measureMapMeasureCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MeasureBoxes'**
+  String get measureMapMeasureCountLabel;
+
+  /// No description provided for @measureMapGoToTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to measure'**
+  String get measureMapGoToTitle;
+
+  /// No description provided for @measureMapGoToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure number'**
+  String get measureMapGoToLabel;
+
+  /// No description provided for @measureMapGoToMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure {number} is not mapped yet'**
+  String measureMapGoToMissing(int number);
+
+  /// No description provided for @measureMapMetaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tempo & time signature'**
+  String get measureMapMetaTitle;
+
+  /// No description provided for @measureMapTimeSignatureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time signature'**
+  String get measureMapTimeSignatureLabel;
+
+  /// No description provided for @measureMapTempoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tempo'**
+  String get measureMapTempoLabel;
+
+  /// No description provided for @measureMapMetaScopeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to'**
+  String get measureMapMetaScopeTitle;
+
+  /// No description provided for @measureMapScopeThisMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'This measure only'**
+  String get measureMapScopeThisMeasure;
+
+  /// No description provided for @measureMapScopeThisSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'This system'**
+  String get measureMapScopeThisSystem;
+
+  /// No description provided for @measureMapScopeThisPage.
+  ///
+  /// In en, this message translates to:
+  /// **'This page'**
+  String get measureMapScopeThisPage;
+
+  /// No description provided for @measureMapScopeRestOfScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest of score'**
+  String get measureMapScopeRestOfScore;
+
+  /// No description provided for @measureMapScopeNextN.
+  ///
+  /// In en, this message translates to:
+  /// **'Next N…'**
+  String get measureMapScopeNextN;
+
+  /// No description provided for @measureMapMetaNextNLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of measures'**
+  String get measureMapMetaNextNLabel;
+
+  /// No description provided for @measureMapClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear MeasureMap?'**
+  String get measureMapClearTitle;
+
+  /// No description provided for @measureMapClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete every SystemBox and MeasureBox for this Score. This cannot be undone.'**
+  String get measureMapClearBody;
+
+  /// No description provided for @measureMapClearConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get measureMapClearConfirm;
+
+  /// No description provided for @measureMapDeleteSystemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete system?'**
+  String get measureMapDeleteSystemTitle;
+
+  /// No description provided for @measureMapDeleteSystemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this SystemBox and all its MeasureBoxes.'**
+  String get measureMapDeleteSystemBody;
+
+  /// No description provided for @measureMapCopyFromPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy layout from page'**
+  String get measureMapCopyFromPageTitle;
+
+  /// No description provided for @measureMapCopyFromPageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source page'**
+  String get measureMapCopyFromPageLabel;
+
+  /// No description provided for @measureMapCopyPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy previous page'**
+  String get measureMapCopyPrevious;
+
+  /// No description provided for @measureMapEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw a system — the app will ask how many measures'**
+  String get measureMapEmptyHint;
+
+  /// No description provided for @measureMapDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get measureMapDone;
+
+  /// No description provided for @measureMapEditBeats.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit beats'**
+  String get measureMapEditBeats;
+
+  /// No description provided for @measureMapSetMeasureCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Set measure count…'**
+  String get measureMapSetMeasureCount;
+
+  /// No description provided for @measureMapDeleteSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete system'**
+  String get measureMapDeleteSystem;
+
+  /// No description provided for @measureMapDeleteMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete measure'**
+  String get measureMapDeleteMeasure;
+
+  /// No description provided for @measureMapEditMeta.
+  ///
+  /// In en, this message translates to:
+  /// **'Tempo & time signature…'**
+  String get measureMapEditMeta;
+
+  /// No description provided for @measureMapClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear MeasureMap…'**
+  String get measureMapClearAll;
 }
 
 class _AppLocalizationsDelegate

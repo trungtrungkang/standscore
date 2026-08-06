@@ -9,12 +9,7 @@ Future<void> clearScoreOverlays({
   required Directory root,
   required String scoreId,
 }) async {
-  final paths = [
-    p.join(root.path, 'annotations', '$scoreId.json'),
-    p.join(root.path, 'bookmarks', '$scoreId.json'),
-    p.join(root.path, 'jumplinks', '$scoreId.json'),
-    p.join(root.path, 'page_orders', '$scoreId.json'),
-  ];
+  final paths = scoreOverlayPaths(root: root, scoreId: scoreId);
   for (final path in paths) {
     final file = File(path);
     if (await file.exists()) {
@@ -33,5 +28,6 @@ List<String> scoreOverlayPaths({
     p.join(root.path, 'bookmarks', '$scoreId.json'),
     p.join(root.path, 'jumplinks', '$scoreId.json'),
     p.join(root.path, 'page_orders', '$scoreId.json'),
+    p.join(root.path, 'measure_maps', '$scoreId.json'),
   ];
 }
