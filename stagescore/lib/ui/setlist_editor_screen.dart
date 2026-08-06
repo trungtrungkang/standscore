@@ -3,7 +3,7 @@ import 'package:stagescore/library/score.dart';
 import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 
-/// Create / edit a Setlist (Spec 0012).
+/// Create / edit a Setlist (Spec 0012 / 0055).
 class SetlistEditorScreen extends StatefulWidget {
   const SetlistEditorScreen({
     super.key,
@@ -151,6 +151,7 @@ class _SetlistEditorScreenState extends State<SetlistEditorScreen> {
   }
 }
 
+/// Picker: roots first; drill into a root to pick a child (Spec 0055).
 class _AddScoresSheet extends StatefulWidget {
   const _AddScoresSheet({required this.scores});
 
@@ -162,10 +163,26 @@ class _AddScoresSheet extends StatefulWidget {
 
 class _AddScoresSheetState extends State<_AddScoresSheet> {
   final Set<String> _selected = {};
+  String? _drillRootId;
 
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height * 0.7;
+    final roots = rootsOnly(widget.scores);
+    Score? drilling;
+    final drillId = _drillRootId;
+    if (drillId != null) {
+      for (final s in widget.scores) {
+        if (s.id == drillId) {
+          drilling = s;
+          break;
+        }
+      }
+    }
+    final list = drilling == null
+        ? roots
+        : childrenOfRoot(widget.scores, drilling.id);
+
     return SizedBox(
       height: height,
       child: Column(
@@ -179,9 +196,15 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
             ),
             child: Row(
               children: [
+                if (drilling != null)
+                  IconButton(
+                    tooltip: 'Back',
+                    onPressed: () => setState(() => _drillRootId = null),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
                 Expanded(
                   child: Text(
-                    'Add scores',
+                    drilling == null ? 'Add scores' : drilling.title,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -197,10 +220,45 @@ class _AddScoresSheetState extends State<_AddScoresSheet> {
           const Divider(height: 1),
           Expanded(
             child: ListView.builder(
-              itemCount: widget.scores.length,
+              itemCount: list.length,
               itemBuilder: (context, index) {
-                final score = widget.scores[index];
+                final score = list[index];
                 final checked = _selected.contains(score.id);
+                final childCount = drilling == null
+                    ? childrenOfRoot(widget.scores, score.id).length
+                    : 0;
+                if (drilling == null && childCount > 0) {
+                  return ListTile(
+                    title: Text(score.title),
+                    subtitle: Text(
+                      '$childCount ${childCount == 1 ? 'piece' : 'pieces'}',
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          value: checked,
+                          onChanged: (v) {
+                            setState(() {
+                              if (v == true) {
+                                _selected.add(score.id);
+                              } else {
+                                _selected.remove(score.id);
+                              }
+                            });
+                          },
+                        ),
+                        IconButton(
+                          tooltip: 'Pieces',
+                          icon: const Icon(Icons.chevron_right),
+                          onPressed: () =>
+                              setState(() => _drillRootId = score.id),
+                        ),
+                      ],
+                    ),
+                    onTap: () => setState(() => _drillRootId = score.id),
+                  );
+                }
                 return CheckboxListTile(
                   value: checked,
                   title: Text(score.title),

@@ -10,13 +10,21 @@ bool textMatchesQuery(String haystack, String query) {
   return haystack.toLowerCase().contains(q);
 }
 
-/// Filter Scores by title or Bookmark title match.
+/// Filter Scores by title, Bookmark title, or the name of the book they came
+/// out of.
 ///
 /// Empty [query] returns [scores] unchanged. Preserve input order.
+///
+/// [bookNameByDocumentId] is optional so callers that have no manifest keep
+/// working. It earns its place because a piece is often named `Op. 10 No. 3`
+/// while the thing the musician remembers is `Chopin Etudes` — and the header
+/// row is what explains why a match with neither word in its title appeared
+/// (Spec 0054).
 List<Score> filterScoresBySearch({
   required List<Score> scores,
   required String query,
   required Map<String, List<String>> bookmarkTitlesByScoreId,
+  Map<String, String> bookNameByDocumentId = const {},
 }) {
   final q = query.trim();
   if (q.isEmpty) return List<Score>.from(scores);
@@ -26,7 +34,8 @@ List<Score> filterScoresBySearch({
       if (textMatchesQuery(score.title, q) ||
           (bookmarkTitlesByScoreId[score.id] ?? const []).any(
             (title) => textMatchesQuery(title, q),
-          ))
+          ) ||
+          textMatchesQuery(bookNameByDocumentId[score.pdfDocumentId] ?? '', q))
         score,
   ];
 }

@@ -288,6 +288,14 @@ class AnnotationStore {
     _strokes.addAll(strokes);
   }
 
+  /// Copy strokes and stamps from [other] without touching undo (Spec 0055).
+  ///
+  /// Used to build a display-only union of root + piece notes on all-pages.
+  void importAllFrom(AnnotationStore other) {
+    _strokes.addAll(other.strokes);
+    _stamps.addAll(other.stamps);
+  }
+
   Map<String, dynamic> toJson(String scoreId) => {
     'scoreId': scoreId,
     'strokes': _strokes.map((s) => s.toJson()).toList(),

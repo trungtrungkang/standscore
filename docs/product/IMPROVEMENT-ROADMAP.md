@@ -72,16 +72,24 @@ C4 ran first in this phase — rename was a debt from Spec 0002 ("rename can wai
 
 ---
 
-## Phase D — ADR 0008 exit decision
+## Phase D — ADR 0008 exit decision — **CLOSED 2026-08-05: go, with limits**
 
 Orchestrator gate (not a Spec):
 
 - [x] A1 + A2 G4 pass  
 - [x] Optional: B1 G4 if chrome still feels wrong on device — done (0034)  
-- [ ] Explicit **go / hold** on opening H3 (SmartMode)
+- [x] Explicit **go / hold** on opening H3 (SmartMode) — **decided via ADR 0019 (accepted 2026-08-05)**
 
-If **go** → first H3 Spec (Smart Score import / Verovio shell) per VISION.  
-If **hold** → more Phase B/C only.
+**Outcome: neither a plain go nor a plain hold, because the question turned out to be the wrong shape.** This gate assumed the next horizon was H3 and that the boundary ran between PDF and MusicXML. ADR 0019 replaced that boundary with a question:
+
+> A feature belongs to H5 if it only needs to know **where on the page, at what second**. It belongs to H3/H4 if it needs to know **which note**.
+
+By that rule the app can open **H5 — BackingTrack plus SyncMap — while H3 and H4 stay closed**, because nothing in it needs to know which note. So:
+
+- **H5: open.** MeasureMap, SyncMap, BackingTrack, Transport, hands-free page turn, beat-level position indicator.
+- **H3 / H4: still closed.** MusicXML, Verovio, MidiRealization, WaitMode, PracticePolicy, and OMR. The `AGENTS.md` hard stop keeps full force for those.
+
+So there is **no first H3 Spec.** The track that follows this gate is the sequence in ADR 0019 (Specs **0052**–**0065** after revision 6), starting with `PdfDocument` splitting from `Score` (Spec 0052). Three Library slices were inserted from G4 rather than the original plan: **0053**, **0054**, and **0055** (Score root containing child Scores; one Library row per file) — read the sequencing table in ADR 0019 for numbering. `VISION.md` took a G0 in the same round: pillars reordered (*Play along* ahead of *Smart Score*) and the horizon table rewritten, because it could not express "H5 open, H3 closed".
 
 ---
 

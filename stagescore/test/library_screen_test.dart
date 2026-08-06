@@ -182,6 +182,66 @@ void main() {
     expect(find.text('+1'), findsOneWidget);
   });
 
+  /// A four-page book cut in two, so each row is a piece of a file (Spec 0053).
+  Future<List<Score>> splitInTwo(WidgetTester tester, int secondStart) {
+    return io(tester, () async {
+      final book = await importScore('Chopin Etudes.pdf');
+      return library.splitScore(
+        scoreId: book.id,
+        marks: [
+          (startPage: 1, title: 'One'),
+          (startPage: secondStart, title: 'Two'),
+        ],
+      );
+    });
+  }
+
+  testWidgets('a piece says which pages it covers inside Pieces', (
+    tester,
+  ) async {
+    await splitInTwo(tester, 3);
+    await pumpLibrary(tester);
+
+    expect(find.widgetWithText(ListTile, 'Chopin Etudes'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ListTile, 'Chopin Etudes'));
+    await settle(tester);
+    expect(find.text('Pages 1–2'), findsOneWidget);
+    expect(find.text('Pages 3–4'), findsOneWidget);
+  });
+
+  testWidgets('a one-page piece says Page, not Pages n–n', (tester) async {
+    await splitInTwo(tester, 4);
+    await pumpLibrary(tester);
+
+    await tester.tap(find.widgetWithText(ListTile, 'Chopin Etudes'));
+    await settle(tester);
+    expect(find.text('Page 4'), findsOneWidget);
+  });
+
+  testWidgets('a Score that is a whole file gains no line', (tester) async {
+    await io(tester, () => importScore('Chart.pdf'));
+    await pumpLibrary(tester);
+
+    // Whoever never split anything walks through this slice without noticing
+    // it happened.
+    expect(find.textContaining('of Chart.pdf'), findsNothing);
+    expect(find.text('Added today · 4 pages'), findsOneWidget);
+  });
+
+  testWidgets('a piece row carries both its Labels and where it came from', (
+    tester,
+  ) async {
+    final pieces = await splitInTwo(tester, 3);
+    final two = pieces.firstWhere((s) => s.title == 'Two');
+    await io(tester, () => addLabels(two.id, ['Gig']));
+    await pumpLibrary(tester);
+
+    await tester.tap(find.widgetWithText(ListTile, 'Chopin Etudes'));
+    await settle(tester);
+    expect(find.text('Pages 3–4'), findsOneWidget);
+    expect(find.text('Gig'), findsOneWidget);
+  });
+
   testWidgets('an active filter is named on screen and removable', (
     tester,
   ) async {
@@ -190,7 +250,7 @@ void main() {
     await io(tester, () => addLabels(jazz.id, ['Jazz']));
 
     await pumpLibrary(tester);
-    await tester.tap(find.byTooltip('Filter by Label'));
+    await tester.tap(find.byTooltip('Filter'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Jazz').last);
     await tester.pumpAndSettle();

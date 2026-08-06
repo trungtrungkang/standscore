@@ -10,8 +10,8 @@ Tên thuật ngữ giữ tiếng Anh, định nghĩa viết tiếng Việt (ADR 
 ### Library (Thư viện)
 
 **Score**:
-Một bản nhạc đơn lẻ mà người dùng lưu trong library, dựa trên một PDF và/hoặc một tài liệu MusicXML, và tuỳ chọn kèm một hoặc nhiều BackingTrack.
-_Avoid_: Song, file, track (ambiguous), piece (ok in UI copy only)
+Đơn vị chơi được trong library — dựa trên một PDF và/hoặc MusicXML, tuỳ chọn kèm BackingTrack. Một Score có thể **chứa Score con** (cùng một PdfDocument, mỗi con một PageExtent); Score không có con là trường hợp thường. Library mặc định chỉ hiện Score gốc (`parentId` null); chữ *piece* trên UI chỉ là Score con, không phải loại riêng (ADR 0019 quyết định 11 revision 6).
+_Avoid_: Song, file, track (ambiguous), Piece (as a domain type — use Score; ok in UI copy only as "piece"/"pieces")
 
 **Setlist**:
 Một nhóm Score có thứ tự, để xem hoặc biểu diễn liên tiếp mà không phải mở lại từng Score bằng tay.
@@ -24,8 +24,12 @@ _Avoid_: Tag (ok as UI synonym), category, genre (too narrow)
 ### Documents (Tài liệu)
 
 **PdfDocument**:
-Phần byte PDF và các ảnh trang gắn với khung xem biểu diễn của một Score.
-_Avoid_: PDF score (use Score + PdfDocument)
+Phần byte PDF và các ảnh trang. Một PdfDocument phục vụ **nhiều** Score được (gốc + các con, mỗi con một PageExtent). Có **tên riêng** (`title`) làm fallback; tên người dùng thấy trên Library của một cuốn đã tách là **title của Score gốc**, không phải một hàng PdfDocument. PdfDocument **không bao giờ** tự là một hàng Library hay vào Setlist — đơn vị đó là Score (ADR 0019 quyết định 11 revision 6).
+_Avoid_: PDF score (use Score + PdfDocument), file, book (ok in UI copy only)
+
+**PageExtent**:
+Khoảng trang liên tục của một PdfDocument thuộc về một Score. Nó là **phạm vi** — trang nào là của bản nhạc này — đặt lúc tách bài và sửa được, nhưng hiếm khi đổi. Nó **không phải** PageOrder: PageOrder là *trình tự*, và PageOrder chạy bên trong PageExtent.
+_Avoid_: page range (ok in UI copy only), page span, section, slice
 
 **MusicXmlDocument**:
 Nguồn MusicXML gắn với khung xem Smart Score của một Score.

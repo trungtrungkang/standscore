@@ -11,19 +11,24 @@ import 'package:share_handler/share_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:stagescore/brand/brand.dart';
 import 'package:stagescore/label/label.dart';
-import 'package:stagescore/label/label_filter.dart';
 import 'package:stagescore/label/label_store.dart';
 import 'package:stagescore/library/library_backup.dart';
 import 'package:stagescore/library/library_root.dart';
 import 'package:stagescore/library/library_search.dart';
 import 'package:stagescore/library/library_sort.dart';
 import 'package:stagescore/library/library_sort_prefs_store.dart';
+import 'package:stagescore/library/library_visibility.dart';
+import 'package:stagescore/library/outline_split.dart';
+import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/relative_day.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
+import 'package:stagescore/library/score_origin.dart';
 import 'package:stagescore/library/score_thumbnails.dart';
 import 'package:stagescore/library/shared_pdf_import.dart';
+import 'package:stagescore/library/split_handover.dart';
 import 'package:stagescore/pdf/pdf_first_page.dart';
+import 'package:stagescore/pdf/pdf_outline.dart';
 import 'package:stagescore/setlist/setlist.dart';
 import 'package:stagescore/setlist/setlist_session.dart';
 import 'package:stagescore/setlist/setlist_store.dart';
@@ -32,12 +37,19 @@ import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/about_sheet.dart';
 import 'package:stagescore/ui/appearance_sheet.dart';
 import 'package:stagescore/ui/label_sheets.dart';
+import 'package:stagescore/ui/library_filter_sheet.dart';
+import 'package:stagescore/ui/page_extent_screen.dart';
 import 'package:stagescore/ui/pdf_mode_screen.dart';
+import 'package:stagescore/ui/pieces_screen.dart';
 import 'package:stagescore/ui/score_thumbnail_tile.dart';
 import 'package:stagescore/ui/setlist_editor_screen.dart';
+import 'package:stagescore/ui/split_score_screen.dart';
 import 'package:stagescore/ui/title_prompt.dart';
 
 enum _LibraryTab { scores, setlists }
+
+/// Which kind of Label filter chip is showing (Spec 0021).
+enum _FilterChipKind { label, untagged }
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({
@@ -49,6 +61,7 @@ class LibraryScreen extends StatefulWidget {
     this.onLibraryRestored,
     this.readBuild,
     this.launchUrl,
+    this.loadOutline,
   });
 
   /// Injected for tests; production creates a documents-based library.
@@ -68,6 +81,11 @@ class LibraryScreen extends StatefulWidget {
   /// bundle and the system browser itself (Spec 0042).
   final Future<AppBuild> Function()? readBuild;
   final Future<bool> Function(Uri url)? launchUrl;
+
+  /// Injected for tests; production reads the outline with pdfrx. Null means no
+  /// split proposals — a grid with nothing marked, which is also what a PDF
+  /// without a table of contents gets (Spec 0052).
+  final PdfOutlineLoader? loadOutline;
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();
@@ -92,6 +110,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
   /// that ran once per Label per row on every frame (Spec 0040).
   Map<String, List<String>> _labelNames = const {};
   ScoreThumbnails? _thumbnails;
+  PdfOutlineLoader? _outlineLoader;
+
+  /// Freshly imported files that look like collections, in import order — one
+  /// suggestion bar at a time, dismissable, never a step in the import flow
+  /// (Spec 0052, G3 #6).
+  List<({Score score, List<OutlineSplitProposal> proposals})>
+  _splitSuggestions = const [];
   Directory? _libraryRoot;
   LibrarySortPrefsStore? _sortPrefsStore;
   LibrarySortMode _sortMode = LibrarySortMode.lastViewed;
@@ -139,6 +164,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       _thumbnails =
           widget.thumbnails ??
           (widget.library == null ? await _openThumbnailCache() : null);
+      _outlineLoader =
+          widget.loadOutline ??
+          (widget.library == null ? loadPdfOutline : null);
       if (!mounted) return;
       setState(() {
         _library = library;
@@ -254,6 +282,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         content: Text(n == 1 ? 'Imported 1 score' : 'Imported $n scores'),
       ),
     );
+    await _suggestSplits(imported);
   }
 
   Future<void> _reload() async {
@@ -280,23 +309,29 @@ class _LibraryScreenState extends State<LibraryScreen> {
     });
   }
 
-  List<Score> get _visibleScores {
-    var scores = _scores;
-    final labels = _labelStore;
-    if (labels != null) {
-      scores = filterScoresByLabels(
-        scores: scores,
-        assignments: labels.assignments,
-        selectedLabelIds: _filterLabelIds,
-        mode: _filterMode,
-      );
+  /// What to call each book when search matches a piece by its book's name.
+  Map<String, String> get _bookNames {
+    final byId = <String, String>{};
+    for (final score in _scores) {
+      if (!score.isRoot) continue;
+      byId[score.pdfDocumentId] = score.title;
     }
-    scores = filterScoresBySearch(
-      scores: scores,
+    return byId;
+  }
+
+  /// Scores on the Library list after search/filter, then sorted (Spec 0055).
+  List<Score> get _visibleScores {
+    final labels = _labelStore;
+    final filtered = visibleLibraryScores(
+      scores: _scores,
       query: _searchQuery,
       bookmarkTitlesByScoreId: _bookmarkTitles,
+      bookNameByDocumentId: _bookNames,
+      assignments: labels?.assignments ?? const {},
+      selectedLabelIds: _filterLabelIds,
+      mode: _filterMode,
     );
-    return sortScores(scores, _sortMode);
+    return sortLibraryScores(filtered, _sortMode, _scores);
   }
 
   Future<void> _setSortMode(LibrarySortMode mode) async {
@@ -494,7 +529,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   Text('$percent%'),
                   if (value.label != null) ...[
                     const SizedBox(height: AppSpacing.sm),
-                    Text(value.label!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      value.label!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ],
               ),
@@ -541,8 +580,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     ];
   }
 
-  /// What the filter is doing, in a sentence — the empty state used to say
-  /// "this filter" and leave the musician guessing (Spec 0040).
+  /// What the filter is doing, in a sentence (Spec 0040).
   String _filterDescription() {
     if (_filterMode == LabelFilterMode.untagged) return 'Untagged';
     final names = _activeFilterNames;
@@ -558,19 +596,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
     });
   }
 
-  /// The active filter, spelled out under the search field and removable from
-  /// there; the filled funnel icon alone never said what was hidden.
+  /// The active Label filter, spelled out under the search field.
   Widget _buildFilterChips(BuildContext context) {
     final theme = Theme.of(context);
     final untagged = _filterMode == LabelFilterMode.untagged;
     final store = _labelStore;
-    final chips = <({String? id, String name})>[
+    final chips = <({_FilterChipKind kind, String? id, String name})>[
       if (untagged)
-        (id: null, name: 'Untagged')
+        (kind: _FilterChipKind.untagged, id: null, name: 'Untagged')
       else
         for (final label in store?.labels ?? const <Label>[])
           if (_filterLabelIds.contains(label.id))
-            (id: label.id, name: label.name),
+            (kind: _FilterChipKind.label, id: label.id, name: label.name),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -598,7 +635,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     deleteIcon: const Icon(Icons.close, size: 18),
                     deleteButtonTooltipMessage: 'Remove ${chip.name} filter',
-                    onDeleted: () => _removeFilterChip(chip.id),
+                    onDeleted: () => _removeFilterChip(chip.kind, chip.id),
                   ),
               ],
             ),
@@ -609,12 +646,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-  void _removeFilterChip(String? labelId) {
-    if (labelId == null) {
-      _clearFilter();
-      return;
+  void _removeFilterChip(_FilterChipKind kind, String? id) {
+    switch (kind) {
+      case _FilterChipKind.untagged:
+        _clearFilter();
+      case _FilterChipKind.label:
+        setState(() => _filterLabelIds = {..._filterLabelIds}..remove(id));
     }
-    setState(() => _filterLabelIds = {..._filterLabelIds}..remove(labelId));
   }
 
   bool get _searchActive => _searchQuery.trim().isNotEmpty;
@@ -622,7 +660,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Future<void> _openFilter() async {
     final store = _labelStore;
     if (store == null) return;
-    await showLabelFilterSheet(
+    await showLibraryFilterSheet(
       context: context,
       store: store,
       selectedLabelIds: _filterLabelIds,
@@ -679,15 +717,27 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final path = result.files.first.path;
     if (path == null) return;
 
+    // The file may be shared by every piece of a book, and the person pressing
+    // the button is thinking about the one they just opened — so the count goes
+    // in the sentence, not in a footnote (Spec 0052).
+    final sharing = await library.scoresSharingDocument(score.id);
+    final others = sharing - 1;
+
     if (!mounted) return;
     final choice = await showDialog<ReplacePdfOverlayChoice>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Replace PDF'),
         content: Text(
-          'Replace the file for “${score.title}”? '
-          'Choose whether to keep annotations, bookmarks, jump links, '
-          'and page order — or reset them.',
+          others > 0
+              ? 'This PDF holds $sharing scores. Replacing it changes '
+                    '“${score.title}” and $others '
+                    '${others == 1 ? 'other score' : 'other scores'} that share '
+                    'the same file. Choose whether to keep annotations, '
+                    'bookmarks, jump links, and page order — or reset them.'
+              : 'Replace the file for “${score.title}”? '
+                    'Choose whether to keep annotations, bookmarks, jump links, '
+                    'and page order — or reset them.',
         ),
         actions: [
           TextButton(
@@ -710,19 +760,28 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (choice == null) return;
 
     try {
-      await library.replacePdf(
+      final result = await library.replacePdf(
         scoreId: score.id,
         sourcePath: path,
         overlays: choice,
       );
       await _reload();
       if (!mounted) return;
+      final overlayNote = choice == ReplacePdfOverlayChoice.reset
+          ? 'overlays reset'
+          : 'overlays kept';
+      // A shorter file can leave a piece describing pages that no longer
+      // exist. Saying so is the point: silently repairing it is how a musician
+      // finds out on stage.
+      final shortened = result.truncated.length + result.reset.length;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            choice == ReplacePdfOverlayChoice.reset
-                ? 'PDF replaced; overlays reset.'
-                : 'PDF replaced; overlays kept.',
+            shortened == 0
+                ? 'PDF replaced; $overlayNote.'
+                : 'PDF replaced; $overlayNote. The new file is shorter, so '
+                      '$shortened ${shortened == 1 ? 'score' : 'scores'} '
+                      'no longer cover the same pages.',
           ),
         ),
       );
@@ -754,7 +813,274 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
     if (files.isEmpty) return;
 
-    await library.importPdfs(files);
+    final imported = await library.importPdfs(files);
+    await _reload();
+    await _suggestSplits(imported);
+  }
+
+  /// Offer to split whatever came in looking like a collection.
+  ///
+  /// After the import, never inside it: import takes many files at once, so a
+  /// question per file would turn one import of a dozen pieces into a dozen
+  /// dialogs. Someone importing a single piece sees no extra step at all.
+  Future<void> _suggestSplits(List<Score> imported) async {
+    final library = _library;
+    if (library == null || _outlineLoader == null) return;
+    final found = <({Score score, List<OutlineSplitProposal> proposals})>[];
+    for (final score in imported) {
+      final pdf = library.absoluteFileOrNull(score);
+      if (pdf == null) continue;
+      final proposals = await _outlineProposals(pdf.path);
+      final looks = looksLikeCollection(
+        pageCount: library.pageCountOf(score),
+        proposals: proposals,
+      );
+      if (looks) found.add((score: score, proposals: proposals));
+    }
+    if (found.isEmpty || !mounted) return;
+    setState(() => _splitSuggestions = found);
+  }
+
+  Future<List<OutlineSplitProposal>> _outlineProposals(String path) async {
+    final loader = _outlineLoader;
+    if (loader == null) return const [];
+    final outline = await loader(path);
+    if (outline == null) return const [];
+    return proposeSplitFromOutline(outline);
+  }
+
+  void _dismissSuggestion(String scoreId) {
+    if (!_splitSuggestions.any((s) => s.score.id == scoreId)) return;
+    setState(() {
+      _splitSuggestions = [
+        for (final suggestion in _splitSuggestions)
+          if (suggestion.score.id != scoreId) suggestion,
+      ];
+    });
+  }
+
+  /// Whether this Score holds enough pages to be carved into pieces.
+  ///
+  /// A root splits only while it has no children yet — once it does, further
+  /// carving happens on the children (Spec 0055). A child with two or more
+  /// pages can always be resplit into siblings under the same root.
+  bool _canSplit(Score score) {
+    final document = _library?.documentFor(score);
+    final pageCount = document?.pageCount;
+    if (pageCount == null || pageCount < 2) return false;
+    final extent = score.extentIn(pageCount);
+    if (extent == null || extent.length < 2) return false;
+    if (score.isRoot) {
+      return childrenOfRoot(_scores, score.id).isEmpty;
+    }
+    return true;
+  }
+
+  /// Whether this Score is a child, so its pages can be moved.
+  bool _isPiece(Score score) => score.parentId != null;
+
+  Future<void> _splitScore(
+    Score score, {
+    List<OutlineSplitProposal>? proposals,
+  }) async {
+    final library = _library;
+    final root = _libraryRoot;
+    if (library == null || root == null) return;
+    final document = library.documentFor(score);
+    final pageCount = document?.pageCount;
+    final pdf = library.absoluteFileOrNull(score);
+    final pages = pageCount == null ? null : score.extentIn(pageCount);
+    if (document == null || pageCount == null || pdf == null || pages == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Still reading this PDF — try again in a moment.'),
+        ),
+      );
+      return;
+    }
+    final wholeFile = pages.coversWholeDocument(pageCount);
+
+    final suggested = proposals ?? await _outlineProposals(pdf.path);
+    if (!mounted) return;
+    var bookTitle = score.title;
+    if (!score.isRoot) {
+      bookTitle = document.displayName;
+      for (final s in _scores) {
+        if (s.id == score.parentId) {
+          bookTitle = s.title;
+          break;
+        }
+      }
+    }
+    final marks = await Navigator.of(context).push<List<SplitMark>>(
+      MaterialPageRoute(
+        builder: (_) => SplitScoreScreen(
+          bookTitle: bookTitle,
+          pdf: pdf,
+          documentId: document.id,
+          pages: pages,
+          fixedFirstTitle: wholeFile ? null : score.title,
+          thumbnails: _thumbnails,
+          proposals: suggested,
+        ),
+      ),
+    );
+    _dismissSuggestion(score.id);
+    // Fewer than two pieces is not a split: one mark either leaves the book as
+    // it already is or only trims its front matter, and changing which pages one
+    // Score covers is what the Pages screen is for. Save is disabled there too;
+    // this is the second line.
+    if (marks == null || marks.length < 2 || !mounted) return;
+
+    if (!await _confirmSplitPageOrder(score, marks, pages)) return;
+
+    final scores = await library.splitScore(scoreId: score.id, marks: marks);
+    final rootId = score.parentId ?? score.id;
+    final pieces = childrenOfRoot(scores, rootId);
+    await handOverPageScales(
+      root: root,
+      originalScoreId: score.id,
+      pieces: pieces,
+    );
+    // Resplitting a child keeps that child's id on the first sibling, so its
+    // page order must narrow. A first split of a root leaves the root's order
+    // alone — it still covers the whole file (Spec 0055).
+    final kept = scores.firstWhere((s) => s.id == score.id);
+    final keptExtent = kept.pageExtent;
+    if (keptExtent != null) {
+      await restrictPageOrderTo(
+        root: root,
+        scoreId: kept.id,
+        extent: keptExtent,
+      );
+    }
+    await _reload();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Split into ${marks.length} pieces')),
+    );
+  }
+
+  /// Resplitting a child narrows the page order on the Score that keeps its id.
+  /// Says the count first — being told afterwards is being told too late
+  /// (Spec 0052, G3 #5). A first split of a root does not narrow anything.
+  Future<bool> _confirmSplitPageOrder(
+    Score score,
+    List<SplitMark> marks,
+    PageExtent pages,
+  ) async {
+    if (score.isRoot) return true;
+    final root = _libraryRoot;
+    if (root == null) return false;
+    final starts = [for (final mark in marks) mark.startPage]..sort();
+    final first = PageExtent(
+      firstPage: starts.first.clamp(pages.firstPage, pages.lastPage),
+      lastPage: (starts[1] - 1).clamp(pages.firstPage, pages.lastPage),
+    );
+    final dropping = await pageOrderSlotsOutside(
+      root: root,
+      scoreId: score.id,
+      extent: first,
+    );
+    if (!mounted) return false;
+    if (dropping == 0) return true;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Split into pieces?'),
+        content: Text(
+          '$dropping ${dropping == 1 ? 'slot' : 'slots'} in the page order of '
+          '“${score.title}” point outside pages '
+          '${first.firstPage}–${first.lastPage} and will be removed. '
+          'Annotations on those pages are kept with the pieces that hold them.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Split'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  Future<void> _editPageExtent(Score score) async {
+    final library = _library;
+    final root = _libraryRoot;
+    if (library == null || root == null) return;
+    final document = library.documentFor(score);
+    final pageCount = document?.pageCount;
+    final pdf = library.absoluteFileOrNull(score);
+    final current = score.pageExtent;
+    if (document == null ||
+        pageCount == null ||
+        pdf == null ||
+        current == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Still reading this PDF — try again in a moment.'),
+        ),
+      );
+      return;
+    }
+
+    final next = await Navigator.of(context).push<PageExtent>(
+      MaterialPageRoute(
+        builder: (_) => PageExtentScreen(
+          scoreTitle: score.title,
+          pdf: pdf,
+          documentId: document.id,
+          pageCount: pageCount,
+          initial: current,
+          thumbnails: _thumbnails,
+        ),
+      ),
+    );
+    if (next == null || next == current || !mounted) return;
+
+    // Annotations outside the new pages are only hidden, but a performance
+    // sequence has to stay consistent — so slots are dropped, and the count is
+    // said before the change, not reported after it (Spec 0052, G3 #5).
+    final dropping = await pageOrderSlotsOutside(
+      root: root,
+      scoreId: score.id,
+      extent: next,
+    );
+    if (!mounted) return;
+    if (dropping > 0) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Change pages?'),
+          content: Text(
+            '$dropping ${dropping == 1 ? 'slot' : 'slots'} in the page order '
+            'of “${score.title}” point outside pages '
+            '${next.firstPage}–${next.lastPage} and will be removed. '
+            'Annotations on those pages are kept, and come back if you widen '
+            'the pages again.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Change pages'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
+
+    await library.updatePageExtent(scoreId: score.id, extent: next);
+    await restrictPageOrderTo(root: root, scoreId: score.id, extent: next);
     await _reload();
   }
 
@@ -777,15 +1103,86 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await _reload();
   }
 
+  /// Tap on a Library row: roots with children drill in; everything else opens.
+  Future<void> _onScoreRowTap(Score score) async {
+    if (score.isRoot && childrenOfRoot(_scores, score.id).isNotEmpty) {
+      await _openPieces(score);
+      return;
+    }
+    await _openScore(score);
+  }
+
+  Future<void> _openPieces(Score root) async {
+    if (!mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (piecesContext) => PiecesScreen(
+          root: root,
+          pieces: childrenOfRoot(_scores, root.id),
+          library: _library!,
+          thumbnails: _thumbnails,
+          labelNames: _labelNames,
+          canSplit: _canSplit,
+          onOpenPiece: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _openScore(piece);
+          },
+          onOpenFullScore: () async {
+            Navigator.of(piecesContext).pop();
+            await _openScore(root);
+          },
+          onRename: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _renameScore(piece);
+          },
+          onLabels: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _editScoreLabels(piece);
+          },
+          onSplit: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _splitScore(piece);
+          },
+          onPages: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _editPageExtent(piece);
+          },
+          onReplace: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _replacePdf(piece);
+          },
+          onDelete: (piece) async {
+            Navigator.of(piecesContext).pop();
+            await _deleteScore(piece);
+          },
+        ),
+      ),
+    );
+    await _reload();
+  }
+
   Future<void> _openScore(Score score) async {
     final library = _library;
     if (library == null) return;
     final updated = await library.markOpened(score);
     final path = library.absoluteFile(updated).path;
+    final document = library.documentFor(updated);
+    final childIds = childrenOfRoot(_scores, score.id).map((s) => s.id).toList();
     if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => PdfModeScreen(score: updated, filePath: path),
+        builder: (_) => PdfModeScreen(
+          score: updated,
+          filePath: path,
+          originLine: scoreOriginLine(
+            extent: updated.pageExtent,
+            documentName: document?.displayName,
+            documentPageCount: document?.pageCount,
+          ),
+          pieceScoreIds: score.isRoot && score.pageExtent == null
+              ? childIds
+              : const [],
+        ),
       ),
     );
     await _reload();
@@ -906,15 +1303,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final library = _library;
     final setlists = _setlistStore;
     if (library == null || setlists == null) return;
+    final children = childrenOfRoot(_scores, score.id);
+    final content = children.isEmpty
+        ? 'Delete “${score.title}” from the Library? '
+            'The PDF, annotations, bookmarks, jump links, and page order '
+            'will be removed. This cannot be undone.'
+        : 'Delete “${score.title}” and its ${children.length} '
+            '${children.length == 1 ? 'piece' : 'pieces'}? '
+            'The PDF and every overlay on the book and its pieces will be '
+            'removed. This cannot be undone.';
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete score?'),
-        content: Text(
-          'Delete “${score.title}” from the Library? '
-          'The PDF, annotations, bookmarks, jump links, and page order '
-          'will be removed. This cannot be undone.',
-        ),
+        content: Text(content),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -928,10 +1330,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
     );
     if (ok != true) return;
+    final doomed = [score.id, ...children.map((c) => c.id)];
     await library.deleteScore(score.id);
-    await _labelStore?.setScoreLabels(score.id, {});
-    await setlists.removeScoreFromAll(score.id);
-    await _thumbnails?.evict(score.id);
+    for (final id in doomed) {
+      await _labelStore?.setScoreLabels(id, {});
+      await setlists.removeScoreFromAll(id);
+      await _thumbnails?.evict(id);
+    }
     await _reload();
   }
 
@@ -981,7 +1386,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ),
             IconButton(
-              tooltip: 'Filter by Label',
+              tooltip: 'Filter',
               onPressed: _loading ? null : _openFilter,
               icon: Icon(
                 _filterActive ? Icons.filter_alt : Icons.filter_alt_outlined,
@@ -1081,7 +1486,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'Search titles & bookmarks',
+                  hintText: 'Search titles, books & bookmarks',
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _searchActive
                       ? IconButton(
@@ -1099,6 +1504,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
           if (!_loading && _tab == _LibraryTab.scores && _filterActive)
             _buildFilterChips(context),
+          if (!_loading &&
+              _tab == _LibraryTab.scores &&
+              _splitSuggestions.isNotEmpty)
+            _buildSplitSuggestion(context, _splitSuggestions.first),
           Expanded(child: _buildBody(context)),
         ],
       ),
@@ -1115,6 +1524,70 @@ class _LibraryScreenState extends State<LibraryScreen> {
               icon: const Icon(Icons.playlist_add),
               label: const Text('New setlist'),
             ),
+    );
+  }
+
+  /// One bar at the top of the list offering to split a book that just came in.
+  ///
+  /// Says what it noticed rather than what it wants, and is dismissable, so a
+  /// musician who imported a 40-page single piece is not being corrected.
+  Widget _buildSplitSuggestion(
+    BuildContext context,
+    ({Score score, List<OutlineSplitProposal> proposals}) suggestion,
+  ) {
+    final theme = Theme.of(context);
+    final score = suggestion.score;
+    final name = _library?.documentFor(score)?.displayName ?? score.title;
+    final pages = _library?.pageCountOf(score);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            // Length only, never a count of contents entries: a book with two
+            // bookmarks and twenty-eight pieces made that number a claim the
+            // file could not back (Spec 0052, G3 #11). The count belongs on the
+            // split screen, where it labels the action that acts on it.
+            pages != null
+                ? '“$name” is $pages pages — split it into pieces?'
+                : '“$name” looks like a collection — split it into pieces?',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSecondaryContainer,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => _dismissSuggestion(score.id),
+                child: const Text('Not now'),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              FilledButton(
+                onPressed: () =>
+                    _splitScore(score, proposals: suggestion.proposals),
+                child: const Text('Split…'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -1181,8 +1654,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    final visible = _visibleScores;
-    if (visible.isEmpty) {
+    final scores = _visibleScores;
+    if (scores.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1216,26 +1689,57 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final library = _library;
     return ListView.separated(
       padding: const EdgeInsets.only(bottom: kFabScrollClearance),
-      itemCount: visible.length,
+      itemCount: scores.length,
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
-        final score = visible[index];
+        final score = scores[index];
         final labelNames = _labelNames[score.id] ?? const <String>[];
+        final pdf = library?.absoluteFileOrNull(score);
+        final document = library?.documentFor(score);
+        final childCount = score.isRoot
+            ? childrenOfRoot(_scores, score.id).length
+            : 0;
+        final inRoot = childInRootSubtitle(score, _scores);
+        final origin = score.isRoot
+            ? null
+            : scoreOriginLine(
+                extent: score.pageExtent,
+                documentName: inRoot == null ? document?.displayName : null,
+                documentPageCount: document?.pageCount,
+              );
+        final hasChildren = childCount > 0;
         return ListTile(
-          leading: library == null
+          leading: pdf == null
               ? const Icon(Icons.picture_as_pdf_outlined)
               : ScoreThumbnailTile(
                   thumbnails: _thumbnails,
                   scoreId: score.id,
-                  pdf: library.absoluteFile(score),
+                  pdf: pdf,
+                  pageNumber: score.firstAbsolutePage,
                 ),
           title: Text(score.title),
-          isThreeLine: labelNames.isNotEmpty,
+          isThreeLine:
+              labelNames.isNotEmpty || origin != null || inRoot != null || hasChildren,
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_recencyLine(score)),
+              Text(
+                hasChildren
+                    ? '${_recencyLine(score)} · $childCount '
+                        '${childCount == 1 ? 'piece' : 'pieces'}'
+                    : _recencyLine(score),
+              ),
+              if (inRoot != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: Text(inRoot),
+                ),
+              if (origin != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: Text(origin),
+                ),
               if (labelNames.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
@@ -1243,27 +1747,48 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
             ],
           ),
-          onTap: () => _openScore(score),
           trailing: PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
+                case 'open_full':
+                  _openScore(score);
                 case 'rename':
                   _renameScore(score);
                 case 'labels':
                   _editScoreLabels(score);
+                case 'split':
+                  _splitScore(score);
+                case 'pages':
+                  _editPageExtent(score);
                 case 'replace':
                   _replacePdf(score);
                 case 'delete':
                   _deleteScore(score);
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'rename', child: Text('Rename…')),
-              PopupMenuItem(value: 'labels', child: Text('Labels…')),
-              PopupMenuItem(value: 'replace', child: Text('Replace PDF…')),
-              PopupMenuItem(value: 'delete', child: Text('Delete…')),
+            itemBuilder: (context) => [
+              if (hasChildren)
+                const PopupMenuItem(
+                  value: 'open_full',
+                  child: Text('Open full score'),
+                ),
+              const PopupMenuItem(value: 'rename', child: Text('Rename…')),
+              const PopupMenuItem(value: 'labels', child: Text('Labels…')),
+              if (_canSplit(score))
+                const PopupMenuItem(
+                  value: 'split',
+                  child: Text('Split into pieces…'),
+                ),
+              if (_isPiece(score))
+                const PopupMenuItem(value: 'pages', child: Text('Pages…')),
+              const PopupMenuItem(
+                value: 'replace',
+                child: Text('Replace PDF…'),
+              ),
+              const PopupMenuItem(value: 'delete', child: Text('Delete…')),
             ],
           ),
+          onTap: () => _onScoreRowTap(score),
         );
       },
     );

@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:stagescore/annotation/all_pages_notes.dart';
 import 'package:stagescore/annotation/annotation_export.dart';
 import 'package:stagescore/annotation/annotation_store.dart';
 import 'package:stagescore/annotation/draw_style.dart';
@@ -87,6 +88,8 @@ class PdfModeScreen extends StatefulWidget {
     required this.score,
     required this.filePath,
     this.setlistSession,
+    this.originLine,
+    this.pieceScoreIds = const [],
   });
 
   final Score score;
@@ -95,6 +98,20 @@ class PdfModeScreen extends StatefulWidget {
   /// When non-null, PageTurn can cross Score boundaries (Spec 0012).
   final SetlistSession? setlistSession;
 
+  /// "Pages 12–19 of Chopin Etudes.pdf" for one piece of a book, null for a
+  /// Score that is a whole file (Spec 0052).
+  ///
+  /// Passed in rather than looked up: this screen never holds a `ScoreLibrary`,
+  /// and the file name a musician recognises is the one the PDF came in with,
+  /// not the uuid it is stored under.
+  final String? originLine;
+
+  /// Child Score ids when this screen opened a whole-file root (Spec 0055).
+  ///
+  /// Empty for ordinary Scores and for children. Non-empty enables the
+  /// session-only *Show piece notes* toggle on all-pages.
+  final List<String> pieceScoreIds;
+
   @override
   State<PdfModeScreen> createState() => _PdfModeScreenState();
 }
@@ -102,6 +119,7 @@ class PdfModeScreen extends StatefulWidget {
 class _PdfModeScreenState extends State<PdfModeScreen> {
   late Score _score;
   late String _filePath;
+  String? _originLine;
   late AnnotationStore _store;
   AnnotationPersistence? _annotationPersistence;
   final PdfViewerController _controller = PdfViewerController();
@@ -144,10 +162,18 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   String? _pendingStampText;
   String? _selectedStampId;
   bool _annotationsVisible = true;
+  bool _showPieceNotes = false;
+  AnnotationStore? _pieceNotesUnion;
   bool _exporting = false;
   bool _prefsReady = false;
   int _scoreIndex = 0;
   List<int> _piecePageCounts = const [];
+
+  bool get _canShowPieceNotes => widget.pieceScoreIds.isNotEmpty;
+
+  /// What the overlay paints: root only, or root + children when toggled.
+  AnnotationStore get _overlayStore =>
+      _showPieceNotes ? (_pieceNotesUnion ?? _store) : _store;
 
   /// Authoritative performance page for PageTurn (avoids stale controller reads).
   int _navPage = 1;
@@ -165,6 +191,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     super.initState();
     _score = widget.score;
     _filePath = widget.filePath;
+    _originLine = widget.originLine;
     _store = AnnotationStore();
     final session = widget.setlistSession;
     if (session != null) {
@@ -172,6 +199,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       final piece = session.pieces[_scoreIndex];
       _score = piece.score;
       _filePath = piece.filePath;
+      _originLine = piece.originLine;
     }
     _controller.addListener(_onControllerChanged);
     _sliderController.addListener(_onControllerChanged);
@@ -435,7 +463,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       await doc.dispose();
     } catch (_) {}
 
-    final pageOrder = await pageOrderStore.loadOrIdentity(sourceCount);
+    // The Score's own pages, which are the whole file only while it is the only
+    // Score on it (Spec 0052). Read off the file just opened rather than the
+    // manifest, because the file is what the viewer is about to render.
+    final extent = _score.extentIn(sourceCount);
+    final pageOrder = await pageOrderStore.loadOrIdentity(
+      extent?.length ?? 0,
+      sourceFirstPage: extent?.firstPage ?? 1,
+    );
     final jumpLinks = await jumpLinkStore.list();
     final nav = clampPageNumber(initialPage, pageOrder.length);
 
@@ -486,6 +521,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       _scoreIndex = index;
       _score = piece.score;
       _filePath = piece.filePath;
+      _originLine = piece.originLine;
       _store = AnnotationStore();
       _annotationPersistence = null;
       _navPage = page;
@@ -568,6 +604,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
   void _setDrawEnabled(bool enabled) {
     setState(() {
+      // Piece-notes view is read-only: turning Draw on drops the toggle
+      // rather than writing into a child store from all-pages (Spec 0055).
+      if (enabled && _showPieceNotes) {
+        _showPieceNotes = false;
+        _pieceNotesUnion = null;
+      }
       _drawEnabled = enabled;
       if (enabled) {
         // Drawing requires seeing marks (Spec 0020 G3).
@@ -580,6 +622,36 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     });
     // Chrome is laid out and pinned for the whole Draw session (0034).
     _chrome.setDrawing(enabled);
+  }
+
+  Future<void> _setShowPieceNotes(bool show) async {
+    if (!_canShowPieceNotes) return;
+    if (!show) {
+      setState(() {
+        _showPieceNotes = false;
+        _pieceNotesUnion = null;
+      });
+      return;
+    }
+    final root = _root;
+    if (root == null) return;
+    final union = await buildAllPagesNotesUnion(
+      root: root,
+      rootStore: _store,
+      pieceScoreIds: widget.pieceScoreIds,
+    );
+    if (!mounted) return;
+    setState(() {
+      _showPieceNotes = true;
+      _pieceNotesUnion = union;
+      if (_drawEnabled) {
+        _drawEnabled = false;
+        _pendingStamp = null;
+        _pendingStampText = null;
+        _selectedStampId = null;
+      }
+    });
+    _chrome.setDrawing(false);
   }
 
   Future<void> _exportAnnotatedPdf() async {
@@ -788,6 +860,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     final action = await showScoreMenu(
       context: context,
       groups: _scoreMenuGroups(),
+      subtitle: _originLine,
     );
     if (!mounted) return;
     // Reading the menu counts as interaction, whether or not it led anywhere.
@@ -1512,6 +1585,21 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       toolbarHeight: kPdfAppBarHeight,
       title: _buildTitle(),
       actions: [
+        // Session-only: every open of all-pages starts with this off (Spec 0055).
+        if (_canShowPieceNotes)
+          IconButton(
+            tooltip: _showPieceNotes
+                ? 'Hide piece notes'
+                : 'Show piece notes',
+            onPressed: _prefsReady
+                ? () => _setShowPieceNotes(!_showPieceNotes)
+                : null,
+            icon: Icon(
+              _showPieceNotes
+                  ? Icons.layers
+                  : Icons.layers_outlined,
+            ),
+          ),
         // Draw, Metronome and Bookmarks moved down to the ScoreMenuQuickBar in
         // the bottom chrome (Spec 0043): they are the actions wanted mid-piece,
         // and they read fine there without an AppBar row fighting the title for
@@ -1714,8 +1802,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               ),
               filePath: _filePath,
               pageOrder: _pageOrder,
-              store: _store,
-              drawEnabled: _drawEnabled,
+              store: _overlayStore,
+              drawEnabled: _drawEnabled && !_showPieceNotes,
               drawTool: _drawTool,
               drawStyle: _drawStyle,
               onDrawStyleChanged: _onEyedropperColor,
@@ -1765,8 +1853,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               _layoutPrefs.copyWith(halfPageSeparatorRatio: ratio),
             );
           },
-          store: _store,
-          drawEnabled: _drawEnabled,
+          store: _overlayStore,
+          drawEnabled: _drawEnabled && !_showPieceNotes,
           drawTool: _drawTool,
           drawStyle: _drawStyle,
           onDrawStyleChanged: _onEyedropperColor,
@@ -1811,8 +1899,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               filePath: _filePath,
               pageOrder: _pageOrder,
               layoutMode: layoutMode,
-              store: _store,
-              drawEnabled: _drawEnabled,
+              store: _overlayStore,
+              drawEnabled: _drawEnabled && !_showPieceNotes,
               drawTool: _drawTool,
               drawStyle: _drawStyle,
               onDrawStyleChanged: _onEyedropperColor,
@@ -1885,8 +1973,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                   PageAnnotationOverlay(
                     pageRect: pageRect,
                     page: page,
-                    store: _store,
-                    drawEnabled: _drawEnabled,
+                    store: _overlayStore,
+                    drawEnabled: _drawEnabled && !_showPieceNotes,
                     tool: _drawTool,
                     style: _drawStyle,
                     onStyleChanged: _onEyedropperColor,
