@@ -70,15 +70,6 @@ void main() {
     expect(onTall, lessThan(1600 * 0.9), reason: 'nowhere near the cap');
   });
 
-  testWidgets('Layout sheet grows for the half-page slider', (tester) async {
-    final compact = await _layoutSheetHeight(tester, PdfLayoutMode.single);
-    final withSlider = await _layoutSheetHeight(
-      tester,
-      PdfLayoutMode.halfPageTopBottom,
-    );
-    expect(withSlider, greaterThan(compact));
-  });
-
   testWidgets('Page turn sheet stays within the screen', (tester) async {
     final height = await _openAndMeasure(
       tester,

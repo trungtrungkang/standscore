@@ -168,8 +168,10 @@ Future<void> showPageTurnSettingsSheet({
                           onChanged: (v) =>
                               update(current.copyWith(reverseDirection: v)),
                         ),
-                        // Hidden where it does nothing: One page and the peek
-                        // layouts always advance one page (Spec 0041).
+                        // Hidden where it does nothing: One page always
+                        // advances one page, and Half Page always advances
+                        // half a viewport internally without exposing the
+                        // choice (Spec 0056).
                         if (turnAmountApplies(layoutMode)) ...[
                           const Divider(height: 32),
                           Text(
@@ -182,7 +184,7 @@ Future<void> showPageTurnSettingsSheet({
                                 ? 'Half advances one page of the spread '
                                       'instead of the whole pair.'
                                 : 'Half advances ~½ screen instead of a whole '
-                                      'one. Not the same as the peek layouts.',
+                                      'one.',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           const SizedBox(height: AppSpacing.sm),

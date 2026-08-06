@@ -2,9 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:stagescore/layout/half_page.dart';
 
-/// PdfMode reading layout (Specs 0004 / 0013 / 0041).
+/// PdfMode reading layout (Specs 0004 / 0013 / 0041 / 0056).
 enum PdfLayoutMode {
   /// Whatever the screen can afford — resolved from `LayoutFit`, never drawn
   /// directly. Stored as a choice; see `resolveLayoutMode` (Spec 0041).
@@ -28,10 +27,14 @@ enum PdfLayoutMode {
   /// resolved to [fitWidth] before anything draws it.
   fitHeight,
 
-  /// Current page + peek of next (peek on top). Dedicated [HalfPageView].
+  /// Pages stacked vertically (continuous scroll), same engine as
+  /// [fitWidth]. PageTurn always advances half a viewport (Spec 0056) — that
+  /// half-step is what shows the top of the next page while the current one
+  /// is still on screen, without the jump-cut a fixed peek overlay caused.
   halfPageTopBottom,
 
-  /// Current page + peek of next (peek on left; right when reverse). Dedicated.
+  /// Pages in a horizontal strip (continuous scroll), same engine as
+  /// [fitHeight]. PageTurn always advances half a viewport (Spec 0056).
   halfPageLeftRight,
 }
 
@@ -74,26 +77,21 @@ extension PdfLayoutModeX on PdfLayoutMode {
   };
 }
 
-/// pdfrx continuous layouts. Discrete modes use dedicated widgets.
+/// pdfrx continuous layouts. Single page uses a dedicated widget (Spec 0056
+/// moved Half Page off its own overlay and onto this same engine).
 PdfPageLayoutFunction layoutPagesFor(PdfLayoutMode mode) {
   assert(
-    !isHalfPageLayoutMode(mode) &&
-        mode != PdfLayoutMode.single &&
-        mode != PdfLayoutMode.auto,
-    'Single/half-page modes use dedicated viewers, and Auto must be resolved',
+    mode != PdfLayoutMode.single && mode != PdfLayoutMode.auto,
+    'Single page uses a dedicated viewer, and Auto must be resolved',
   );
   return switch (mode) {
     PdfLayoutMode.auto || PdfLayoutMode.single =>
       (pages, params) => _layoutVertical(pages, params, gap: params.margin),
-    PdfLayoutMode.fitWidth => (pages, params) => _layoutVertical(
-      pages,
-      params,
-      gap: params.margin,
-    ),
-    PdfLayoutMode.fitHeight => _layoutHorizontal,
-    PdfLayoutMode.twoPage => _layoutTwoPage,
-    PdfLayoutMode.halfPageTopBottom || PdfLayoutMode.halfPageLeftRight =>
+    PdfLayoutMode.fitWidth || PdfLayoutMode.halfPageTopBottom =>
       (pages, params) => _layoutVertical(pages, params, gap: params.margin),
+    PdfLayoutMode.fitHeight ||
+    PdfLayoutMode.halfPageLeftRight => _layoutHorizontal,
+    PdfLayoutMode.twoPage => _layoutTwoPage,
   };
 }
 

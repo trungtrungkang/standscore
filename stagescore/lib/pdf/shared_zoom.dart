@@ -9,13 +9,14 @@ import 'package:stagescore/pdf/zoom_toggle.dart';
 /// gesture, and — separately requested the same week — the *whole* view a
 /// musician sets up on one page follows them to the next, not just the scale:
 /// a scan with a wide left margin and a narrow right one is worth panning
-/// past once, not on every page. `SinglePageSlider`, `HalfPageView`, and
-/// `ContinuousPageOrderView` each keep one `TransformationController` per
-/// page, so nothing shares state between them unless something does it on
-/// purpose. The three call these free functions identically; kept here, once,
-/// so they cannot drift and so this logic is unit-testable without a real
-/// `PdfDocument` (pdfrx needs the native viewer, which `flutter test` cannot
-/// provide — see `pdf_mode_chrome_layout_test.dart`).
+/// past once, not on every page. `SinglePageSlider` and
+/// `ContinuousPageOrderView` (which now also draws the Half Page layouts,
+/// Spec 0056) each keep one `TransformationController` per page, so nothing
+/// shares state between them unless something does it on purpose. Both call
+/// these free functions identically; kept here, once, so they cannot drift
+/// and so this logic is unit-testable without a real `PdfDocument` (pdfrx
+/// needs the native viewer, which `flutter test` cannot provide — see
+/// `pdf_mode_chrome_layout_test.dart`).
 
 /// The transform to remember once a pinch/pan gesture settles at [value] —
 /// `null` once back at fit (no meaningful zoom), so the next page opens at

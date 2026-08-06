@@ -38,16 +38,11 @@ class LayoutFit {
   /// Width over height of the viewport.
   double get viewAspect => _measured ? viewSize.width / viewSize.height : 0;
 
-  /// Fraction of the viewport height a next-page peek can take before the
-  /// music starts shrinking.
-  ///
-  /// A page fitted to the viewport's width leaves the rest of the height
-  /// unused; the peek is free until it has eaten that slack. Zero once the
-  /// page is bound by height instead, which is every landscape screen.
-  double get freePeek {
-    if (!_measured) return 0;
-    return (1 - viewAspect / pageAspect).clamp(0.0, 1.0).toDouble();
-  }
+  /// Whether the viewport has vertical slack a width-fitted page leaves
+  /// behind — the case Half Page (top/bottom) spends by scrolling into it
+  /// (Spec 0056). True for any portrait phone; false once the page is bound
+  /// by height instead, which is every landscape screen.
+  bool get hasVerticalSlack => _measured && viewAspect < pageAspect;
 
   /// Width each page of a facing pair would be drawn at, in logical pixels.
   double get spreadPageWidth {
@@ -63,9 +58,9 @@ class LayoutFit {
 
   /// Whether the second page costs nothing.
   ///
-  /// The mirror image of [freePeek]. A page bound by the viewport's height
-  /// leaves horizontal slack, and once that slack is a page wide the spread
-  /// draws each page at exactly the size One page would have drawn it — twice
+  /// The mirror image of [hasVerticalSlack]. A page bound by the viewport's
+  /// height leaves horizontal slack, and once that slack is a page wide the
+  /// spread draws each page at exactly the size One page would have drawn it — twice
   /// the music for nothing. Below that the spread still *fits* (a tablet held
   /// upright), but it is a trade, and Auto does not make trades on the
   /// musician's behalf.
@@ -74,13 +69,15 @@ class LayoutFit {
   /// The layout this screen would choose for itself.
   ///
   /// Spend whichever slack the screen has and nothing else: a second page
-  /// across when the screen is wider than the page, a peek of the next page
-  /// down when it is narrower. Auto must never draw the music smaller than
-  /// One page would have, so both moves are gated on being free.
-  PdfLayoutMode recommendedMode({required double peekRatio}) {
+  /// across when the screen is wider than the page, continuous scroll (with
+  /// its half-step peek of what comes next) when it is narrower. Since Spec
+  /// 0056, Half Page draws the music at exactly One page's size — it is
+  /// never a trade, so it is recommended whenever there is any vertical
+  /// slack to spend.
+  PdfLayoutMode recommendedMode() {
     if (!_measured) return PdfLayoutMode.single;
     if (spreadIsFree) return PdfLayoutMode.twoPage;
-    if (freePeek >= peekRatio) return PdfLayoutMode.halfPageTopBottom;
+    if (hasVerticalSlack) return PdfLayoutMode.halfPageTopBottom;
     return PdfLayoutMode.single;
   }
 
@@ -102,11 +99,10 @@ class LayoutFit {
 PdfLayoutMode resolveLayoutMode({
   required PdfLayoutMode stored,
   required LayoutFit fit,
-  required double peekRatio,
 }) {
   switch (stored) {
     case PdfLayoutMode.auto:
-      return fit.recommendedMode(peekRatio: peekRatio);
+      return fit.recommendedMode();
     case PdfLayoutMode.twoPage:
       // 0004 always said "facing pages when width allows" and never said what
       // happens when it does not. This is that.

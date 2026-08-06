@@ -2,49 +2,30 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:stagescore/layout/half_page.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 
 class PdfLayoutPrefs {
-  /// [mode] defaults to Auto, which only ever reaches a new install: a prefs
-  /// file that already exists keeps the layout its owner chose (Spec 0041).
-  const PdfLayoutPrefs({
-    this.mode = PdfLayoutMode.auto,
-    this.halfPageSeparatorRatio = halfPageSeparatorDefault,
-  });
+  /// [mode] defaults to One page (Spec 0056). Auto used to be the default for
+  /// a new install (0041 decision 3), but on the most common device shape it
+  /// silently resolved to the Half Page peek — a layout the musician never
+  /// picked. A new install now opens on the simplest mode; Auto stays fully
+  /// pickable from the Layout sheet.
+  const PdfLayoutPrefs({this.mode = PdfLayoutMode.single});
 
   final PdfLayoutMode mode;
 
-  /// Fraction of the viewport used for the next-page peek (Fixed / app-wide).
-  final double halfPageSeparatorRatio;
+  PdfLayoutPrefs copyWith({PdfLayoutMode? mode}) =>
+      PdfLayoutPrefs(mode: mode ?? this.mode);
 
-  PdfLayoutPrefs copyWith({
-    PdfLayoutMode? mode,
-    double? halfPageSeparatorRatio,
-  }) => PdfLayoutPrefs(
-    mode: mode ?? this.mode,
-    halfPageSeparatorRatio: halfPageSeparatorRatio != null
-        ? clampHalfPageSeparatorRatio(halfPageSeparatorRatio)
-        : this.halfPageSeparatorRatio,
-  );
-
-  Map<String, dynamic> toJson() => {
-    'mode': mode.name,
-    'halfPageSeparatorRatio': halfPageSeparatorRatio,
-  };
+  Map<String, dynamic> toJson() => {'mode': mode.name};
 
   factory PdfLayoutPrefs.fromJson(Map<String, dynamic> json) {
-    final ratio = (json['halfPageSeparatorRatio'] as num?)?.toDouble();
     return PdfLayoutPrefs(
       mode: PdfLayoutMode.values.firstWhere(
         (m) => m.name == json['mode'],
-        // A file with no readable mode belongs to an install that predates
-        // Auto, so it keeps the old default rather than being switched over.
+        // A file with no readable mode keeps the pre-Auto default too.
         orElse: () => PdfLayoutMode.single,
       ),
-      halfPageSeparatorRatio: ratio == null
-          ? halfPageSeparatorDefault
-          : clampHalfPageSeparatorRatio(ratio),
     );
   }
 }

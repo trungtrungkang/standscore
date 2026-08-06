@@ -35,7 +35,7 @@ Status legend: `todo` | `specced` | `done` | `reopen` | `wont` (explicit cut)
 | P1.6 | PageOrder: reorder, duplicate, delete, blank pages | done (0011) |
 | P1.7 | Setlist: group Scores, continuous view, jump by title | done (0012) |
 | P1.8 | Bookmarks with custom titles + jump | done (0010) |
-| P1.9 | Half-page layouts (T/B, L/R) + separator settings | done (0013) |
+| P1.9 | Half-page layouts (T/B, L/R), continuous scroll + forced half-step turn | done (0013, reworked by 0056) |
 | P1.10 | Jump links (tap target → page) | done (0016 — list sheet UX revision) |
 | P1.11 | Page slider + jump to page number | done (0009) |
 | P1.12 | Page turn amount (full 1/1 vs half 1/2), esp. continuous scroll | done (0014) |

@@ -62,6 +62,22 @@ void main() {
         _landscape.height / document.height,
       );
     });
+
+    test('half page side peek reads sideways too, so height binds', () {
+      // Regression: this mode reuses fit height's horizontal-strip engine
+      // (Spec 0056) but was missing from the height-binds branch, so it fell
+      // through to width-binds — dividing by the *whole strip's* width and
+      // rendering every page as a tiny thumbnail.
+      final document = Size(9000, _page.height + _margin * 2);
+      expect(
+        pdfFitZoom(
+          mode: PdfLayoutMode.halfPageLeftRight,
+          viewSize: _portrait,
+          documentSize: document,
+        ),
+        _portrait.height / document.height,
+      );
+    });
   });
 
   group('two pages', () {

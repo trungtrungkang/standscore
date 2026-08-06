@@ -20,7 +20,6 @@ import 'package:stagescore/jumplink/jump_link_geometry.dart';
 import 'package:stagescore/jumplink/jump_link_store.dart';
 import 'package:stagescore/layout/display_prefs.dart';
 import 'package:stagescore/layout/display_prefs_store.dart';
-import 'package:stagescore/layout/half_page.dart';
 import 'package:stagescore/layout/layout_fit.dart';
 import 'package:stagescore/layout/page_color_filter.dart';
 import 'package:stagescore/layout/page_color_filter_prefs_store.dart';
@@ -46,7 +45,6 @@ import 'package:stagescore/pageturn/page_turn_prefs.dart';
 import 'package:stagescore/pageturn/page_turn_prefs_store.dart';
 import 'package:stagescore/pageturn/pedal_key_map.dart';
 import 'package:stagescore/pdf/continuous_page_order_view.dart';
-import 'package:stagescore/pdf/half_page_view.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
 import 'package:stagescore/pdf/pdf_surface.dart';
 import 'package:stagescore/pdf/single_page_slider.dart';
@@ -125,7 +123,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   final PdfViewerController _controller = PdfViewerController();
   final SinglePageSliderController _sliderController =
       SinglePageSliderController();
-  final HalfPageController _halfPageController = HalfPageController();
   final ContinuousPageOrderController _orderScrollController =
       ContinuousPageOrderController();
   final FocusNode _focusNode = FocusNode();
@@ -203,7 +200,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     }
     _controller.addListener(_onControllerChanged);
     _sliderController.addListener(_onControllerChanged);
-    _halfPageController.addListener(_onControllerChanged);
     _orderScrollController.addListener(_onControllerChanged);
     HardwareKeyboard.instance.addHandler(_onHardwareKey);
     _metronome.addListener(_onMetronomeChanged);
@@ -233,10 +229,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _metronome.dispose();
     _controller.removeListener(_onControllerChanged);
     _sliderController.removeListener(_onControllerChanged);
-    _halfPageController.removeListener(_onControllerChanged);
     _orderScrollController.removeListener(_onControllerChanged);
     _sliderController.dispose();
-    _halfPageController.dispose();
     _orderScrollController.dispose();
     _focusNode.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -274,11 +268,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     if (_pageCount < 1) return null;
     if (_isSingle) {
       return _sliderController.isReady ? _sliderController.pageNumber : null;
-    }
-    if (_isHalfPage) {
-      return _halfPageController.isReady
-          ? _halfPageController.pageNumber
-          : null;
     }
     if (_useCustomContinuous) {
       return _orderScrollController.isReady
@@ -321,31 +310,13 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   String? _layoutNotice;
 
   /// The layout actually drawn: what was picked, through what fits.
-  PdfLayoutMode get _layoutMode => resolveLayoutMode(
-    stored: _layoutPrefs.mode,
-    fit: _fit,
-    peekRatio: _layoutPrefs.halfPageSeparatorRatio,
-  );
+  PdfLayoutMode get _layoutMode =>
+      resolveLayoutMode(stored: _layoutPrefs.mode, fit: _fit);
 
   bool get _isSingle => _layoutMode == PdfLayoutMode.single;
 
-  bool get _isHalfPage => isHalfPageLayoutMode(_layoutMode);
-
   bool get _useCustomContinuous =>
-      !_isSingle &&
-      !_isHalfPage &&
-      !_pageOrder.isIdentity &&
-      _pageOrder.length > 0;
-
-  /// Next Setlist piece title when peeking past the last page of this Score.
-  String? get _nextSetlistTitle {
-    final session = widget.setlistSession;
-    if (session == null) return null;
-    if (_pageNumber < _pageCount) return null;
-    final next = _scoreIndex + 1;
-    if (next >= session.pieces.length) return null;
-    return session.pieces[next].score.title;
-  }
+      !_isSingle && !_pageOrder.isIdentity && _pageOrder.length > 0;
 
   Future<void> _loadPrefs() async {
     final root = await openLibraryRoot();
@@ -1080,18 +1051,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     await _jumpToPage(dest);
   }
 
-  Rect _jumpLinkPageRect(Size viewSize) {
-    if (_isHalfPage) {
-      final pane = halfPageCurrentPaneRect(
-        viewerSize: viewSize,
-        layoutMode: _layoutMode,
-        separatorRatio: _layoutPrefs.halfPageSeparatorRatio,
-        reverseHorizontal: _pageTurnPrefs.reverseDirection,
-      );
-      return fittedPageRect(pane.size, _pageAspectRatio).shift(pane.topLeft);
-    }
-    return fittedPageRect(viewSize, _pageAspectRatio);
-  }
+  Rect _jumpLinkPageRect(Size viewSize) =>
+      fittedPageRect(viewSize, _pageAspectRatio);
 
   void _replaceJumpLink(JumpLink link) {
     setState(() {
@@ -1154,7 +1115,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   bool get _atFitZoom {
-    if (_isSingle || _isHalfPage || _useCustomContinuous) return true;
+    if (_isSingle || _useCustomContinuous) return true;
     final fit = _fitZoom(_controller);
     if (fit == null) return true;
     return _controller.currentZoom <= fit * kFitZoomTolerance;
@@ -1241,11 +1202,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       await _sliderController.goToPage(target, duration: Duration.zero);
       return;
     }
-    if (_isHalfPage) {
-      if (!_halfPageController.isReady) return;
-      await _halfPageController.goToPage(target, duration: Duration.zero);
-      return;
-    }
     if (_useCustomContinuous) {
       if (!_orderScrollController.isReady) return;
       await _orderScrollController.goToPage(target);
@@ -1262,10 +1218,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     _navPage = target;
     if (_isSingle) {
       await _sliderController.goToPage(target, duration: duration);
-      return;
-    }
-    if (_isHalfPage) {
-      await _halfPageController.goToPage(target, duration: duration);
       return;
     }
     if (_useCustomContinuous) {
@@ -1384,14 +1336,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       );
     }
 
-    // Identity continuous: pdfrx PdfViewer (fit width / fit height).
-    if (_isSingle || _isHalfPage) return false;
+    // Identity continuous: pdfrx PdfViewer (Scroll or Half Page).
+    if (_isSingle) return false;
     if (!_controller.isReady) return false;
 
     final view = _controller.viewSize;
     final zoom = _controller.currentZoom;
     if (zoom <= 0 || view.isEmpty) return false;
-    final horizontal = _layoutMode == PdfLayoutMode.fitHeight;
+    final horizontal = layoutAxisFor(_layoutMode) == LayoutAxis.horizontal;
     final extent = horizontal ? view.width : view.height;
     final docDelta = (extent * fraction) / zoom;
     final sign = forward ? 1.0 : -1.0;
@@ -1728,8 +1680,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               : _wrapViewerInsets(
                   _isSingle
                       ? _buildSinglePageBody()
-                      : _isHalfPage
-                      ? _buildHalfPageBody()
                       : _useCustomContinuous
                       ? _buildCustomContinuousBody(layoutMode)
                       : _buildContinuousBody(layoutMode),
@@ -1849,56 +1799,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
             ),
             _interactionLayer(),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHalfPageBody() {
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: true,
-      child: _withJumpLinkLayer(
-        HalfPageView(
-          // Not keyed by layout mode: moving the peek from the top to the side
-          // is a rebuild, not a new viewer, and reopening the document there
-          // would cost the page and the loaded PDF for nothing.
-          key: ValueKey('half-${_score.id}-$_filePath-${_pageOrder.hashCode}'),
-          filePath: _filePath,
-          pageOrder: _pageOrder,
-          layoutMode: _layoutMode,
-          separatorRatio: _layoutPrefs.halfPageSeparatorRatio,
-          onSeparatorRatioChanged: (ratio) {
-            _saveLayoutPrefs(
-              _layoutPrefs.copyWith(halfPageSeparatorRatio: ratio),
-            );
-          },
-          store: _overlayStore,
-          drawEnabled: _drawEnabled && !_showPieceNotes,
-          drawTool: _drawTool,
-          drawStyle: _drawStyle,
-          onDrawStyleChanged: _onEyedropperColor,
-          onEyedropperDone: _onEyedropperDone,
-          pendingStamp: _pendingStamp,
-          pendingStampText: _pendingStampText,
-          onPendingStampConsumed: _onPendingStampConsumed,
-          selectedStampId: _selectedStampId,
-          onSelectedStampChanged: _onSelectedStampChanged,
-          annotationsVisible: _annotationsVisible,
-          colorFilterMode: _colorFilterMode,
-          pageScale: _resolvePageScale(_currentSourcePage),
-          zoomLocked: _pageScalePrefs.locked,
-          resolvePageScale: _resolvePageScale,
-          pageBorderEnabled: _displayPrefs.borderEnabled,
-          pageBorderWidth: _displayPrefs.borderWidth,
-          pageBorderColor: _displayPrefs.borderColor,
-          onAnnotateChanged: _onAnnotationsChanged,
-          controller: _halfPageController,
-          reverseHorizontal: _pageTurnPrefs.reverseDirection,
-          nextSetlistTitle: _nextSetlistTitle,
-          initialPage: _pageNumber,
-          // Full viewer so left/top tap zones still mean previous (peek sits there).
-          viewerOverlay: _interactionLayer(),
         ),
       ),
     );

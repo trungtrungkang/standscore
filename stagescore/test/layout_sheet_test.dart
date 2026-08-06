@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
 import 'package:stagescore/pageturn/page_turn_prefs.dart';
 import 'package:stagescore/ui/layout_settings_sheet.dart';
@@ -95,19 +94,6 @@ void main() {
       _subtitleOf(tester, 'Two pages'),
       'tap left / right · swipe sideways',
     );
-  });
-
-  testWidgets('the peek slider says where the peek stops being free', (
-    tester,
-  ) async {
-    await _openSheet(
-      tester,
-      screen: const Size(393, 852),
-      prefs: const PdfLayoutPrefs(mode: PdfLayoutMode.halfPageTopBottom),
-    );
-
-    expect(find.textContaining('Free up to 35%'), findsOneWidget);
-    expect(find.textContaining('the music is full size'), findsOneWidget);
   });
 
   testWidgets('choosing a row reports it without closing the sheet', (

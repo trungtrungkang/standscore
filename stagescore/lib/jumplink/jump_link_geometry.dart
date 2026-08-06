@@ -1,12 +1,7 @@
 import 'dart:ui';
 
 import 'package:stagescore/jumplink/jump_link.dart';
-import 'package:stagescore/layout/half_page.dart';
-import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/pageturn/page_jump.dart';
-
-/// Separator handle thickness used by [HalfPageView].
-const double halfPageHandleExtent = 28;
 
 /// Clamp JumpLink destination to a valid performance page (Spec 0016).
 int clampJumpDestination(int destinationPage, int pageCount) =>
@@ -87,36 +82,4 @@ JumpLink? hitTestJumpLinks({
     localInViewer: localInViewer,
     pageRect: fittedPageRect(viewerSize, pageAspectRatio),
   );
-}
-
-/// Current-page pane inside a Half Page layout (matches HalfPageView chrome).
-Rect halfPageCurrentPaneRect({
-  required Size viewerSize,
-  required PdfLayoutMode layoutMode,
-  required double separatorRatio,
-  required bool reverseHorizontal,
-}) {
-  final ratio = clampHalfPageSeparatorRatio(separatorRatio);
-  if (layoutMode == PdfLayoutMode.halfPageTopBottom) {
-    final usable = viewerSize.height - halfPageHandleExtent;
-    final peek = usable * ratio;
-    return Rect.fromLTWH(
-      0,
-      peek + halfPageHandleExtent,
-      viewerSize.width,
-      usable - peek,
-    );
-  }
-  final usable = viewerSize.width - halfPageHandleExtent;
-  final peek = usable * ratio;
-  final peekFirst = !reverseHorizontal;
-  if (peekFirst) {
-    return Rect.fromLTWH(
-      peek + halfPageHandleExtent,
-      0,
-      usable - peek,
-      viewerSize.height,
-    );
-  }
-  return Rect.fromLTWH(0, 0, usable - peek, viewerSize.height);
 }

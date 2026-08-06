@@ -8,16 +8,26 @@ import 'package:stagescore/pageturn/page_turn_prefs_store.dart';
 
 void main() {
   group('resolvePageTurnStep', () {
-    test('single and half-page layout always one page', () {
+    test('single layout always advances one page', () {
+      for (final amount in TurnAmount.values) {
+        final step = resolvePageTurnStep(
+          mode: PdfLayoutMode.single,
+          amount: amount,
+        );
+        expect(step.kind, PageTurnStepKind.performancePages);
+        expect(step.pageDelta, 1);
+      }
+    });
+
+    test('half-page layout always advances half a viewport (Spec 0056)', () {
       for (final mode in [
-        PdfLayoutMode.single,
         PdfLayoutMode.halfPageTopBottom,
         PdfLayoutMode.halfPageLeftRight,
       ]) {
         for (final amount in TurnAmount.values) {
           final step = resolvePageTurnStep(mode: mode, amount: amount);
-          expect(step.kind, PageTurnStepKind.performancePages);
-          expect(step.pageDelta, 1);
+          expect(step.kind, PageTurnStepKind.viewportFraction, reason: mode.name);
+          expect(step.viewportFraction, 0.5, reason: mode.name);
         }
       }
     });

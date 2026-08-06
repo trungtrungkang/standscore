@@ -121,9 +121,10 @@ void main() {
     'a pinch-and-pan-then-turn round trip: zoom + pan on page 1, next page '
     'opens the same way, zooming back out on page 2 resets page 3',
     () {
-      // Simulates what SinglePageSlider / HalfPageView / ContinuousPageOrderView
-      // do around a pinch gesture ending, without needing a real PdfDocument
-      // (pdfrx needs the native viewer, unavailable under flutter test).
+      // Simulates what SinglePageSlider / ContinuousPageOrderView (which also
+      // draws the Half Page layouts, Spec 0056) do around a pinch gesture
+      // ending, without needing a real PdfDocument (pdfrx needs the native
+      // viewer, unavailable under flutter test).
       Matrix4? shared;
 
       // Page 1: musician pinches to 2x and pans left to hide a wide margin.

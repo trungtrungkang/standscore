@@ -3,7 +3,7 @@
 **Status:** the 2026-07-27 blockers are closed and **v1 is back to being a set of human errands that run in parallel.** Ads and the `remove_ads` purchase moved into `1.0.0` on 2026-07-30 and then back out to **1.1** the same day (ADR 0018 decision 10). The reversal is not indecision: the second look found that AdMob will not serve ads to an app that is not yet on a store (decision 13), so shipping ads in v1 buys **zero revenue on launch day** while putting a sequential tier-L chain and up to 90 days of tax paperwork in front of the release date. Nothing about the app v1 ships has changed since 2026-07-28, and **nothing in this file or `STORE-LISTING.md` should be edited for ads until the 1.1 build is ready to submit**
 **Decision:** ship **v1 before Phase C** (Orchestrator 2026-07-27) — Phase C becomes 1.1, alongside ads
 **What is left for v1:** R16 — see the **v1 submission runbook** at the bottom. R5 / R6 / R9 closed 2026-07-31; R24 closed 2026-08-01; R12 closed 2026-08-01
-**Version in `pubspec.yaml`:** `1.0.0+4` (the line said `+1` until 2026-07-28; the build number now shows in About, so it is worth keeping honest)
+**Version in `pubspec.yaml`:** `1.0.0+7` (the line said `+1` until 2026-07-28; the build number now shows in About, so it is worth keeping honest — `+7` on 2026-08-06 replaces the Half Page overlay with continuous scroll, Spec 0056)
 **Bundle / application ID:** `com.backingscore.scoreapp` (ADR 0009)
 
 This is not a Feature Spec and has no G3/G4. It is the list of things that stand

@@ -33,7 +33,11 @@ double pdfFitZoom({
   double spreadHeight = 0,
 }) {
   if (viewSize.isEmpty || documentSize.isEmpty) return 1;
-  if (mode == PdfLayoutMode.fitHeight) {
+  // Both read sideways: pages sit in a horizontal strip, so its width is the
+  // sum of every page rather than the reading unit — height is what one page
+  // (or Half Page's half-viewport step, Spec 0056) actually binds to.
+  if (mode == PdfLayoutMode.fitHeight ||
+      mode == PdfLayoutMode.halfPageLeftRight) {
     return viewSize.height / documentSize.height;
   }
   final byWidth = viewSize.width / documentSize.width;

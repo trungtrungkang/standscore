@@ -313,7 +313,9 @@ class _ContinuousPageOrderViewState extends State<ContinuousPageOrderView> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final horizontal = widget.layoutMode == PdfLayoutMode.fitHeight;
+    final horizontal =
+        widget.layoutMode == PdfLayoutMode.fitHeight ||
+        widget.layoutMode == PdfLayoutMode.halfPageLeftRight;
     final twoPage = widget.layoutMode == PdfLayoutMode.twoPage;
 
     final scrollPhysics = widget.drawEnabled

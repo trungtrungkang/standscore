@@ -73,7 +73,7 @@ Việc đưa khung xem biểu diễn tiến lên hay lùi lại theo luật layo
 _Avoid_: Scroll (only when layout is continuous scroll), swipe (a gesture, not the action)
 
 **TurnAmount**:
-Một PageTurn đi được bao xa — trọn trang (1/1) hay nửa trang (1/2). Khác với *layout* Half Page, thứ chỉ hé trang kế lên trên mà không dùng tới TurnAmount.
+Một PageTurn đi được bao xa — trọn trang (1/1) hay nửa trang (1/2). *Layout* Half Page (Spec 0056) dùng một bước TurnAmount cố định (nửa trang) ở bên trong để scroll liên tục, nhưng không để nhạc công chỉnh setting này — chỉnh sửa được sẽ chỉ gây nhầm vì bước đã bị ép cứng.
 _Avoid_: Half page (ambiguous with layout mode), scroll step (implementation)
 
 **GestureMap**:

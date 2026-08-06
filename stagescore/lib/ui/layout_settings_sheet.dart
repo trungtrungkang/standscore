@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:stagescore/layout/half_page.dart';
 import 'package:stagescore/layout/layout_fit.dart';
 import 'package:stagescore/layout/pdf_layout_mode.dart';
 import 'package:stagescore/layout/pdf_layout_prefs.dart';
@@ -35,13 +34,6 @@ Future<void> showLayoutSettingsSheet({
           // The screen is the honest input: it is what the layout has to fit
           // into, and unlike the viewer it does not shrink when chrome appears.
           final fit = LayoutFit(viewSize: MediaQuery.sizeOf(context));
-          final resolved = resolveLayoutMode(
-            stored: current.mode,
-            fit: fit,
-            peekRatio: current.halfPageSeparatorRatio,
-          );
-          final half = isHalfPageLayoutMode(resolved);
-          final freePeekPercent = (fit.freePeek * 100).round();
 
           // Cap, not a fixed height: the sheet ends where its content does
           // (Spec 0035).
@@ -88,56 +80,16 @@ Future<void> showLayoutSettingsSheet({
                             mode: mode,
                             selected: current.mode == mode,
                             resolvedForAuto: mode == PdfLayoutMode.auto
-                                ? fit.recommendedMode(
-                                    peekRatio: current.halfPageSeparatorRatio,
-                                  )
+                                ? fit.recommendedMode()
                                 : null,
                             fallsBack:
                                 mode == PdfLayoutMode.twoPage &&
                                 !fit.spreadFits,
-                            recommended:
-                                mode ==
-                                fit.recommendedMode(
-                                  peekRatio: current.halfPageSeparatorRatio,
-                                ),
+                            recommended: mode == fit.recommendedMode(),
                             pageTurnPrefs: pageTurnPrefs,
                             onSelected: () =>
                                 update(current.copyWith(mode: mode)),
                           ),
-                        if (half) ...[
-                          const Divider(height: 24),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'How much of the next page peeks in',
-                                  style: Theme.of(context).textTheme.titleSmall,
-                                ),
-                                const SizedBox(height: AppSpacing.xs),
-                                Text(
-                                  freePeekPercent > 0
-                                      ? 'Free up to $freePeekPercent% on this '
-                                            'screen — past that the music gets '
-                                            'smaller.'
-                                      : 'On this screen the peek always makes '
-                                            'the music smaller.',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
-                          _PeekSlider(
-                            ratio: current.halfPageSeparatorRatio,
-                            freePeek: fit.freePeek,
-                            onChanged: (v) => update(
-                              current.copyWith(halfPageSeparatorRatio: v),
-                            ),
-                          ),
-                        ],
                         if (onOpenPageTurnSettings != null) ...[
                           const Divider(height: 24),
                           ListTile(
@@ -225,53 +177,6 @@ class _LayoutRow extends StatelessWidget {
         ],
       ),
       subtitle: Text(subtitle),
-    );
-  }
-}
-
-/// Separator slider with the point where the peek stops being free marked on
-/// it (Spec 0041). Marked, not clamped — the ratio is the musician's.
-class _PeekSlider extends StatelessWidget {
-  const _PeekSlider({
-    required this.ratio,
-    required this.freePeek,
-    required this.onChanged,
-  });
-
-  final double ratio;
-  final double freePeek;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final costs = ratio > freePeek;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Slider(
-            value: ratio,
-            min: halfPageSeparatorMin,
-            max: halfPageSeparatorMax,
-            divisions: 40,
-            label: '${(ratio * 100).round()}%',
-            secondaryTrackValue: freePeek.clamp(
-              halfPageSeparatorMin,
-              halfPageSeparatorMax,
-            ),
-            onChanged: onChanged,
-          ),
-          Text(
-            costs
-                ? '${(ratio * 100).round()}% — the music is smaller than it '
-                      'would be on one page'
-                : '${(ratio * 100).round()}% — the music is full size',
-            style: theme.textTheme.bodySmall,
-          ),
-        ],
-      ),
     );
   }
 }

@@ -48,14 +48,20 @@ class PageTurnStep {
   final double viewportFraction;
 }
 
-/// Resolve PageTurn step from layout + turn amount (Specs 0014 / 0041).
+/// Resolve PageTurn step from layout + turn amount (Specs 0014 / 0041 / 0056).
 PageTurnStep resolvePageTurnStep({
   required PdfLayoutMode mode,
   required TurnAmount amount,
 }) {
   assert(mode != PdfLayoutMode.auto, 'resolve the layout before stepping it');
-  if (mode == PdfLayoutMode.single || isHalfPageLayoutMode(mode)) {
+  if (mode == PdfLayoutMode.single) {
     return PageTurnStep.pages(1);
+  }
+  // Half Page is continuous scroll with the step hard-wired to half a
+  // viewport (Spec 0056) — that half-step *is* the peek, so Turn amount
+  // never changes it.
+  if (isHalfPageLayoutMode(mode)) {
+    return PageTurnStep.viewport(0.5);
   }
   if (mode == PdfLayoutMode.twoPage) {
     return PageTurnStep.pages(amount == TurnAmount.half ? 1 : 2);
@@ -69,7 +75,9 @@ PageTurnStep resolvePageTurnStep({
 
 /// Whether Turn amount changes anything in [mode].
 ///
-/// One page and the peek layouts always advance one page, so offering the
-/// setting there teaches the musician that settings do nothing (Spec 0041).
+/// One page always advances one page. Half Page always advances half a
+/// viewport, hard-wired rather than driven by this setting (Spec 0056).
+/// Offering the setting in either would teach the musician that settings do
+/// nothing (Spec 0041).
 bool turnAmountApplies(PdfLayoutMode mode) =>
     mode != PdfLayoutMode.single && !isHalfPageLayoutMode(mode);
