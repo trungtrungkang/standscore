@@ -386,6 +386,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
 
   @override
+  String get scoreMenuPlaybackSettings => 'Playback settings…';
+
+  @override
+  String get playbackSettingsTitle => 'Playback settings';
+
+  @override
+  String get playbackSettingsPlayhead => 'Playhead';
+
+  @override
+  String get playbackSettingsPlayheadHint => '再生中に楽譜上に表示する線';
+
+  @override
+  String get playbackSettingsPlayheadColor => '色';
+
+  @override
+  String playbackSettingsPlayheadSize(String value) {
+    return '太さ $value';
+  }
+
+  @override
+  String playbackSettingsPlayheadOpacity(int percent) {
+    return '不透明度 $percent%';
+  }
+
+  @override
+  String playbackSettingsPlayheadHeight(int percent) {
+    return '高さ 小節の $percent%';
+  }
+
+  @override
   String get scoreMenuPlaybackMapFirst => 'Map measures first';
 
   @override
@@ -407,6 +437,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get metronomeSheetPlaybackStyle => 'Controls layout';
+
+  @override
+  String get metronomeSheetPlaybackStyleHint =>
+      'Bar sits above page chrome; Float is a small draggable Play/Stop';
+
+  @override
+  String get metronomeSheetPlaybackStyleDocked => 'Bar';
+
+  @override
+  String get metronomeSheetPlaybackStyleFloating => 'Float';
 
   @override
   String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';

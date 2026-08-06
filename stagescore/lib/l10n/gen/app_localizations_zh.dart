@@ -383,6 +383,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
 
   @override
+  String get scoreMenuPlaybackSettings => 'Playback settings…';
+
+  @override
+  String get playbackSettingsTitle => 'Playback settings';
+
+  @override
+  String get playbackSettingsPlayhead => 'Playhead';
+
+  @override
+  String get playbackSettingsPlayheadHint => '播放时显示在乐谱上的线';
+
+  @override
+  String get playbackSettingsPlayheadColor => '颜色';
+
+  @override
+  String playbackSettingsPlayheadSize(String value) {
+    return '粗细 $value';
+  }
+
+  @override
+  String playbackSettingsPlayheadOpacity(int percent) {
+    return '不透明度 $percent%';
+  }
+
+  @override
+  String playbackSettingsPlayheadHeight(int percent) {
+    return '高度为小节的 $percent%';
+  }
+
+  @override
   String get scoreMenuPlaybackMapFirst => 'Map measures first';
 
   @override
@@ -404,6 +434,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get metronomeSheetPlaybackStyle => 'Controls layout';
+
+  @override
+  String get metronomeSheetPlaybackStyleHint =>
+      'Bar sits above page chrome; Float is a small draggable Play/Stop';
+
+  @override
+  String get metronomeSheetPlaybackStyleDocked => 'Bar';
+
+  @override
+  String get metronomeSheetPlaybackStyleFloating => 'Float';
 
   @override
   String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';
@@ -2197,6 +2240,36 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
 
   @override
+  String get scoreMenuPlaybackSettings => 'Playback settings…';
+
+  @override
+  String get playbackSettingsTitle => 'Playback settings';
+
+  @override
+  String get playbackSettingsPlayhead => 'Playhead';
+
+  @override
+  String get playbackSettingsPlayheadHint => '播放時顯示在樂譜上的線';
+
+  @override
+  String get playbackSettingsPlayheadColor => '顏色';
+
+  @override
+  String playbackSettingsPlayheadSize(String value) {
+    return '粗細 $value';
+  }
+
+  @override
+  String playbackSettingsPlayheadOpacity(int percent) {
+    return '不透明度 $percent%';
+  }
+
+  @override
+  String playbackSettingsPlayheadHeight(int percent) {
+    return '高度為小節的 $percent%';
+  }
+
+  @override
   String get scoreMenuPlaybackMapFirst => 'Map measures first';
 
   @override
@@ -2218,6 +2291,19 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get metronomeSheetPlaybackStyle => 'Controls layout';
+
+  @override
+  String get metronomeSheetPlaybackStyleHint =>
+      'Bar sits above page chrome; Float is a small draggable Play/Stop';
+
+  @override
+  String get metronomeSheetPlaybackStyleDocked => 'Bar';
+
+  @override
+  String get metronomeSheetPlaybackStyleFloating => 'Float';
 
   @override
   String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';

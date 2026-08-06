@@ -10,10 +10,10 @@
 - **G3:** **accepted 2026-08-06** — câu **1–10** theo khuyến nghị nguyên bản; câu **11–15** chốt trong chat cùng ngày (dialog số ô, xoá/đổi N + hình học giữ trái, tempo/time sig + phạm vi, BeatBox ẩn + *Edit beats*)
 - **Revision 1 (G4 2026-08-07):** câu **16–18** — selection hạng nhất cho SystemBox + tách menu; resize 4 mép / move thân khi system đang chọn
 - **Revision 2 (2026-08-07):** câu **1** — `beatSplits` là **N mốc nội tại** (kéo khớp nốt từng phách; **không** tính hai vạch nhịp mép ô). Mặc định tâm từng lát bằng. Wire web vẫn N−1 biên (đổi centres ↔ midpoints).
-- **G4:** **pass (2026-08-07)** — gồm rev. 1; rev. 2 chờ xác nhận Edit beats (4 vạch trong ô 4/4)
+- **G4:** **pass (2026-08-07)** — gồm rev. 1 + rev. 2 (Edit beats N vạch) + follow-up khóa PageTurn khi soạn (cùng ngày với G4 0059)
 - **Security Review:** **không cần**
 
-> **Đóng slice:** G3 + build + rev. 1 + G4 pass. Rev. 2 (N vạch phách) đã vào code — xác nhận Edit beats trên máy. Suite measure_map xanh sau rev. 2.
+> **Đóng slice.** G3 + build + rev. 1–2 + G4 pass (Orchestrator xác nhận lại 2026-08-07 cùng 0059). Follow-up soạn MeasureMap khóa PageTurn/scroll đã vào.
 
 ---
 
@@ -71,7 +71,7 @@ Test thuần: encode → decode → bằng nhau. `noteEvents` / OMR-adjacent bê
 - Vẽ chồng lên trang bằng cùng đường overlay annotation — **không** hệ zoom thứ hai.
 - Thao tác: vẽ SystemBox → dialog số MeasureBox (câu 11); chỉnh vạch ô; **selection** `none` \| `measure` \| `system` loại trừ lẫn nhau (câu 16); chọn SystemBox (tap khung) → *Set measure count…* / *Delete system* / resize·move (câu 17–18); chọn MeasureBox → xoá ô / tempo·time sig + phạm vi / *Edit beats* (câu 12–15); **chép layout trang liền trước** một tap, chọn trang bất kỳ là lối phụ (câu 4).
 - BeatBox mặc định **ẩn**; *Edit beats* chỉ hiện vạch ô đang chọn (câu 15).
-- **Loại trừ lẫn nhau** với Draw mực (câu 7).
+- **Loại trừ lẫn nhau** với Draw mực (câu 7). Trong chế độ soạn: khóa PageTurn / pan-scroll trang như Draw (G4 follow-up) để rubber-band SystemBox không thua gesture arena.
 - All-pages gốc: không union map con; soạn trên gốc được phép nhưng IA nghiêng về piece (câu 8).
 - Xoá hết map: có, confirm một lần (câu 9).
 

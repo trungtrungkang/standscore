@@ -19,4 +19,13 @@ void main() {
       '1.1',
     );
   });
+
+  test('formatMeasureBeat is measure.beat', () {
+    expect(formatMeasureBeat(12, 3), '12.3');
+  });
+
+  test('beat badge width sample covers three-digit measure', () {
+    expect(kPlaybackBeatBadgeWidthSample.length, greaterThanOrEqualTo(5));
+    expect(kPlaybackBeatBadgeWidthSample, contains('.'));
+  });
 }

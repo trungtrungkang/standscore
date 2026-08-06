@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:stagescore/l10n/gen/app_localizations.dart';
 import 'package:stagescore/metronome/metronome_engine.dart';
 import 'package:stagescore/metronome/metronome_prefs.dart';
-import 'package:stagescore/sync_map/playback_prefs.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/beat_dots.dart';
 import 'package:stagescore/ui/metronome_icon.dart';
@@ -13,8 +12,6 @@ Future<void> showMetronomeSheet({
   required BuildContext context,
   required MetronomeEngine engine,
   required ValueChanged<MetronomePrefs> onPrefsChanged,
-  PlaybackPrefs? playbackPrefs,
-  ValueChanged<PlaybackPrefs>? onPlaybackPrefsChanged,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -23,8 +20,6 @@ Future<void> showMetronomeSheet({
       return _MetronomeSheet(
         engine: engine,
         onPrefsChanged: onPrefsChanged,
-        playbackPrefs: playbackPrefs,
-        onPlaybackPrefsChanged: onPlaybackPrefsChanged,
       );
     },
   );
@@ -34,14 +29,10 @@ class _MetronomeSheet extends StatefulWidget {
   const _MetronomeSheet({
     required this.engine,
     required this.onPrefsChanged,
-    this.playbackPrefs,
-    this.onPlaybackPrefsChanged,
   });
 
   final MetronomeEngine engine;
   final ValueChanged<MetronomePrefs> onPrefsChanged;
-  final PlaybackPrefs? playbackPrefs;
-  final ValueChanged<PlaybackPrefs>? onPlaybackPrefsChanged;
 
   @override
   State<_MetronomeSheet> createState() => _MetronomeSheetState();
@@ -49,13 +40,11 @@ class _MetronomeSheet extends StatefulWidget {
 
 class _MetronomeSheetState extends State<_MetronomeSheet> {
   late MetronomePrefs _prefs;
-  late PlaybackPrefs _playbackPrefs;
 
   @override
   void initState() {
     super.initState();
     _prefs = widget.engine.prefs;
-    _playbackPrefs = widget.playbackPrefs ?? const PlaybackPrefs();
     widget.engine.addListener(_onEngine);
   }
 
@@ -72,11 +61,6 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
   void _update(MetronomePrefs next) {
     setState(() => _prefs = next);
     widget.onPrefsChanged(next);
-  }
-
-  void _updatePlayback(PlaybackPrefs next) {
-    setState(() => _playbackPrefs = next);
-    widget.onPlaybackPrefsChanged?.call(next);
   }
 
   Future<void> _editTempo() async {
@@ -167,42 +151,6 @@ class _MetronomeSheetState extends State<_MetronomeSheet> {
           value: _prefs.showBeatsOnScore,
           onChanged: (v) => _update(_prefs.copyWith(showBeatsOnScore: v)),
         ),
-        if (widget.onPlaybackPrefsChanged != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          Text(l10n.metronomeSheetCountIn, style: theme.textTheme.titleSmall),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            l10n.metronomeSheetCountInHint,
-            style: theme.textTheme.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: Text(l10n.metronomeSheetCountInNone),
-                selected: _playbackPrefs.countInMeasures == 0,
-                onSelected: (_) => _updatePlayback(
-                  _playbackPrefs.copyWith(countInMeasures: 0),
-                ),
-              ),
-              ChoiceChip(
-                label: Text(l10n.metronomeSheetCountInOne),
-                selected: _playbackPrefs.countInMeasures == 1,
-                onSelected: (_) => _updatePlayback(
-                  _playbackPrefs.copyWith(countInMeasures: 1),
-                ),
-              ),
-              ChoiceChip(
-                label: Text(l10n.metronomeSheetCountInTwo),
-                selected: _playbackPrefs.countInMeasures == 2,
-                onSelected: (_) => _updatePlayback(
-                  _playbackPrefs.copyWith(countInMeasures: 2),
-                ),
-              ),
-            ],
-          ),
-        ],
         if (!_prefs.muted) ...[
           Text(
             l10n.metronomeSheetVolume((_prefs.volume * 100).round()),

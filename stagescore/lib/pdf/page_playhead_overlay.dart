@@ -3,9 +3,6 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:stagescore/sync_map/playhead_overlay_config.dart';
 import 'package:stagescore/sync_map/playhead_position.dart';
 
-/// Deep red playhead — readable on white / sepia paper (Spec 0059).
-const kPlayheadColor = Color(0xFF8B0000);
-
 /// Vertical playhead line on one PDF page (Spec 0059).
 ///
 /// Rebuilds only this overlay via [ListenableBuilder] on the playback clock.
@@ -39,12 +36,21 @@ class PagePlayheadOverlay extends StatelessWidget {
           return const SizedBox.shrink();
         }
         final x = pos.x * pageRect.width;
-        final top = pos.top * pageRect.height;
-        final height = pos.height * pageRect.height;
+        final boxTop = pos.top * pageRect.height;
+        final boxHeight = pos.height * pageRect.height;
+        final scale = config.heightScale.clamp(1.0, double.infinity);
+        final height = boxHeight * scale;
+        final top = boxTop - (height - boxHeight) / 2;
         return IgnorePointer(
           child: CustomPaint(
             size: pageRect.size,
-            painter: _PlayheadPainter(x: x, top: top, height: height),
+            painter: _PlayheadPainter(
+              x: x,
+              top: top,
+              height: height,
+              color: config.paintColor,
+              strokeWidth: config.width,
+            ),
           ),
         );
       },
@@ -57,17 +63,21 @@ class _PlayheadPainter extends CustomPainter {
     required this.x,
     required this.top,
     required this.height,
+    required this.color,
+    required this.strokeWidth,
   });
 
   final double x;
   final double top;
   final double height;
+  final Color color;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = kPlayheadColor
-      ..strokeWidth = 2.5
+      ..color = color
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     canvas.drawLine(Offset(x, top), Offset(x, top + height), paint);
@@ -77,5 +87,7 @@ class _PlayheadPainter extends CustomPainter {
   bool shouldRepaint(covariant _PlayheadPainter oldDelegate) =>
       oldDelegate.x != x ||
       oldDelegate.top != top ||
-      oldDelegate.height != height;
+      oldDelegate.height != height ||
+      oldDelegate.color != color ||
+      oldDelegate.strokeWidth != strokeWidth;
 }

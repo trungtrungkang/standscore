@@ -85,6 +85,8 @@ import 'package:stagescore/ui/page_turn_interaction_layer.dart';
 import 'package:stagescore/ui/page_turn_settings_sheet.dart';
 import 'package:stagescore/ui/performance_chrome.dart';
 import 'package:stagescore/ui/playback_controls_bar.dart';
+import 'package:stagescore/ui/playback_float_controls.dart';
+import 'package:stagescore/ui/playback_settings_sheet.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
 import 'package:stagescore/ui/score_menu.dart';
 import 'package:stagescore/ui/score_menu_quick_bar.dart';
@@ -241,21 +243,40 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   /// Bring the playhead's page into view — not Spec 0060 fine page-turn.
+  ///
+  /// Count-in hides the playhead, but Stop→Play must still open the **first**
+  /// mapped page immediately so the musician can read ahead during the clicks.
   void _onPlaybackChanged() {
-    if (!mounted || !_playback.playheadVisible) {
+    if (!mounted) return;
+
+    final int? targetPage;
+    if (_playback.isCountIn) {
+      final startMs = _playback.map.first?.timeMs;
+      if (startMs == null) {
+        _lastPlayheadPage = null;
+        return;
+      }
+      targetPage = playheadAtTime(
+        syncMap: _playback.map,
+        store: _measureMap,
+        timeMs: startMs,
+      )?.pageNumber;
+    } else if (_playback.playheadVisible) {
+      targetPage = playheadAtTime(
+        syncMap: _playback.map,
+        store: _measureMap,
+        timeMs: _playback.positionMs,
+      )?.pageNumber;
+    } else {
       _lastPlayheadPage = null;
       return;
     }
-    final pos = playheadAtTime(
-      syncMap: _playback.map,
-      store: _measureMap,
-      timeMs: _playback.positionMs,
-    );
-    if (pos == null) return;
-    if (pos.pageNumber == _lastPlayheadPage) return;
-    _lastPlayheadPage = pos.pageNumber;
+
+    if (targetPage == null) return;
+    if (targetPage == _lastPlayheadPage) return;
+    _lastPlayheadPage = targetPage;
     final slot = _pageOrder.entries.indexWhere(
-      (e) => e.sourcePage == pos.pageNumber,
+      (e) => e.sourcePage == targetPage,
     );
     if (slot >= 0 && slot + 1 != _pageNumber) {
       unawaited(_jumpToPage(slot + 1));
@@ -456,8 +477,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       context: context,
       engine: _metronome,
       onPrefsChanged: _saveMetronomePrefs,
-      playbackPrefs: _playbackPrefs,
-      onPlaybackPrefsChanged: _savePlaybackPrefs,
+    );
+  }
+
+  Future<void> _openPlaybackSettings() async {
+    await showPlaybackSettingsSheet(
+      context: context,
+      prefs: _playbackPrefs,
+      onChanged: _savePlaybackPrefs,
     );
   }
 
@@ -752,6 +779,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       playback: _playback,
       store: _measureMap,
       suppressed: _measureMapEditing,
+      color: _playbackPrefs.playheadColor,
+      width: _playbackPrefs.playheadWidth,
+      opacity: _playbackPrefs.playheadOpacity,
+      heightScale: _playbackPrefs.playheadHeightScale,
     );
   }
 
@@ -1173,6 +1204,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _openMetronome();
       case ScoreMenuAction.togglePlaybackControls:
         unawaited(_togglePlaybackControls());
+      case ScoreMenuAction.playbackSettings:
+        unawaited(_openPlaybackSettings());
       case ScoreMenuAction.stagePreset:
         _applyStagePreset();
     }
@@ -1842,6 +1875,37 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     );
   }
 
+  /// Like [_fadingChrome] but collapses height when hidden so docked Playback
+  /// can sit on the home-indicator edge without a dead nav-sized gap.
+  Widget _collapsingFadingChrome(Widget child, {required bool shown}) {
+    return IgnorePointer(
+      ignoring: !shown,
+      child: AnimatedOpacity(
+        opacity: shown ? 1 : 0,
+        duration: kChromeFadeDuration,
+        child: AnimatedSize(
+          duration: kChromeFadeDuration,
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: shown
+              ? child
+              : const SizedBox(width: double.infinity, height: 0),
+        ),
+      ),
+    );
+  }
+
+  Widget _dockedPlaybackBar({required bool includeBottomSafeArea}) {
+    return PlaybackControlsBar(
+      playback: _playback,
+      enabled: _measureMap.isNotEmpty,
+      includeBottomSafeArea: includeBottomSafeArea,
+      onPlay: () => unawaited(_playback.play()),
+      onPause: _playback.pause,
+      onStop: _playback.stop,
+    );
+  }
+
   void _paintPageBorder(Canvas canvas, Rect pageRect, PdfPage page) {
     if (!_displayPrefs.borderEnabled) return;
     final paint = Paint()
@@ -1955,14 +2019,29 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           )
         : null;
 
-    // One visual block of bottom chrome, whether it sits in the Scaffold's own
-    // slot or floats as an overlay. The quick-bar is in it even when there is
-    // no scrubber yet: Draw is not in `⋯` (0035 decision 6), so tying the bar's
-    // life to the page count is what would take Draw away entirely — and every
-    // Setlist piece change, which clears `_prefsReady`, moved the chrome.
-    final bottomChrome = Column(
+    final showPlayback = _prefsReady &&
+        _playbackPrefs.showPlaybackControls &&
+        !_measureMapEditing;
+    final dockedPlayback = showPlayback &&
+        _playbackPrefs.style == PlaybackControlsStyle.docked;
+    final floatingPlayback = showPlayback &&
+        _playbackPrefs.style == PlaybackControlsStyle.floating;
+
+    // PageNav + QuickBar only — docked Playback is stacked above this so it is
+    // never covered when PerformanceMode chrome floats over the viewer.
+    final navChrome = Column(
       mainAxisSize: MainAxisSize.min,
       children: [?pageNav, if (!mergeQuickBar) quickBar],
+    );
+
+    // Laid-out Scaffold bottom slot (non-PerformanceMode).
+    final bottomChrome = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (dockedPlayback)
+          _dockedPlaybackBar(includeBottomSafeArea: false),
+        navChrome,
+      ],
     );
 
     final body = Column(
@@ -2108,16 +2187,6 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                       : _buildContinuousBody(layoutMode),
                 ),
         ),
-        if (_prefsReady &&
-            _playbackPrefs.showPlaybackControls &&
-            !_measureMapEditing)
-          PlaybackControlsBar(
-            playback: _playback,
-            enabled: _measureMap.isNotEmpty,
-            onPlay: () => unawaited(_playback.play()),
-            onPause: _playback.pause,
-            onStop: _playback.stop,
-          ),
       ],
     );
 
@@ -2162,6 +2231,25 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
           // Always in the Stack, shown by its own rule: a child that comes and
           // goes is a child the viewer beside it can be rebuilt by.
           BeatStrip(engine: _metronome, chromeShown: chromeShown),
+          if (floatingPlayback)
+            Positioned.fill(
+              child: PlaybackFloatControls(
+                playback: _playback,
+                enabled: _measureMap.isNotEmpty,
+                normX: _playbackPrefs.floatNormX,
+                normY: _playbackPrefs.floatNormY,
+                onNormChanged: (x, y) {
+                  unawaited(
+                    _savePlaybackPrefs(
+                      _playbackPrefs.copyWith(floatNormX: x, floatNormY: y),
+                    ),
+                  );
+                },
+                onPlay: () => unawaited(_playback.play()),
+                onPause: _playback.pause,
+                onStop: _playback.stop,
+              ),
+            ),
           if (performanceChrome) ...[
             if (_pageCount > 0)
               Positioned(
@@ -2183,7 +2271,14 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: _fadingChrome(bottomChrome, shown: chromeShown),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (dockedPlayback)
+                    _dockedPlaybackBar(includeBottomSafeArea: !chromeShown),
+                  _collapsingFadingChrome(navChrome, shown: chromeShown),
+                ],
+              ),
             ),
           ],
         ],

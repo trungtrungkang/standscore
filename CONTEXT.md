@@ -113,7 +113,7 @@ Chỉ báo vị trí phát trên giấy theo SyncMap × MeasureMap (`beatSplits`
 _Avoid_: Cursor (ambiguous with text caret), progress bar, scrubber
 
 **PlaybackControls**:
-UI Play / Pause / Stop trên PdfMode (show/hide từ ScoreMenu). Chạy timeline SyncMap + click metronome; không phải Transport đầy đủ (0062).
+UI Play / Pause / Stop trên PdfMode (show/hide từ ScoreMenu). Hai kiểu hiện: **docked** (seek + transport trên chrome đáy) hoặc **floating** (pill Play/Pause+Stop kéo được). Pref kiểu, count-in, và hình dạng playhead (màu / độ dày / chiều cao ≥ MeasureBox / độ đục) ở **Playback settings…** (ScoreMenu), không phải Metronome sheet. Chạy timeline SyncMap + click metronome; không phải Transport đầy đủ (0062).
 _Avoid_: Transport bar, media controls (generic)
 
 ### Playback & practice (Phát nhạc và luyện tập)

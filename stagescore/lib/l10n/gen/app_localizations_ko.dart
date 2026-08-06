@@ -386,6 +386,36 @@ class AppLocalizationsKo extends AppLocalizations {
   String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
 
   @override
+  String get scoreMenuPlaybackSettings => 'Playback settings…';
+
+  @override
+  String get playbackSettingsTitle => 'Playback settings';
+
+  @override
+  String get playbackSettingsPlayhead => 'Playhead';
+
+  @override
+  String get playbackSettingsPlayheadHint => '재생 중 악보 위에 표시되는 선';
+
+  @override
+  String get playbackSettingsPlayheadColor => '색';
+
+  @override
+  String playbackSettingsPlayheadSize(String value) {
+    return '두께 $value';
+  }
+
+  @override
+  String playbackSettingsPlayheadOpacity(int percent) {
+    return '불투명도 $percent%';
+  }
+
+  @override
+  String playbackSettingsPlayheadHeight(int percent) {
+    return '높이 마디의 $percent%';
+  }
+
+  @override
   String get scoreMenuPlaybackMapFirst => 'Map measures first';
 
   @override
@@ -407,6 +437,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get metronomeSheetPlaybackStyle => 'Controls layout';
+
+  @override
+  String get metronomeSheetPlaybackStyleHint =>
+      'Bar sits above page chrome; Float is a small draggable Play/Stop';
+
+  @override
+  String get metronomeSheetPlaybackStyleDocked => 'Bar';
+
+  @override
+  String get metronomeSheetPlaybackStyleFloating => 'Float';
 
   @override
   String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';

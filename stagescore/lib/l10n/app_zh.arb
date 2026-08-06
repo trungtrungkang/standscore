@@ -481,6 +481,35 @@
   "measureMapClearAll": "清除 MeasureMap…",
   "scoreMenuShowPlaybackControls": "Show Playback controls",
   "scoreMenuHidePlaybackControls": "Hide Playback controls",
+  "scoreMenuPlaybackSettings": "Playback settings…",
+  "playbackSettingsTitle": "Playback settings",
+  "playbackSettingsPlayhead": "Playhead",
+  "playbackSettingsPlayheadHint": "播放时显示在乐谱上的线",
+  "playbackSettingsPlayheadColor": "颜色",
+  "playbackSettingsPlayheadSize": "粗细 {value}",
+  "@playbackSettingsPlayheadSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "playbackSettingsPlayheadOpacity": "不透明度 {percent}%",
+  "@playbackSettingsPlayheadOpacity": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackSettingsPlayheadHeight": "高度为小节的 {percent}%",
+  "@playbackSettingsPlayheadHeight": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "scoreMenuPlaybackMapFirst": "Map measures first",
   "playbackControlsPlay": "Play",
   "playbackControlsPause": "Pause",
@@ -499,6 +528,10 @@
   "metronomeSheetCountInNone": "Off",
   "metronomeSheetCountInOne": "1",
   "metronomeSheetCountInTwo": "2",
+  "metronomeSheetPlaybackStyle": "Controls layout",
+  "metronomeSheetPlaybackStyleHint": "Bar sits above page chrome; Float is a small draggable Play/Stop",
+  "metronomeSheetPlaybackStyleDocked": "Bar",
+  "metronomeSheetPlaybackStyleFloating": "Float",
   "measureMapStartsAtBeat": "Starts at beat",
   "measureMapStartsAtBeatHint": "1 = full measure; higher skips early beats (pickup on a wide box)",
   "playbackControlsCountInLabel": "Count-in"

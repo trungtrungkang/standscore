@@ -481,6 +481,35 @@
   "measureMapClearAll": "MeasureMap 지우기…",
   "scoreMenuShowPlaybackControls": "Show Playback controls",
   "scoreMenuHidePlaybackControls": "Hide Playback controls",
+  "scoreMenuPlaybackSettings": "Playback settings…",
+  "playbackSettingsTitle": "Playback settings",
+  "playbackSettingsPlayhead": "Playhead",
+  "playbackSettingsPlayheadHint": "재생 중 악보 위에 표시되는 선",
+  "playbackSettingsPlayheadColor": "색",
+  "playbackSettingsPlayheadSize": "두께 {value}",
+  "@playbackSettingsPlayheadSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "playbackSettingsPlayheadOpacity": "불투명도 {percent}%",
+  "@playbackSettingsPlayheadOpacity": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackSettingsPlayheadHeight": "높이 마디의 {percent}%",
+  "@playbackSettingsPlayheadHeight": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "scoreMenuPlaybackMapFirst": "Map measures first",
   "playbackControlsPlay": "Play",
   "playbackControlsPause": "Pause",
@@ -499,6 +528,10 @@
   "metronomeSheetCountInNone": "Off",
   "metronomeSheetCountInOne": "1",
   "metronomeSheetCountInTwo": "2",
+  "metronomeSheetPlaybackStyle": "Controls layout",
+  "metronomeSheetPlaybackStyleHint": "Bar sits above page chrome; Float is a small draggable Play/Stop",
+  "metronomeSheetPlaybackStyleDocked": "Bar",
+  "metronomeSheetPlaybackStyleFloating": "Float",
   "measureMapStartsAtBeat": "Starts at beat",
   "measureMapStartsAtBeatHint": "1 = full measure; higher skips early beats (pickup on a wide box)",
   "playbackControlsCountInLabel": "Count-in"

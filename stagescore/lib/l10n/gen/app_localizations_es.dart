@@ -392,6 +392,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scoreMenuHidePlaybackControls => 'Hide Playback controls';
 
   @override
+  String get scoreMenuPlaybackSettings => 'Playback settings…';
+
+  @override
+  String get playbackSettingsTitle => 'Playback settings';
+
+  @override
+  String get playbackSettingsPlayhead => 'Playhead';
+
+  @override
+  String get playbackSettingsPlayheadHint =>
+      'Línea sobre la partitura al reproducir';
+
+  @override
+  String get playbackSettingsPlayheadColor => 'Color';
+
+  @override
+  String playbackSettingsPlayheadSize(String value) {
+    return 'Grosor $value';
+  }
+
+  @override
+  String playbackSettingsPlayheadOpacity(int percent) {
+    return 'Opacidad $percent%';
+  }
+
+  @override
+  String playbackSettingsPlayheadHeight(int percent) {
+    return 'Altura $percent% del compás';
+  }
+
+  @override
   String get scoreMenuPlaybackMapFirst => 'Map measures first';
 
   @override
@@ -413,6 +444,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get metronomeSheetPlaybackStyle => 'Controls layout';
+
+  @override
+  String get metronomeSheetPlaybackStyleHint =>
+      'Bar sits above page chrome; Float is a small draggable Play/Stop';
+
+  @override
+  String get metronomeSheetPlaybackStyleDocked => 'Bar';
+
+  @override
+  String get metronomeSheetPlaybackStyleFloating => 'Float';
 
   @override
   String get playbackMapLostSnackbar => 'MeasureMap changed — playback stopped';

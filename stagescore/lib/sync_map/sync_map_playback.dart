@@ -108,6 +108,17 @@ class SyncMapPlayback extends ChangeNotifier {
     );
   }
 
+  /// Score position as measure + 1-based beat while playing / paused.
+  ///
+  /// Null when stopped or during count-in (use [countInRemaining] then).
+  ({int measure, int beat})? get positionMeasureBeat {
+    if (_phase != SyncMapPlaybackPhase.playing &&
+        _phase != SyncMapPlaybackPhase.paused) {
+      return null;
+    }
+    return measureBeatAtTime(_map, _positionMs);
+  }
+
   /// Seek the timeline. Syncs playhead + upcoming metronome clicks.
   ///
   /// - While **playing**: continue from [positionMs] (no click at the land).

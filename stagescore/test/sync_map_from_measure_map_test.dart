@@ -218,4 +218,31 @@ void main() {
       expect(sync.entries[1].startsAtBeat, 0);
     });
   });
+
+  group('measureBeatAtTime', () {
+    test('tracks measure.beat through a 4/4 bar', () {
+      final sync = syncMapFromMeasureMap(mapWith(count: 2));
+      expect(measureBeatAtTime(sync, 0), (measure: 1, beat: 1));
+      expect(measureBeatAtTime(sync, 499), (measure: 1, beat: 1));
+      expect(measureBeatAtTime(sync, 500), (measure: 1, beat: 2));
+      expect(measureBeatAtTime(sync, 1500), (measure: 1, beat: 4));
+      expect(measureBeatAtTime(sync, 2000), (measure: 2, beat: 1));
+    });
+
+    test('pickup startsAtBeat shows bar beat number', () {
+      final store = MeasureMapStore();
+      store.addSystem(
+        pageNumber: 1,
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 0.1,
+        measureCount: 1,
+      );
+      store.setStartsAtBeat(store.boxes.first.id, 2); // audible beats 3,4
+      final sync = syncMapFromMeasureMap(store);
+      expect(measureBeatAtTime(sync, 0), (measure: 1, beat: 3));
+      expect(measureBeatAtTime(sync, 500), (measure: 1, beat: 4));
+    });
+  });
 }

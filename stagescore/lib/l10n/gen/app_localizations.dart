@@ -807,6 +807,54 @@ abstract class AppLocalizations {
   /// **'Hide Playback controls'**
   String get scoreMenuHidePlaybackControls;
 
+  /// No description provided for @scoreMenuPlaybackSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback settings…'**
+  String get scoreMenuPlaybackSettings;
+
+  /// No description provided for @playbackSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback settings'**
+  String get playbackSettingsTitle;
+
+  /// No description provided for @playbackSettingsPlayhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Playhead'**
+  String get playbackSettingsPlayhead;
+
+  /// No description provided for @playbackSettingsPlayheadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Line on the score while playing'**
+  String get playbackSettingsPlayheadHint;
+
+  /// No description provided for @playbackSettingsPlayheadColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get playbackSettingsPlayheadColor;
+
+  /// No description provided for @playbackSettingsPlayheadSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Thickness {value}'**
+  String playbackSettingsPlayheadSize(String value);
+
+  /// No description provided for @playbackSettingsPlayheadOpacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity {percent}%'**
+  String playbackSettingsPlayheadOpacity(int percent);
+
+  /// No description provided for @playbackSettingsPlayheadHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height {percent}% of measure'**
+  String playbackSettingsPlayheadHeight(int percent);
+
   /// No description provided for @scoreMenuPlaybackMapFirst.
   ///
   /// In en, this message translates to:
@@ -848,6 +896,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Count-in'**
   String get playbackControlsCountInLabel;
+
+  /// No description provided for @metronomeSheetPlaybackStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Controls layout'**
+  String get metronomeSheetPlaybackStyle;
+
+  /// No description provided for @metronomeSheetPlaybackStyleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar sits above page chrome; Float is a small draggable Play/Stop'**
+  String get metronomeSheetPlaybackStyleHint;
+
+  /// No description provided for @metronomeSheetPlaybackStyleDocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar'**
+  String get metronomeSheetPlaybackStyleDocked;
+
+  /// No description provided for @metronomeSheetPlaybackStyleFloating.
+  ///
+  /// In en, this message translates to:
+  /// **'Float'**
+  String get metronomeSheetPlaybackStyleFloating;
 
   /// No description provided for @playbackMapLostSnackbar.
   ///

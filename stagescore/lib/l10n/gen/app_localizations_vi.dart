@@ -389,6 +389,36 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scoreMenuHidePlaybackControls => 'Ẩn Playback controls';
 
   @override
+  String get scoreMenuPlaybackSettings => 'Playback settings…';
+
+  @override
+  String get playbackSettingsTitle => 'Playback settings';
+
+  @override
+  String get playbackSettingsPlayhead => 'Playhead';
+
+  @override
+  String get playbackSettingsPlayheadHint => 'Đường trên bản nhạc khi phát';
+
+  @override
+  String get playbackSettingsPlayheadColor => 'Màu';
+
+  @override
+  String playbackSettingsPlayheadSize(String value) {
+    return 'Độ dày $value';
+  }
+
+  @override
+  String playbackSettingsPlayheadOpacity(int percent) {
+    return 'Độ đục $percent%';
+  }
+
+  @override
+  String playbackSettingsPlayheadHeight(int percent) {
+    return 'Chiều cao $percent% ô nhịp';
+  }
+
+  @override
   String get scoreMenuPlaybackMapFirst => 'Map measures trước';
 
   @override
@@ -410,6 +440,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get playbackControlsCountInLabel => 'Count-in';
+
+  @override
+  String get metronomeSheetPlaybackStyle => 'Controls layout';
+
+  @override
+  String get metronomeSheetPlaybackStyleHint =>
+      'Bar sits above page chrome; Float is a small draggable Play/Stop';
+
+  @override
+  String get metronomeSheetPlaybackStyleDocked => 'Bar';
+
+  @override
+  String get metronomeSheetPlaybackStyleFloating => 'Float';
 
   @override
   String get playbackMapLostSnackbar => 'MeasureMap đã đổi — đã dừng phát';

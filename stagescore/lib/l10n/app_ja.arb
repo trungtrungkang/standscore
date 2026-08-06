@@ -481,6 +481,35 @@
   "measureMapClearAll": "MeasureMap を消去…",
   "scoreMenuShowPlaybackControls": "Show Playback controls",
   "scoreMenuHidePlaybackControls": "Hide Playback controls",
+  "scoreMenuPlaybackSettings": "Playback settings…",
+  "playbackSettingsTitle": "Playback settings",
+  "playbackSettingsPlayhead": "Playhead",
+  "playbackSettingsPlayheadHint": "再生中に楽譜上に表示する線",
+  "playbackSettingsPlayheadColor": "色",
+  "playbackSettingsPlayheadSize": "太さ {value}",
+  "@playbackSettingsPlayheadSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "playbackSettingsPlayheadOpacity": "不透明度 {percent}%",
+  "@playbackSettingsPlayheadOpacity": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackSettingsPlayheadHeight": "高さ 小節の {percent}%",
+  "@playbackSettingsPlayheadHeight": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "scoreMenuPlaybackMapFirst": "Map measures first",
   "playbackControlsPlay": "Play",
   "playbackControlsPause": "Pause",
@@ -499,6 +528,10 @@
   "metronomeSheetCountInNone": "Off",
   "metronomeSheetCountInOne": "1",
   "metronomeSheetCountInTwo": "2",
+  "metronomeSheetPlaybackStyle": "Controls layout",
+  "metronomeSheetPlaybackStyleHint": "Bar sits above page chrome; Float is a small draggable Play/Stop",
+  "metronomeSheetPlaybackStyleDocked": "Bar",
+  "metronomeSheetPlaybackStyleFloating": "Float",
   "measureMapStartsAtBeat": "Starts at beat",
   "measureMapStartsAtBeatHint": "1 = full measure; higher skips early beats (pickup on a wide box)",
   "playbackControlsCountInLabel": "Count-in"

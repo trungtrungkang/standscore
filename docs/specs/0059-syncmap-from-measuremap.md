@@ -1,6 +1,6 @@
 # 0059 — SyncMap tính từ MeasureMap; Playback controls + playhead
 
-- **Status:** accepted
+- **Status:** done
 - **Type:** feature
 - **Horizon:** H5 (ADR 0019 quyết định 1 — chỉ cần biết *chỗ nào trên trang, ở giây thứ mấy*; không cần biết *nốt nào*)
 - **Owner (human):** Orchestrator
@@ -8,10 +8,10 @@
 - **Depends on Specs:** **0058** (`done`, **rev. 2** — `beatSplits` = N mốc nội tại; không phải nguồn thời lượng), **0030** (metronome — click đi theo cùng clock khi Play), **0035** / **0043** (ScoreMenu IA — lối show/hide Playback controls), 0052 / 0055 (lớp phủ theo `scoreId`)
 - **Tier:** **M** — seam thời gian + UI playback trên PdfMode; không SDK mới, không quyền mới, không byte rời máy, không di trú library. **G3 + G4**; không cần ADR mới; **Security Review không cần** (ADR 0019: cần cho SongPack và thu âm, không cần slice 1–7)
 - **G3:** **accepted 2026-08-07** — Orchestrator chấp nhận **mọi** khuyến nghị (câu 1–11b + 2b–2g). Câu 2 đã chốt sớm hơn cùng ngày (Playback controls + playhead).
-- **G4:** chưa (build xong 2026-08-07 — chờ manual)
+- **G4:** **pass (2026-08-07)** — Orchestrator chấp nhận sau build + chỉnh UI (Playback settings, docked/float, playhead appearance, badge cố định width)
 - **Security Review:** không cần
 
-> **Build xong.** Baseline **596** → **621** test; `flutter analyze` sạch. Slice 6 ADR 0019; **0060** = lật trang rảnh tay tinh (playhead đã thuộc 0059).
+> **Đóng slice.** Baseline build **596** → **621**; G4 UI/tests sau đó. Slice 6 ADR 0019 xong. Slice kế: **0060** lật trang rảnh tay tinh.
 
 ---
 
@@ -60,13 +60,14 @@ Round-trip subset `TimemapEntry`: `timeMs`, `measure`, `beatTimestamps`, `timeSi
 ### D. Playback controls + clock
 
 - **Lối show/hide:** ScoreMenu (`⋯`) — *Show/Hide playback controls* (nhóm Playing hoặc tương đương 0035). **Không** QuickBar (G3 2c).
-- **Khi hiện:** thanh / cụm **Playback controls** trên PdfMode với ít nhất:
-  - **Play** — chạy timeline SyncMap từ vị trí hiện tại (sau Pause) hoặc từ đầu (sau Stop / lần đầu).
-  - **Pause** — dừng clock, giữ vị trí; playhead đứng yên.
-  - **Stop** — dừng và đưa vị trí về đầu timeline (ô `measureNumber` nhỏ nhất trên map).
-- **Điều kiện:** controls / Play khi MeasureMap **không rỗng**; map rỗng → mục menu **disabled** + lý do (G3 2d).
-- Clock PdfMode riêng cho timeline này (chưa Transport / `ClickLane` — **0062**). Click audible: tái sử dụng `MetronomeEngine` theo cùng clock khi Play (volume/mute/showBeats vẫn prefs 0030). **Không** invent engine audio thứ hai.
-- **Count-in (đếm trước):** pref **0 / 1 / 2** ô; mặc định **0** (G4; G3 từng là 1); chỉnh ở **metronome sheet**. Badge chỉ hiện **trong lúc đếm**, bên phải transport; dạng `measures.beat` 1-based (`2.4`…`2.1` rồi `1.4`…`1.1` với 4/4; pref `1` bắt đầu `1.4`). Hết count-in → ẩn. Tempo + meter = ô đích bắt đầu. Trong count-in: playhead **chưa** chạy trên bài. **Chỉ** sau Stop / lần Play đầu từ đầu bài — **không** count-in sau Pause→Play (G3 11 / 11b).
+- **Khi hiện:** hai kiểu (pref `PlaybackControlsStyle`, mặc định **docked** — G4):
+  - **Docked** — một hàng seek + thời gian + Play/Pause/Stop; luôn **trên** PageNav/QuickBar (không bị PerformanceMode chrome đè).
+  - **Floating** — pill Play/Pause + Stop kéo được (không seek trên pill); persist vị trí chuẩn hoá.
+- **Play** — timeline từ vị trí hiện tại (sau Pause) hoặc từ đầu (sau Stop / lần đầu). **Pause** — đóng băng. **Stop** — về đầu timeline rồi ẩn playhead (G3 2e).
+- **Playback settings…** (ScoreMenu, nhóm Playing) — count-in + Bar/Float + **playhead** (màu / độ dày / chiều cao ≥100% MeasureBox / độ đục). **Không** để trong Metronome sheet (G4).
+- **Điều kiện:** show/hide + Play khi MeasureMap **không rỗng**; map rỗng → show/hide **disabled** + lý do (G3 2d). Settings vẫn mở được (prefs app-wide).
+- Clock PdfMode riêng (chưa Transport / `ClickLane` — **0062**). Click: `MetronomeEngine.playClick` cùng clock (volume/mute/showBeats prefs 0030). **Không** engine audio thứ hai. Click lead nhỏ + warm buffer để playhead không chạy trước tiếng.
+- **Count-in:** pref **0 / 1 / 2** ô; mặc định **0** (G4; G3 từng là 1). Badge dạng `measures.beat` 1-based lúc đếm (vàng cam); hết count-in → hiện **`measure.beat` hiện tại** màu primary (Play/Pause). Pref `0` → không count-in. Tempo + meter = ô đích. Trong count-in: playhead **chưa** vẽ trên bài, nhưng **trang đầu map vào tầm nhìn ngay** khi Stop→Play. **Không** count-in sau Pause→Play (G3 11b).
 - Đổi MeasureMap lúc đang Play: tính lại SyncMap; tiếp tục từ `measure`+phách gần nhất nếu còn; nếu mất → Stop + snackbar.
 
 ### D2. Nhịp lấy đà (pickup / anacrusis)
@@ -121,7 +122,7 @@ SyncMap tính (tempo 120 → 500 ms/phách đen):
 
 ### F. `CONTEXT.md` (G1 lúc build)
 
-- Giữ SyncMap đã siết. Thêm **PlaybackControls** (UI PdfMode: play/pause/stop + show/hide) nếu cần một term. **Playhead** — chỉ báo vị trí trên giấy theo SyncMap + MeasureMap; tránh synonym “cursor / scrubber” làm term miền.
+- Giữ SyncMap đã siết. **PlaybackControls** (docked/floating + Playback settings trên ScoreMenu). **Playhead** — chỉ báo vị trí trên giấy theo SyncMap + MeasureMap; tránh synonym “cursor / scrubber” làm term miền.
 
 ---
 
@@ -145,11 +146,11 @@ SyncMap tính (tempo 120 → 500 ms/phách đen):
 |---|---|
 | **SyncMap** | Timeline ms ↔ ô/phách; slice này tính từ MeasureMap |
 | **SyncMapEntry** | Một mốc ô (~ web `TimemapEntry`) |
-| **PlaybackControls** | UI Play / Pause / Stop + show/hide từ ScoreMenu |
+| **PlaybackControls** | UI Play / Pause / Stop + show/hide; kiểu **docked** / **floating**; settings riêng trên ScoreMenu |
 | **Playhead** | Chỉ báo vị trí trên giấy theo SyncMap × `beatSplits` |
 | **MeasureMap** / **beatSplits** | Hình học; N mốc nội tại — vị trí, không thời lượng |
-| **Metronome** | Click; khi Play theo cùng clock SyncMap; **count-in** 0/1/2 ô trước khi bài chạy |
-| **Count-in** | Đếm trước N ô (click) trước Playhead/timeline bài |
+| **Metronome** | Click; khi Play theo cùng clock SyncMap (count-in prefs không sống trong Metronome sheet) |
+| **Count-in** | Đếm trước N ô (click) trước timeline bài; badge rồi chuyển sang `measure.beat` đang chơi |
 | **Pickup** / **`startsAtBeat`** | Nhịp lấy đà: ô ngắn + time sig **hoặc** ô đủ rộng bắt đầu từ phách k |
 
 ---
@@ -176,7 +177,7 @@ Orchestrator: chấp nhận **mọi** khuyến nghị như bảng dưới.
 | 8 | **Play bắt đầu từ đâu?** | Stop/lần đầu: ô `measureNumber` nhỏ nhất (+ `startsAtBeat`); Pause→Play: tiếp tục |
 | 9 | **All-pages gốc?** | Theo MeasureMap của `scoreId` đang mở |
 | 10 | **Baseline test?** | Đo đầu chat build; kỳ vọng ~**595+** (sau 0058) |
-| 11 | **Count-in?** | Pref **0 / 1 / 2** ô; mặc định **0** (G4; G3 là 1); chỉnh ở **metronome sheet**; pref `0` ẩn badge; tempo/meter = ô đích |
+| 11 | **Count-in?** | Pref **0 / 1 / 2** ô; mặc định **0** (G4; G3 là 1); chỉnh ở **Playback settings…** (G4; G3 metronome sheet); pref `0` = không đếm; lúc Play/Pause badge = `measure.beat`; tempo/meter = ô đích |
 | 11b | **Count-in sau Pause?** | **Không** — chỉ sau Stop / Play đầu từ đầu bài |
 
 ---
@@ -196,47 +197,51 @@ Orchestrator: chấp nhận **mọi** khuyến nghị như bảng dưới.
 
 **Chưa map**
 
-- [ ] Không Play theo bài; metronome 0030 nguyên — *G4*
-- [ ] Mục Playback controls **disabled** + lý do khi map rỗng (G3 2d) — *UI*
+- [x] Không Play theo bài; metronome 0030 nguyên — *G4*
+- [x] Mục Playback controls **disabled** + lý do khi map rỗng (G3 2d) — *UI*
 
 **SyncMap**
 
-- [ ] Tính đúng `timeMs` / `beatTimestamps` / tempo đổi giữa bài — *unit*
-- [ ] `beatSplits` lệch không đổi timeline — *unit*
-- [ ] Round-trip subset `TimemapEntry` — *unit*
+- [x] Tính đúng `timeMs` / `beatTimestamps` / tempo đổi giữa bài — *unit*
+- [x] `beatSplits` lệch không đổi timeline — *unit*
+- [x] Round-trip subset `TimemapEntry` — *unit*
 
 **Playback controls + count-in**
 
-- [ ] ScoreMenu show/hide; persist — *UI + prefs*
-- [ ] Play / Pause / Stop đúng nghĩa Outcome — *G4*
-- [ ] Play → click theo SyncMap khi metronome không mute — *G4*
-- [ ] Count-in 0/1/2 ô; mặc định 1; sau Stop có đếm, sau Pause không (11b) — *unit + G4*
-- [ ] Trong count-in playhead chưa chạy trên bài — *G4*
+- [x] ScoreMenu show/hide; persist — *UI + prefs*
+- [x] ScoreMenu **Playback settings…** (Bar/Float + count-in + playhead màu/độ dày/chiều cao/độ đục); không còn trên Metronome sheet — *UI + G4*
+- [x] Docked trên chrome đáy; floating kéo được + persist offset — *UI + prefs*
+- [x] Play / Pause / Stop đúng nghĩa Outcome — *G4*
+- [x] Play → click theo SyncMap khi metronome không mute — *G4*
+- [x] Count-in 0/1/2 ô; mặc định **0**; sau Stop có đếm (nếu >0), sau Pause không (11b) — *unit + G4*
+- [x] Badge: count-in vàng cam; đang Play/Pause → `measure.beat` primary; slot width cố định — *G4*
+- [x] Trong count-in playhead chưa vẽ trên bài; Stop→Play đưa trang đầu vào tầm nhìn ngay — *G4*
 
 **Pickup**
 
-- [ ] Ô ngắn + time sig → timeline ngắn đúng — *unit*
-- [ ] `startsAtBeat` → bỏ phách trước mốc; playhead + accent khớp bất biến § D2; round-trip web — *unit + UI*
+- [x] Ô ngắn + time sig → timeline ngắn đúng — *unit*
+- [x] `startsAtBeat` → bỏ phách trước mốc; playhead + accent khớp bất biến § D2; round-trip web — *unit + UI*
 
 **Playhead**
 
-- [ ] Chạy trên giấy khớp ô/phách (SyncMap × `beatSplits`) khi Play — *G4*
-- [ ] Pause giữ vị trí; Stop về đầu / ẩn theo 2e — *G4*
-- [ ] Ô ngoài trang hiện tại → đưa trang vào tầm nhìn — *G4*
-- [ ] Vào Measure map soạn → Pause + tạm ẩn playhead (2f) — *G4*
+- [x] Chạy trên giấy khớp ô/phách (SyncMap × `beatSplits`) khi Play — *G4*
+- [x] Pause giữ vị trí; Stop về đầu / ẩn theo 2e — *G4*
+- [x] Ô ngoài trang hiện tại → đưa trang vào tầm nhìn — *G4*
+- [x] Vào Measure map soạn → Pause + tạm ẩn playhead (2f) — *G4*
 
 **Ranh giới**
 
-- [ ] Không BackingTrack / Transport / ClickLane rename — *không có*
-- [ ] Không thuật toán lật trang “phách nghỉ cuối hệ” tinh (0060) — *không có*
-- [ ] `flutter analyze` sạch; suite xanh; không dependency / quyền mới
+- [x] Không BackingTrack / Transport / ClickLane rename — *không có*
+- [x] Không thuật toán lật trang “phách nghỉ cuối hệ” tinh (0060) — *không có*
+- [x] `flutter analyze` sạch; suite xanh; không dependency / quyền mới
 
 ---
 
 ## Ghi chú UX (UX notes)
 
-- Playback controls gọn, không đè trung tâm khuông; mép dưới hoặc cạnh chrome đáy — tránh vùng PageTurn chính nếu có thể.
-- Playhead: một đường đứng (hoặc tương đương) màu accent đủ thấy trên giấy trắng/sepia; không hộp đè cả ô.
+- Playback controls gọn, không đè trung tâm khuông. **Hai kiểu** (pref **Playback settings…** trong ScoreMenu — không còn trong Metronome sheet; mặc định docked): **docked** — một hàng seek+transport, luôn **trên** PageNav/QuickBar (không bị PerformanceMode chrome đè); **floating** — pill Play/Pause+Stop kéo được, lưu vị trí, không seek trên pill. Count-in cũng chỉnh ở Playback settings. Badge: lúc count-in màu **vàng cam**; hết count-in → `measure.beat` hiện tại màu primary (Play/Pause).
+- Stop→Play (kể cả đang count-in): đưa **trang đầu** của map vào tầm nhìn ngay — không đợi hết count-in (nhạc công cần nhìn nốt để chuẩn bị).
+- Playhead: một đường đứng (hoặc tương đương); mặc định đỏ (`#E53935`) độ dày `1.4` / chiều cao `100%` MeasureBox (kéo dài tâm ô tới `200%`) / opacity `1.0`; chỉnh trong Playback settings; không hộp đè cả ô.
 - Show/hide: nhãn ScoreMenu phản ánh trạng thái (*Hide…* khi đang hiện).
 - Không mục *SyncMap…* soạn tay ở slice này.
 
@@ -246,18 +251,22 @@ Orchestrator: chấp nhận **mọi** khuyến nghị như bảng dưới.
 
 **Automated**
 
-- `sync_map_from_measure_map_test.dart` — công thức; incomplete; beatSplits ≠ duration
+- `sync_map_from_measure_map_test.dart` — công thức; incomplete; beatSplits ≠ duration; `measureBeatAtTime`
 - `sync_map_web_roundtrip_test.dart` — fixture `TimemapEntry`
-- `playhead_position_test.dart` — `timeMs` + boxes → page/x (kể cả nội suy giữa hai mốc `beatSplits`)
-- Prefs show/hide Playback controls round-trip
+- `playhead_position_test.dart` — `timeMs` + boxes → page/x (kể cả nội suy / barline jump)
+- `playback_prefs_test.dart` — show/hide, count-in, style, float norm
+- `sync_map_playback_count_in_test.dart` — count-in / seek / Stop
+- `playback_controls_bar_test.dart` / `playback_float_controls_test.dart` — format + pill smoke
+- `score_menu_test.dart` — Playback settings entry
 
 **Manual (G4)**
 
-1. Chưa map — metronome cũ; Playback controls không Play được.
-2. Map vài trang → show controls → Play — count-in rồi click + playhead; đổi tempo/meter giữa bài.
-3. Pause / Play lại (không count-in) / Stop (Play lại có count-in).
+1. Chưa map — metronome cũ; Show Playback disabled; Playback settings vẫn mở được.
+2. Map vài trang → show controls → Play — count-in (nếu >0) rồi click + playhead; đổi tempo/meter giữa bài.
+3. Pause / Play lại (không count-in) / Stop (Play lại có count-in nếu pref >0) — **trang đầu hiện ngay khi Play**, kể cả đang đếm.
 3b. Ô pickup ngắn `1/4`; (nếu có) ô full với *Starts at beat* = 3.
+3c. Playback settings: Bar vs Float; kéo float, restart app giữ vị trí; chrome hiện không đè docked.
 4. Hide controls lúc đang Play → **Pause** (G3 2g).
 5. Playhead sang trang khác — trang vào tầm nhìn.
-6. Vào Measure map lúc Play — Pause, không đè soạn.
-7. (Orchestrator) cảm nhận trước khi mở 0060.
+6. Vào Measure map lúc Play — Pause, không đè soạn; kéo SystemBox L→R trên page ≥2 không thành page turn.
+7. (Orchestrator) cảm nhận trước khi mở 0060 / đóng G4.

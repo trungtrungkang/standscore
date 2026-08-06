@@ -23,6 +23,7 @@ enum ScoreMenuAction {
   pageScale,
   metronome,
   togglePlaybackControls,
+  playbackSettings,
   pageTurnSettings,
   stagePreset,
 }
@@ -50,6 +51,7 @@ const kPageScaleIcon = Icons.zoom_in_outlined;
 // revision 2). Kept so the model still has *an* IconData for every action.
 const kMetronomeIcon = Icons.speed_outlined;
 const kPlaybackControlsIcon = Icons.play_circle_outline;
+const kPlaybackSettingsIcon = Icons.tune_outlined;
 const kPageTurnSettingsIcon = Icons.swipe_outlined;
 const kStagePresetIcon = Icons.theater_comedy_outlined;
 
@@ -225,6 +227,11 @@ List<ScoreMenuGroup> buildScoreMenu({
           icon: kPlaybackControlsIcon,
           enabled: measureMapReady,
           value: measureMapReady ? null : l10n.scoreMenuPlaybackMapFirst,
+        ),
+        ScoreMenuEntry(
+          action: ScoreMenuAction.playbackSettings,
+          label: l10n.scoreMenuPlaybackSettings,
+          icon: kPlaybackSettingsIcon,
         ),
         ScoreMenuEntry(
           action: ScoreMenuAction.pageTurnSettings,

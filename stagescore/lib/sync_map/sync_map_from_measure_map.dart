@@ -93,3 +93,25 @@ SyncMapEntry? entryAtTime(SyncMap map, double timeMs) {
   }
   return (measure: entry.measure, beatIndex: best);
 }
+
+/// Current score position as measure number + **1-based** beat in the bar.
+///
+/// Uses the last beatTimestamp at or before [timeMs]. Accounts for
+/// [SyncMapEntry.startsAtBeat] so a pickup starting on beat 3 displays `n.3`.
+({int measure, int beat})? measureBeatAtTime(SyncMap map, double timeMs) {
+  final entry = entryAtTime(map, timeMs);
+  if (entry == null) return null;
+  final beats = entry.beatTimestamps;
+  if (beats.isEmpty) {
+    return (measure: entry.measure, beat: entry.startsAtBeat + 1);
+  }
+  var idx = 0;
+  for (var i = 0; i < beats.length; i++) {
+    if (timeMs + 1e-9 >= beats[i]) {
+      idx = i;
+    } else {
+      break;
+    }
+  }
+  return (measure: entry.measure, beat: entry.startsAtBeat + idx + 1);
+}

@@ -481,6 +481,35 @@
   "measureMapClearAll": "Xoá MeasureMap…",
   "scoreMenuShowPlaybackControls": "Hiện Playback controls",
   "scoreMenuHidePlaybackControls": "Ẩn Playback controls",
+  "scoreMenuPlaybackSettings": "Playback settings…",
+  "playbackSettingsTitle": "Playback settings",
+  "playbackSettingsPlayhead": "Playhead",
+  "playbackSettingsPlayheadHint": "Đường trên bản nhạc khi phát",
+  "playbackSettingsPlayheadColor": "Màu",
+  "playbackSettingsPlayheadSize": "Độ dày {value}",
+  "@playbackSettingsPlayheadSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "playbackSettingsPlayheadOpacity": "Độ đục {percent}%",
+  "@playbackSettingsPlayheadOpacity": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackSettingsPlayheadHeight": "Chiều cao {percent}% ô nhịp",
+  "@playbackSettingsPlayheadHeight": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "scoreMenuPlaybackMapFirst": "Map measures trước",
   "playbackControlsPlay": "Play",
   "playbackControlsPause": "Pause",
@@ -499,6 +528,10 @@
   "metronomeSheetCountInNone": "Tắt",
   "metronomeSheetCountInOne": "1",
   "metronomeSheetCountInTwo": "2",
+  "metronomeSheetPlaybackStyle": "Controls layout",
+  "metronomeSheetPlaybackStyleHint": "Bar sits above page chrome; Float is a small draggable Play/Stop",
+  "metronomeSheetPlaybackStyleDocked": "Bar",
+  "metronomeSheetPlaybackStyleFloating": "Float",
   "measureMapStartsAtBeat": "Starts at beat",
   "measureMapStartsAtBeatHint": "1 = đủ ô; số lớn hơn bỏ phách đầu (pickup trên ô rộng)",
   "playbackControlsCountInLabel": "Count-in"

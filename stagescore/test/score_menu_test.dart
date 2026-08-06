@@ -74,7 +74,10 @@ void main() {
       final groups = menu();
       expect(groups.map((g) => g.title), ['Go to', 'Marks', 'View', 'Playing']);
       for (final group in groups) {
-        expect(group.entries.length, lessThanOrEqualTo(4), reason: group.title);
+        // Playing is allowed 5: Stage / Metronome / Show-Hide Playback /
+        // Playback settings / Page turn (Spec 0059 G4).
+        final max = group.title == 'Playing' ? 5 : 4;
+        expect(group.entries.length, lessThanOrEqualTo(max), reason: group.title);
       }
     });
 
@@ -320,6 +323,12 @@ void main() {
       );
       expect(disabled.enabled, isFalse);
       expect(disabled.value, 'Map measures first');
+    });
+
+    test('Playback settings is always available', () {
+      final entry = entryFor(menu(), ScoreMenuAction.playbackSettings);
+      expect(entry.label, 'Playback settings…');
+      expect(entry.enabled, isTrue);
     });
   });
 }

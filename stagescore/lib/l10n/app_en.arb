@@ -195,6 +195,35 @@
   "scoreMenuMetronome": "Metronome…",
   "scoreMenuShowPlaybackControls": "Show Playback controls",
   "scoreMenuHidePlaybackControls": "Hide Playback controls",
+  "scoreMenuPlaybackSettings": "Playback settings…",
+  "playbackSettingsTitle": "Playback settings",
+  "playbackSettingsPlayhead": "Playhead",
+  "playbackSettingsPlayheadHint": "Line on the score while playing",
+  "playbackSettingsPlayheadColor": "Color",
+  "playbackSettingsPlayheadSize": "Thickness {value}",
+  "@playbackSettingsPlayheadSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "playbackSettingsPlayheadOpacity": "Opacity {percent}%",
+  "@playbackSettingsPlayheadOpacity": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "playbackSettingsPlayheadHeight": "Height {percent}% of measure",
+  "@playbackSettingsPlayheadHeight": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "scoreMenuPlaybackMapFirst": "Map measures first",
   "scoreMenuPageTurnSettings": "Page turn settings",
   "playbackControlsPlay": "Play",
@@ -209,6 +238,10 @@
     }
   },
   "playbackControlsCountInLabel": "Count-in",
+  "metronomeSheetPlaybackStyle": "Controls layout",
+  "metronomeSheetPlaybackStyleHint": "Bar sits above page chrome; Float is a small draggable Play/Stop",
+  "metronomeSheetPlaybackStyleDocked": "Bar",
+  "metronomeSheetPlaybackStyleFloating": "Float",
   "playbackMapLostSnackbar": "MeasureMap changed — playback stopped",
   "scoreMenuLayoutValueBoth": "{stored} · {resolved}",
   "@scoreMenuLayoutValueBoth": {
