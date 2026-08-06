@@ -1,16 +1,18 @@
 # 0055 — Score gốc chứa Score con; Library một hàng / một tệp
 
-- **Status:** accepted (G3 2026-08-05)
+- **Status:** accepted (G3 2026-08-05; **revision 1** 2026-08-06 — Edit pieces)
 - **Type:** feature
 - **Horizon:** không thuộc H5 trực tiếp. Slice này là **hệ quả G4 của 0054** (Library bí bách khi hàng tiêu đề + mọi bài luôn mở) và viết lại UI Library theo ADR 0019 quyết định 11 **revision 6**. Không chạm audio, không chạm mạng, không chạm tiền
 - **Owner (human):** Orchestrator
 - **Depends on ADRs:** **0019** (`accepted` G2 — **quyết định 11, viết lại ở revision 6**), 0005, 0008, 0013 (tier), 0015 (ngôn ngữ), 0016 (mô hình — **chat build riêng sau G3**)
 - **Depends on Specs:** **0052** (`PdfDocument`, `PageExtent`, `splitScore`, annotation theo `scoreId`), **0053** (search/filter hình dạng; chiều nguồn **gỡ UI**), **0054** (tên sách, resplit, nhóm phẳng — **UI nhóm bị thay**), 0021 (Label filter), 0023 (sort), 0028 (xoá), 0024 (Replace PDF)
 - **Tier:** **M** — thêm `Score.parentId` nullable, di trú idempotent nhẹ (`formatVersion` giữ `2`), đổi Library + một màn hình drill-in + luật annotation all-pages. Không SDK, không quyền, không mạng. G3 và G4; không cần ADR mới (revision 6 đã ghi)
-- **G3:** **accepted 2026-08-05** — 12/12 câu theo khuyến nghị nguyên bản
+- **G3:** **accepted 2026-08-05** — 12/12 câu theo khuyến nghị nguyên bản. **Revision 1 (2026-08-06)** thêm **Edit pieces** (phạm vi **G**) và ba câu G3 mới (13–15)
 - **Security Review:** **không cần**
 
 > **Sinh từ G4 cảm nhận của 0054.** Nhóm phẳng luôn mở đúng về dữ liệu nhưng bí bách trên máy thật. Orchestrator chốt: Library một hàng ứng với một tệp (Score gốc); bấm vào mới thấy Score con; vẫn mở được cả PDF trên gốc; Setlist nhận gốc hoặc con. **Không đẻ term miền `Piece`** — con là Score; *piece* chỉ UI copy.
+
+> **Revision 1 — Edit pieces.** Bản gốc chốt resplit chạy trên **con** (câu 10) và không nói gì về việc vẽ lại ranh giới của **cả cuốn** sau khi đã tách. Hệ quả là một ngõ cụt: `_canSplit` giấu *Split into pieces…* ngay khi gốc có con, nên tách sai một lần là không có đường quay lại — chỉ còn cách sửa từng bài một. Revision này mở đường ấy. Nó **không** đảo câu 10: Edit pieces vẫn sinh ra anh em dưới cùng một gốc, cây vẫn một tầng.
 
 ---
 
@@ -68,6 +70,16 @@ Không ghi store con từ all-pages. Toggle **không persist** (session; mỗi l
 
 - Schema id không đổi. Picker: chọn gốc hoặc duyệt vào chọn con.
 
+**G. Edit pieces** *(revision 1, 2026-08-06)*
+
+- Lối vào: `⋯` của hàng gốc **có con**, và menu app bar của màn hình Pieces — nơi các bài thật sự sống. Cùng lượt, `⋯` nhận thêm mục *Pieces…* cho khớp với cử chỉ tap (tap gốc có con đã vào Pieces từ phạm vi B, menu thì chưa có lối nào ngoài *Open full score*).
+- Dùng lại `SplitScoreScreen` chứ không dựng màn hình thứ hai: thêm `initialMarks` (một mark / một bài hiện tại, `firstAbsolutePage` + tên) và `appBarTitle`. Lưới mở ra với ranh giới **hôm nay** đã đánh dấu; nhạc công bỏ dấu, thêm dấu, đổi tên tự do.
+- `ScoreLibrary.editPieces` **thay** cả bộ con bằng một con / một mark — ngược với `splitScore`, thứ chỉ biết **thêm**. Score gốc (`pageExtent: null`) không bị đụng.
+- `planPieceResplit` khớp con cũ với extent mới theo **đúng cặp `(firstPage, lastPage)`** — không theo tên, không theo vị trí — nên phạm vi trang còn nguyên thì `id` còn nguyên, và cùng với nó là annotation, bookmark, jump link, Label, chỗ trong mọi Setlist.
+- Bài không còn phạm vi nào khớp thì **bị xoá**, và được hỏi trước nếu nó **không rỗng** (có mực, bookmark, jump link, Label, hoặc đang nằm trong Setlist). Rỗng thì xoá im lặng — không có gì để mất thì không có gì để hỏi.
+- Dọn dẹp chia đúng như `deleteScore` đang chia: `editPieces` xoá overlay theo `scoreId`; page scale handover, Label, Setlist, thumbnail cache là việc của caller.
+- Vẫn **một tầng**: kết quả là anh em dưới cùng gốc.
+
 ---
 
 ## Ngoài phạm vi (Out of scope)
@@ -104,6 +116,14 @@ Orchestrator accept nguyên bản — cả 12 câu theo khuyến nghị.
 | 10 | **Resplit: vẫn một tầng (anh em), hay cho phép con có con?** | **Một tầng** |
 | 11 | **Nhãn UI cho danh sách con và toggle?** | ***Pieces*** / ***Show piece notes*** |
 | 12 | **Baseline test trước build?** | Đo lại đầu chat build; kỳ vọng ~545 trước slice |
+
+### Revision 1 — ba câu của Edit pieces (**chốt 2026-08-06 trong lúc build, ghi lại sau**)
+
+| # | Câu hỏi | Quyết định |
+|---|---|---|
+| 13 | **Edit pieces đi qua *Split into pieces…* (nới `_canSplit`), hay là lối riêng?** | **Lối riêng.** `_canSplit` giữ nguyên. Một nút làm hai việc thì không viết được lời xác nhận cho nó: tách lần đầu **không xoá gì**, còn vẽ lại **xoá được cả một bài đầy mực** |
+| 14 | **Khớp bài cũ với mark mới theo gì?** | **Đúng cặp `(firstPage, lastPage)`** — không theo tên, không theo vị trí. Khớp theo tên thì đổi tên là mất dữ liệu; khớp theo vị trí thì chèn một dấu ở đầu sách làm **mọi** bài trượt một bậc và mọi `id` đổi chủ |
+| 15 | **Bài không còn phạm vi nào khớp thì sao?** | **Xoá**, có hỏi trước nếu bài ấy không rỗng; rỗng thì xoá im lặng. File annotation đọc không được **tính là có dữ liệu** — cảnh báo thừa rẻ hơn xoá nhầm |
 
 ---
 
@@ -148,9 +168,19 @@ Orchestrator accept nguyên bản — cả 12 câu theo khuyến nghị.
 
 - [x] Thêm gốc và thêm một con — picker drill-in; phát đúng phạm vi từng cái (SetlistSession đã theo scoreId)
 
+**Edit pieces** *(revision 1)*
+
+- [x] `⋯` của gốc có con hiện *Pieces…* và *Edit pieces…*; gốc không con hiện *Split into pieces…* như cũ
+- [x] Lưới mở ra với ranh giới hiện tại đã đánh dấu, tên bài giữ nguyên
+- [x] Bài giữ đúng phạm vi trang → giữ `id`, giữ annotation / bookmark / jump link / Label / chỗ trong Setlist
+- [x] Đổi tên hoặc đảo thứ tự mark không làm bài nào mất dữ liệu
+- [x] Bài biến mất mà không rỗng → hỏi, gọi tên nó, huỷ được; rỗng → không hỏi
+- [x] Bài bị xoá: overlay, page scale, Label, Setlist, thumbnail cache đều được dọn
+- [ ] G4 trên máy thật: tách sai một cuốn rồi vẽ lại, kiểm mực của bài giữ nguyên vẫn còn
+
 **Bản dựng**
 
-- [x] `flutter analyze` sạch; suite xanh (**554**); không dependency / quyền mới
+- [x] `flutter analyze` sạch; suite xanh (**554**; **559** sau revision 1); không dependency / quyền mới
 
 ---
 
@@ -165,9 +195,12 @@ Orchestrator accept nguyên bản — cả 12 câu theo khuyến nghị.
 - `all_pages_annotation_toggle_test.dart` — (logic thuần hoặc widget) mặc định / bật / không ghi con
 - `setlist_root_or_child_test.dart` — nếu picker test được
 - Sửa / gỡ test phụ thuộc `BookHeaderRow` và source filter UI
+- `piece_resplit_test.dart` — khớp theo phạm vi trang; giữ `id`; đổi tên / đảo thứ tự không mất dữ liệu; `removedIds` đúng; < 2 mark là no-op *(revision 1)*
+- `library_edit_pieces_test.dart` — lưới gieo sẵn ranh giới hiện tại; hỏi trước khi xoá bài không rỗng, huỷ được; dọn Label / Setlist / thumbnail cho bài bị xoá *(revision 1)*
 
 **Manual (G4)**
 
 1. Thư viện chưa tách — không khác.
 2. Tuyển tập 28 bài — một hàng; drill-in; mở full; vẽ gốc; mở con không thấy; bật toggle thấy mực con, không vẽ được.
 3. Search một tên bài; Label một bài; Setlist gốc + một con; xoá gốc có confirm; khởi động lại tên/cây còn.
+4. *(revision 1)* Vẽ một bài, rồi *Edit pieces*: bỏ một ranh giới → hỏi đúng tên bài sắp mất; huỷ thì không mất gì; tiếp tục thì bài giữ nguyên phạm vi vẫn còn mực.
