@@ -341,6 +341,171 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scoreMenuMeasureMap => 'Measure map…';
 
   @override
+  String get scoreMenuFormMap => 'Form map…';
+
+  @override
+  String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
+
+  @override
+  String get formMapEmptyHint =>
+      'Không gắn form = chơi thẳng một lần. Thêm repeat (kèm kết 1/kết 2 nếu cần) hoặc chạm MeasureBox để gắn marker/nhảy. Jump Links khác — nhảy trang bằng tay.';
+
+  @override
+  String get formMapDone => 'Done';
+
+  @override
+  String get formMapAddRepeat => 'Add repeat…';
+
+  @override
+  String get formMapReplaceRepeatTitle => 'Replace existing repeat?';
+
+  @override
+  String get formMapReplaceRepeatBody =>
+      'This Score already has a repeat that overlaps these measures. Replace it with the new one?';
+
+  @override
+  String get formMapReplaceConfirm => 'Replace';
+
+  @override
+  String get formMapVoltaSection => 'Kết 1 / kết 2 (tuỳ chọn)';
+
+  @override
+  String get formMapVoltaHint =>
+      'Để trống nếu chỉ lặp thường. Ví dụ: lượt đầu chơi ô 8 rồi quay lại; lượt hai bỏ ô 8 → đặt lượt 1 = 8 và lượt 2 = 9.';
+
+  @override
+  String get formMapPass1Label => 'Chỉ lượt 1 (kết 1)';
+
+  @override
+  String get formMapPass2Label => 'Chỉ lượt 2 (kết 2)';
+
+  @override
+  String get formMapAddEnding => 'Kết 1 / kết 2…';
+
+  @override
+  String get formMapEndingHint =>
+      'Ngoặc volta trên trang — các ô chỉ chơi ở một lượt trong đoạn lặp. Ví dụ: lượt đầu chơi ô 8 rồi quay lại; lượt hai bỏ ô 8 sang ô 9 → gắn ô 8 là lượt 1.';
+
+  @override
+  String get formMapEndingNumberHint =>
+      '1 = lần đầu qua đoạn lặp, 2 = lần hai, …';
+
+  @override
+  String get formMapSetMarker => 'Marker…';
+
+  @override
+  String get formMapSetJump => 'Jump…';
+
+  @override
+  String get formMapClearMeasure => 'Clear on measure';
+
+  @override
+  String get formMapClearAll => 'Clear FormMap…';
+
+  @override
+  String get formMapClearTitle => 'Clear FormMap?';
+
+  @override
+  String get formMapClearBody =>
+      'Removes all repeats, endings, markers, and jumps on this Score. Cannot be undone.';
+
+  @override
+  String get formMapClearConfirm => 'Clear';
+
+  @override
+  String get formMapMarkerNone => 'Không marker';
+
+  @override
+  String get formMapMarkerNoneDesc => 'Xóa marker trên ô này';
+
+  @override
+  String get formMapMarkerSegno => 'Segno';
+
+  @override
+  String get formMapMarkerSegnoDesc => 'Mốc trên trang — D.S. nhảy về đây';
+
+  @override
+  String get formMapMarkerCoda => 'Coda';
+
+  @override
+  String get formMapMarkerCodaDesc => 'Đầu đoạn coda — To Coda nhảy tới đây';
+
+  @override
+  String get formMapMarkerToCoda => 'To Coda';
+
+  @override
+  String get formMapMarkerToCodaDesc =>
+      'Sau khi D.C./D.S. quay lại, bỏ đoạn giữa và nhảy tới Coda';
+
+  @override
+  String get formMapMarkerFine => 'Fine';
+
+  @override
+  String get formMapMarkerFineDesc =>
+      'Dừng ở đây sau khi D.C./D.S. quay lại (lượt đầu bỏ qua)';
+
+  @override
+  String get formMapJumpNone => 'Không nhảy';
+
+  @override
+  String get formMapJumpNoneDesc => 'Xóa chỉ thị nhảy trên ô này';
+
+  @override
+  String get formMapJumpDaCapo => 'D.C.';
+
+  @override
+  String get formMapJumpDaCapoDesc =>
+      'Da Capo — về đầu bài, rồi theo To Coda / Fine';
+
+  @override
+  String get formMapJumpDalSegno => 'D.S.';
+
+  @override
+  String get formMapJumpDalSegnoDesc =>
+      'Dal Segno — về Segno, rồi theo To Coda / Fine';
+
+  @override
+  String get formMapJumpToCoda => 'To Coda';
+
+  @override
+  String get formMapJumpToCodaDesc =>
+      'Nhảy tới Coda (chỉ sau khi đã D.C. hoặc D.S.)';
+
+  @override
+  String get formMapStartMeasure => 'Start measure';
+
+  @override
+  String get formMapEndMeasure => 'End measure';
+
+  @override
+  String get formMapRepeatTimes => 'Times';
+
+  @override
+  String get formMapEndingNumber => 'Lượt thứ mấy?';
+
+  @override
+  String get formMapInvalidSnackbar =>
+      'FormMap is invalid — fix repeats/jumps before Play';
+
+  @override
+  String get formMapInvalidMissingMeasure =>
+      'FormMap references a measure that is not mapped';
+
+  @override
+  String get formMapInvalidRepeat => 'FormMap has an invalid repeat region';
+
+  @override
+  String get formMapInvalidEnding => 'FormMap has an invalid ending';
+
+  @override
+  String get formMapInvalidLoop =>
+      'FormMap loops too long — check repeats and jumps';
+
+  @override
+  String get formMapInvalidEmptyTimeline =>
+      'FormMap produces an empty timeline';
+
+  @override
   String get scoreMenuMarks => 'Đánh dấu';
 
   @override

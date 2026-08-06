@@ -711,6 +711,306 @@ abstract class AppLocalizations {
   /// **'Measure map…'**
   String get scoreMenuMeasureMap;
 
+  /// No description provided for @scoreMenuFormMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Form map…'**
+  String get scoreMenuFormMap;
+
+  /// No description provided for @scoreMenuFormMapNeedsMeasureMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map measures first'**
+  String get scoreMenuFormMapNeedsMeasureMap;
+
+  /// No description provided for @formMapEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No form = play straight through once. Add a repeat (with optional 1st/2nd ending) or tap a MeasureBox for markers/jumps. Jump Links are different — they jump pages by hand.'**
+  String get formMapEmptyHint;
+
+  /// No description provided for @formMapDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get formMapDone;
+
+  /// No description provided for @formMapAddRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Add repeat…'**
+  String get formMapAddRepeat;
+
+  /// No description provided for @formMapReplaceRepeatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace existing repeat?'**
+  String get formMapReplaceRepeatTitle;
+
+  /// No description provided for @formMapReplaceRepeatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This Score already has a repeat that overlaps these measures. Replace it with the new one?'**
+  String get formMapReplaceRepeatBody;
+
+  /// No description provided for @formMapReplaceConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get formMapReplaceConfirm;
+
+  /// No description provided for @formMapVoltaSection.
+  ///
+  /// In en, this message translates to:
+  /// **'1st / 2nd ending (optional)'**
+  String get formMapVoltaSection;
+
+  /// No description provided for @formMapVoltaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank for a plain repeat. Example: first time play 8 then go back; second time skip 8 → set pass 1 to 8 and pass 2 to 9.'**
+  String get formMapVoltaHint;
+
+  /// No description provided for @formMapPass1Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass 1 only (1st ending)'**
+  String get formMapPass1Label;
+
+  /// No description provided for @formMapPass2Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass 2 only (2nd ending)'**
+  String get formMapPass2Label;
+
+  /// No description provided for @formMapAddEnding.
+  ///
+  /// In en, this message translates to:
+  /// **'1st / 2nd ending…'**
+  String get formMapAddEnding;
+
+  /// No description provided for @formMapEndingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Volta brackets on the page — measures played only on one pass through a repeat. Example: first time play measure 8 then go back; second time skip 8 and continue at 9 → mark 8 as pass 1.'**
+  String get formMapEndingHint;
+
+  /// No description provided for @formMapEndingNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1 = first time through the repeat, 2 = second time, …'**
+  String get formMapEndingNumberHint;
+
+  /// No description provided for @formMapSetMarker.
+  ///
+  /// In en, this message translates to:
+  /// **'Marker…'**
+  String get formMapSetMarker;
+
+  /// No description provided for @formMapSetJump.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump…'**
+  String get formMapSetJump;
+
+  /// No description provided for @formMapClearMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear on measure'**
+  String get formMapClearMeasure;
+
+  /// No description provided for @formMapClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear FormMap…'**
+  String get formMapClearAll;
+
+  /// No description provided for @formMapClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear FormMap?'**
+  String get formMapClearTitle;
+
+  /// No description provided for @formMapClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Removes all repeats, endings, markers, and jumps on this Score. Cannot be undone.'**
+  String get formMapClearBody;
+
+  /// No description provided for @formMapClearConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get formMapClearConfirm;
+
+  /// No description provided for @formMapMarkerNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No marker'**
+  String get formMapMarkerNone;
+
+  /// No description provided for @formMapMarkerNoneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear any marker on this measure'**
+  String get formMapMarkerNoneDesc;
+
+  /// No description provided for @formMapMarkerSegno.
+  ///
+  /// In en, this message translates to:
+  /// **'Segno'**
+  String get formMapMarkerSegno;
+
+  /// No description provided for @formMapMarkerSegnoDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Landmark on the page. D.S. jumps back here'**
+  String get formMapMarkerSegnoDesc;
+
+  /// No description provided for @formMapMarkerCoda.
+  ///
+  /// In en, this message translates to:
+  /// **'Coda'**
+  String get formMapMarkerCoda;
+
+  /// No description provided for @formMapMarkerCodaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Start of the coda section. To Coda lands here'**
+  String get formMapMarkerCodaDesc;
+
+  /// No description provided for @formMapMarkerToCoda.
+  ///
+  /// In en, this message translates to:
+  /// **'To Coda'**
+  String get formMapMarkerToCoda;
+
+  /// No description provided for @formMapMarkerToCodaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'After D.C./D.S. returns, skip ahead to the Coda'**
+  String get formMapMarkerToCodaDesc;
+
+  /// No description provided for @formMapMarkerFine.
+  ///
+  /// In en, this message translates to:
+  /// **'Fine'**
+  String get formMapMarkerFine;
+
+  /// No description provided for @formMapMarkerFineDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop here after D.C./D.S. returns (ignored on the first pass)'**
+  String get formMapMarkerFineDesc;
+
+  /// No description provided for @formMapJumpNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No jump'**
+  String get formMapJumpNone;
+
+  /// No description provided for @formMapJumpNoneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear any jump on this measure'**
+  String get formMapJumpNoneDesc;
+
+  /// No description provided for @formMapJumpDaCapo.
+  ///
+  /// In en, this message translates to:
+  /// **'D.C.'**
+  String get formMapJumpDaCapo;
+
+  /// No description provided for @formMapJumpDaCapoDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Da Capo — go back to the start, then follow To Coda / Fine'**
+  String get formMapJumpDaCapoDesc;
+
+  /// No description provided for @formMapJumpDalSegno.
+  ///
+  /// In en, this message translates to:
+  /// **'D.S.'**
+  String get formMapJumpDalSegno;
+
+  /// No description provided for @formMapJumpDalSegnoDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Dal Segno — go back to the Segno, then follow To Coda / Fine'**
+  String get formMapJumpDalSegnoDesc;
+
+  /// No description provided for @formMapJumpToCoda.
+  ///
+  /// In en, this message translates to:
+  /// **'To Coda'**
+  String get formMapJumpToCoda;
+
+  /// No description provided for @formMapJumpToCodaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to the Coda marker (only after a D.C. or D.S.)'**
+  String get formMapJumpToCodaDesc;
+
+  /// No description provided for @formMapStartMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Start measure'**
+  String get formMapStartMeasure;
+
+  /// No description provided for @formMapEndMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'End measure'**
+  String get formMapEndMeasure;
+
+  /// No description provided for @formMapRepeatTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Times'**
+  String get formMapRepeatTimes;
+
+  /// No description provided for @formMapEndingNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Which pass?'**
+  String get formMapEndingNumber;
+
+  /// No description provided for @formMapInvalidSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'FormMap is invalid — fix repeats/jumps before Play'**
+  String get formMapInvalidSnackbar;
+
+  /// No description provided for @formMapInvalidMissingMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'FormMap references a measure that is not mapped'**
+  String get formMapInvalidMissingMeasure;
+
+  /// No description provided for @formMapInvalidRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'FormMap has an invalid repeat region'**
+  String get formMapInvalidRepeat;
+
+  /// No description provided for @formMapInvalidEnding.
+  ///
+  /// In en, this message translates to:
+  /// **'FormMap has an invalid ending'**
+  String get formMapInvalidEnding;
+
+  /// No description provided for @formMapInvalidLoop.
+  ///
+  /// In en, this message translates to:
+  /// **'FormMap loops too long — check repeats and jumps'**
+  String get formMapInvalidLoop;
+
+  /// No description provided for @formMapInvalidEmptyTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'FormMap produces an empty timeline'**
+  String get formMapInvalidEmptyTimeline;
+
   /// No description provided for @scoreMenuMarks.
   ///
   /// In en, this message translates to:

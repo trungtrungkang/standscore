@@ -76,7 +76,9 @@ void main() {
       for (final group in groups) {
         // Playing is allowed 5: Stage / Metronome / Show-Hide Playback /
         // Playback settings / Page turn (Spec 0059 G4).
-        final max = group.title == 'Playing' ? 5 : 4;
+        // Marks is allowed 5: annotations / export / Measure map / Form map
+        // (Spec 0061) — still short enough to scan.
+        final max = group.title == 'Playing' || group.title == 'Marks' ? 5 : 4;
         expect(group.entries.length, lessThanOrEqualTo(max), reason: group.title);
       }
     });
@@ -320,6 +322,19 @@ void main() {
       final disabled = entryFor(
         menu(measureMapReady: false),
         ScoreMenuAction.togglePlaybackControls,
+      );
+      expect(disabled.enabled, isFalse);
+      expect(disabled.value, 'Map measures first');
+    });
+
+    test('Form map is disabled until MeasureMap exists', () {
+      final ready = entryFor(menu(), ScoreMenuAction.formMap);
+      expect(ready.enabled, isTrue);
+      expect(ready.label, 'Form map…');
+
+      final disabled = entryFor(
+        menu(measureMapReady: false),
+        ScoreMenuAction.formMap,
       );
       expect(disabled.enabled, isFalse);
       expect(disabled.value, 'Map measures first');

@@ -1,4 +1,4 @@
-/// One measure on the SyncMap timeline (≈ web `TimemapEntry`, Spec 0059).
+/// One measure on the SyncMap timeline (≈ web `TimemapEntry`, Spec 0059/0061).
 class SyncMapEntry {
   const SyncMapEntry({
     required this.timeMs,
@@ -8,13 +8,20 @@ class SyncMapEntry {
     required this.tempo,
     required this.durationInQuarters,
     this.startsAtBeat = 0,
-  });
+    int? physicalMeasure,
+  }) : physicalMeasure = physicalMeasure ?? measure;
 
   /// Downbeat (or first audible beat) of this measure, milliseconds.
   final double timeMs;
 
-  /// Continuous measure number — same as [MeasureBox.measureNumber].
+  /// Latent visit index on the playback timeline (web `TimemapEntry.measure`).
+  ///
+  /// With an empty FormMap this equals the printed [physicalMeasure] (0059).
   final int measure;
+
+  /// Printed MeasureBox number — playhead / badge use this (Spec 0061 G3 #3/#8).
+  /// Not written to web JSON; derived at unroll.
+  final int physicalMeasure;
 
   /// Per-beat timestamps; `[0] === timeMs`. Evenly spaced in time.
   final List<double> beatTimestamps;
@@ -66,6 +73,7 @@ class SyncMapEntry {
     if (other is! SyncMapEntry) return false;
     if (other.timeMs != timeMs ||
         other.measure != measure ||
+        other.physicalMeasure != physicalMeasure ||
         other.timeSignature != timeSignature ||
         other.tempo != tempo ||
         other.durationInQuarters != durationInQuarters ||
@@ -83,6 +91,7 @@ class SyncMapEntry {
   int get hashCode => Object.hash(
     timeMs,
     measure,
+    physicalMeasure,
     Object.hashAll(beatTimestamps),
     timeSignature,
     tempo,

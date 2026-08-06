@@ -17,6 +17,7 @@ enum ScoreMenuAction {
   toggleAnnotations,
   exportAnnotated,
   measureMap,
+  formMap,
   layout,
   display,
   colorFilter,
@@ -38,6 +39,7 @@ const kJumpLinksIcon = Icons.link_outlined;
 const kPageOrderIcon = Icons.reorder_outlined;
 const kGoToMeasureIcon = Icons.music_note_outlined;
 const kMeasureMapIcon = Icons.grid_on_outlined;
+const kFormMapIcon = Icons.repeat_outlined;
 const kAnnotationsVisibleIcon = Icons.visibility_outlined;
 const kAnnotationsHiddenIcon = Icons.visibility_off_outlined;
 const kExportAnnotatedIcon = Icons.ios_share_outlined;
@@ -165,6 +167,13 @@ List<ScoreMenuGroup> buildScoreMenu({
           action: ScoreMenuAction.measureMap,
           label: l10n.scoreMenuMeasureMap,
           icon: kMeasureMapIcon,
+        ),
+        ScoreMenuEntry(
+          action: ScoreMenuAction.formMap,
+          label: l10n.scoreMenuFormMap,
+          icon: kFormMapIcon,
+          enabled: measureMapReady,
+          value: measureMapReady ? null : l10n.scoreMenuFormMapNeedsMeasureMap,
         ),
       ],
     ),

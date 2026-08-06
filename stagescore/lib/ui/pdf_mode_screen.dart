@@ -33,11 +33,17 @@ import 'package:stagescore/layout/stage_preset.dart';
 import 'package:stagescore/library/library_root.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/library/score.dart';
+import 'package:stagescore/form_map/form_map.dart';
+import 'package:stagescore/form_map/form_map_persistence.dart';
+import 'package:stagescore/form_map/form_map_store.dart';
+import 'package:stagescore/form_map/form_map_unroll.dart';
+import 'package:stagescore/form_map/form_overlay_badge.dart';
 import 'package:stagescore/measure_map/measure_map_overlay_config.dart';
 import 'package:stagescore/measure_map/measure_map_persistence.dart';
 import 'package:stagescore/measure_map/measure_map_selection.dart';
 import 'package:stagescore/measure_map/measure_map_session.dart';
 import 'package:stagescore/measure_map/measure_map_store.dart';
+import 'package:stagescore/sync_map/sync_map_entry.dart';
 import 'package:stagescore/metronome/metronome_engine.dart';
 import 'package:stagescore/metronome/metronome_prefs.dart';
 import 'package:stagescore/metronome/metronome_prefs_store.dart';
@@ -63,13 +69,14 @@ import 'package:stagescore/sync_map/playhead_overlay_config.dart';
 import 'package:stagescore/sync_map/playhead_position.dart';
 import 'package:stagescore/sync_map/playback_prefs.dart';
 import 'package:stagescore/sync_map/playback_prefs_store.dart';
-import 'package:stagescore/sync_map/sync_map_from_measure_map.dart';
 import 'package:stagescore/sync_map/sync_map_playback.dart';
 import 'package:stagescore/theme/app_tokens.dart';
 import 'package:stagescore/ui/beat_strip.dart';
 import 'package:stagescore/ui/bookmarks_sheet.dart';
 import 'package:stagescore/ui/display_sheet.dart';
 import 'package:stagescore/ui/draw_toolbar.dart';
+import 'package:stagescore/ui/form_map_dialogs.dart';
+import 'package:stagescore/ui/form_map_edit_bar.dart';
 import 'package:stagescore/ui/jump_link_edit_sheet.dart';
 import 'package:stagescore/ui/jump_link_overlay.dart';
 import 'package:stagescore/ui/jump_links_sheet.dart';
@@ -145,6 +152,10 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   final MeasureMapSessionDefaults _measureMapSession =
       MeasureMapSessionDefaults();
   bool _measureMapEditing = false;
+  FormMapPersistence? _formMapPersistence;
+  FormMapStore _formMap = FormMapStore();
+  bool _formMapEditing = false;
+  String? _formBuildError;
   MeasureMapSelection _measureMapSelection = MeasureMapSelection.none;
   String? _highlightedMeasureId;
   String? _editingBeatsMeasureId;
@@ -367,7 +378,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   bool _onHardwareKey(KeyEvent event) {
     // KeyRepeatEvent is not a KeyDownEvent — still treat as pedal input.
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
-    if (!_prefsReady || _drawEnabled || _measureMapEditing) return false;
+    if (!_prefsReady ||
+        _drawEnabled ||
+        _measureMapEditing ||
+        _formMapEditing) {
+      return false;
+    }
     if (_isTypingInTextField()) return false;
     final action = resolvePedalKeyAction(event.logicalKey);
     if (action == null) return false;
@@ -505,7 +521,25 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   void _syncPlaybackFromMeasureMap({bool announceLoss = true}) {
-    final ok = _playback.replaceMap(syncMapFromMeasureMap(_measureMap));
+    final built = syncMapFromMeasureMapAndForm(_measureMap, _formMap.form);
+    if (built is SyncMapBuildFailure) {
+      _formBuildError = built.reason;
+      final ok = _playback.replaceMap(const SyncMap([]));
+      if ((!ok || _playback.isActive || _playback.isPaused) &&
+          announceLoss &&
+          mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_formInvalidMessage(context, built.reason))),
+        );
+      }
+      if (_playback.isActive || _playback.isPaused) {
+        _playback.stop();
+      }
+      return;
+    }
+    _formBuildError = null;
+    final ok =
+        _playback.replaceMap((built as SyncMapBuildSuccess).map);
     if (!ok && announceLoss && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -520,6 +554,90 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         ),
       );
     }
+  }
+
+  String _formInvalidMessage(BuildContext context, String reason) {
+    final l10n = AppLocalizations.of(context);
+    return switch (reason) {
+      'formInvalidMissingMeasure' => l10n.formMapInvalidMissingMeasure,
+      'formInvalidRepeat' => l10n.formMapInvalidRepeat,
+      'formInvalidEnding' => l10n.formMapInvalidEnding,
+      'formInvalidLoop' => l10n.formMapInvalidLoop,
+      'formInvalidEmptyTimeline' => l10n.formMapInvalidEmptyTimeline,
+      _ => l10n.formMapInvalidSnackbar,
+    };
+  }
+
+  void _onPlayPressed() {
+    if (_formBuildError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_formInvalidMessage(context, _formBuildError!)),
+        ),
+      );
+      return;
+    }
+    unawaited(_playback.play());
+  }
+
+  List<FormOverlayBadge> _formBadgesForMeasure(int measureNumber) {
+    final badges = <FormOverlayBadge>[];
+    for (final r in _formMap.form.repeats) {
+      if (r.startMeasure == measureNumber) {
+        badges.add(
+          const FormOverlayBadge(
+            label: '|:',
+            kind: FormOverlayBadgeKind.repeat,
+          ),
+        );
+      }
+      if (r.endMeasure == measureNumber) {
+        badges.add(
+          FormOverlayBadge(
+            label: ':|×${r.times}',
+            kind: FormOverlayBadgeKind.repeat,
+          ),
+        );
+      }
+    }
+    for (final e in _formMap.form.endings) {
+      if (measureNumber >= e.startMeasure && measureNumber <= e.endMeasure) {
+        badges.add(
+          FormOverlayBadge(
+            label: '${e.endingNumber}.',
+            kind: FormOverlayBadgeKind.ending,
+          ),
+        );
+      }
+    }
+    final marker = _formMap.markerAt(measureNumber);
+    if (marker != null) {
+      badges.add(
+        FormOverlayBadge(
+          label: switch (marker.kind) {
+            FormMarkerKind.segno => 'Segno',
+            FormMarkerKind.coda => 'Coda',
+            FormMarkerKind.toCoda => 'ToCoda',
+            FormMarkerKind.fine => 'Fine',
+          },
+          kind: FormOverlayBadgeKind.marker,
+        ),
+      );
+    }
+    final jump = _formMap.jumpAt(measureNumber);
+    if (jump != null) {
+      badges.add(
+        FormOverlayBadge(
+          label: switch (jump.kind) {
+            FormJumpKind.daCapo => 'D.C.',
+            FormJumpKind.dalSegno => 'D.S.',
+            FormJumpKind.toCoda => 'ToCoda',
+          },
+          kind: FormOverlayBadgeKind.jump,
+        ),
+      );
+    }
+    return badges;
   }
 
   Future<void> _saveDisplayPrefs(DisplayPrefs prefs) async {
@@ -546,11 +664,17 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       root: root,
       scoreId: _score.id,
     );
+    final formMapPersistence = FormMapPersistence(
+      root: root,
+      scoreId: _score.id,
+    );
     final pageOrderStore = PageOrderStore(root: root, scoreId: _score.id);
     final annotationStore = AnnotationStore();
     await annotationPersistence.loadInto(annotationStore);
     final measureMap = MeasureMapStore();
     await measureMapPersistence.loadInto(measureMap);
+    final formMap = FormMapStore();
+    await formMapPersistence.loadInto(formMap);
 
     var sourceCount = 0;
     var aspect = _pageAspectRatio;
@@ -583,8 +707,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       _jumpLinkStore = jumpLinkStore;
       _annotationPersistence = annotationPersistence;
       _measureMapPersistence = measureMapPersistence;
+      _formMapPersistence = formMapPersistence;
       _store = annotationStore;
       _measureMap = measureMap;
+      _formMap = formMap;
+      _formMapEditing = false;
+      _formBuildError = null;
       _pageExtent = extent;
       _pageOrderStore = pageOrderStore;
       _pageOrder = pageOrder;
@@ -622,6 +750,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       _prefsReady = false;
       _drawEnabled = false;
       _measureMapEditing = false;
+      _formMapEditing = false;
       _measureMapSelection = MeasureMapSelection.none;
       _editingBeatsMeasureId = null;
       _highlightedMeasureId = null;
@@ -724,8 +853,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _pieceNotesUnion = null;
       }
       if (enabled) {
-        // Mutually exclusive with MeasureMap edit (Spec 0058 G3 #7).
+        // Mutually exclusive with MeasureMap / FormMap edit.
         _measureMapEditing = false;
+        _formMapEditing = false;
         _measureMapSelection = MeasureMapSelection.none;
         _editingBeatsMeasureId = null;
         _measureMapSession.reset();
@@ -741,7 +871,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       }
     });
     // Chrome is laid out and pinned for the whole Draw / MeasureMap session.
-    _chrome.setDrawing(enabled || _measureMapEditing);
+    _chrome.setDrawing(enabled || _measureMapEditing || _formMapEditing);
   }
 
   void _setMeasureMapEditing(bool enabled) {
@@ -751,6 +881,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     setState(() {
       _measureMapEditing = enabled;
       if (enabled) {
+        _formMapEditing = false;
         if (_drawEnabled) {
           _drawEnabled = false;
           _pendingStamp = null;
@@ -763,7 +894,30 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _measureMapSession.reset();
       }
     });
-    _chrome.setDrawing(_drawEnabled || enabled);
+    _chrome.setDrawing(_drawEnabled || enabled || _formMapEditing);
+  }
+
+  void _setFormMapEditing(bool enabled) {
+    if (enabled && _measureMap.isEmpty) return;
+    if (enabled && _playback.isActive) {
+      _playback.pause();
+    }
+    setState(() {
+      _formMapEditing = enabled;
+      if (enabled) {
+        _measureMapEditing = false;
+        _editingBeatsMeasureId = null;
+        if (_drawEnabled) {
+          _drawEnabled = false;
+          _pendingStamp = null;
+          _pendingStampText = null;
+          _selectedStampId = null;
+        }
+      } else {
+        _measureMapSelection = MeasureMapSelection.none;
+      }
+    });
+    _chrome.setDrawing(_drawEnabled || _measureMapEditing || enabled);
   }
 
   Future<void> _onMeasureMapChanged() async {
@@ -773,12 +927,19 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     await _measureMapPersistence?.save(_measureMap);
   }
 
+  Future<void> _onFormMapChanged() async {
+    if (!mounted) return;
+    _syncPlaybackFromMeasureMap();
+    setState(() {});
+    await _formMapPersistence?.save(_formMap);
+  }
+
   PlayheadOverlayConfig? _playheadConfig() {
     if (!_prefsReady) return null;
     return PlayheadOverlayConfig(
       playback: _playback,
       store: _measureMap,
-      suppressed: _measureMapEditing,
+      suppressed: _measureMapEditing || _formMapEditing,
       color: _playbackPrefs.playheadColor,
       width: _playbackPrefs.playheadWidth,
       opacity: _playbackPrefs.playheadOpacity,
@@ -798,27 +959,36 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
   MeasureMapOverlayConfig? _measureMapConfig() {
     if (!_prefsReady) return null;
-    if (!_measureMapEditing && _highlightedMeasureId == null) return null;
+    if (!_measureMapEditing &&
+        !_formMapEditing &&
+        _highlightedMeasureId == null) {
+      return null;
+    }
     return MeasureMapOverlayConfig(
       store: _measureMap,
       extent: _pageExtent,
       editEnabled: _measureMapEditing,
+      selectOnly: _formMapEditing && !_measureMapEditing,
+      formBadgesForMeasure:
+          _formMapEditing ? _formBadgesForMeasure : null,
       selection: _measureMapSelection,
       highlightedId: _highlightedMeasureId,
       editingBeatsId: _editingBeatsMeasureId,
       onSelectionChanged: _setMeasureMapSelection,
       onChanged: _onMeasureMapChanged,
       onSystemDrawn: _onSystemDrawn,
-      onMeasureLongPress: (id) {
-        final box = _measureMap.byId(id);
-        if (box == null) return;
-        _setMeasureMapSelection(
-          MeasureMapSelectionSystem(
-            pageNumber: box.pageNumber,
-            systemIndex: box.systemIndex,
-          ),
-        );
-      },
+      onMeasureLongPress: _formMapEditing
+          ? null
+          : (id) {
+              final box = _measureMap.byId(id);
+              if (box == null) return;
+              _setMeasureMapSelection(
+                MeasureMapSelectionSystem(
+                  pageNumber: box.pageNumber,
+                  systemIndex: box.systemIndex,
+                ),
+              );
+            },
     );
   }
 
@@ -1190,6 +1360,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _goToMeasure();
       case ScoreMenuAction.measureMap:
         _setMeasureMapEditing(true);
+      case ScoreMenuAction.formMap:
+        _setFormMapEditing(true);
       case ScoreMenuAction.toggleAnnotations:
         setState(() => _annotationsVisible = !_annotationsVisible);
       case ScoreMenuAction.exportAnnotated:
@@ -1412,6 +1584,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
             if (_prefsReady &&
                 !_drawEnabled &&
                 !_measureMapEditing &&
+                !_formMapEditing &&
                 links.isNotEmpty)
               JumpLinkInteractiveLayer(
                 pageRect: _jumpLinkPageRect(viewSize),
@@ -1517,7 +1690,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   bool get _panEnabled {
-    if (_drawEnabled || _measureMapEditing) return false;
+    if (_drawEnabled || _measureMapEditing || _formMapEditing) return false;
     if (_atFitZoom && _pageTurnPrefs.anySwipeEnabled) return false;
     return true;
   }
@@ -1696,7 +1869,12 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
   }
 
   void _onInteractionAction(PageTurnAction action, PageTurnInputKind kind) {
-    if (_drawEnabled || _measureMapEditing || !_prefsReady) return;
+    if (_drawEnabled ||
+        _measureMapEditing ||
+        _formMapEditing ||
+        !_prefsReady) {
+      return;
+    }
     if (kind == PageTurnInputKind.swipe && !_atFitZoom) return;
     _applyAction(action, kind: kind);
   }
@@ -1720,7 +1898,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
     // While drawing, keep PageTurn chrome off the page so ink gestures are not
     // shared with the viewer's scroll arena (which caused the score to scroll).
     // Edge GestureMap strips still work for Show menu / Draw.
-    if (_drawEnabled || _measureMapEditing) {
+    if (_drawEnabled || _measureMapEditing || _formMapEditing) {
       return _drawModeEdgeGestureChrome();
     }
     return PageTurnInteractionLayer(
@@ -1900,7 +2078,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       playback: _playback,
       enabled: _measureMap.isNotEmpty,
       includeBottomSafeArea: includeBottomSafeArea,
-      onPlay: () => unawaited(_playback.play()),
+      onPlay: _onPlayPressed,
       onPause: _playback.pause,
       onStop: _playback.stop,
     );
@@ -2021,7 +2199,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
 
     final showPlayback = _prefsReady &&
         _playbackPrefs.showPlaybackControls &&
-        !_measureMapEditing;
+        !_measureMapEditing &&
+        !_formMapEditing;
     final dockedPlayback = showPlayback &&
         _playbackPrefs.style == PlaybackControlsStyle.docked;
     final floatingPlayback = showPlayback &&
@@ -2176,6 +2355,123 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               await _onMeasureMapChanged();
             },
           ),
+        if (_formMapEditing)
+          FormMapEditBar(
+            measureSelected: _measureMapSelection.isMeasure,
+            onDone: () => _setFormMapEditing(false),
+            onSetMarker: () async {
+              final id = _measureMapSelection.measureId;
+              if (id == null) return;
+              final box = _measureMap.byId(id);
+              if (box == null) return;
+              final pick = await pickFormMarker(
+                context,
+                current: _formMap.markerAt(box.measureNumber)?.kind,
+              );
+              if (pick == null || !mounted) return;
+              _formMap.setMarkerOnMeasure(
+                measure: box.measureNumber,
+                kind: pick.kind,
+              );
+              await _onFormMapChanged();
+            },
+            onSetJump: () async {
+              final id = _measureMapSelection.measureId;
+              if (id == null) return;
+              final box = _measureMap.byId(id);
+              if (box == null) return;
+              final pick = await pickFormJump(
+                context,
+                current: _formMap.jumpAt(box.measureNumber)?.kind,
+              );
+              if (pick == null || !mounted) return;
+              _formMap.setJumpOnMeasure(
+                measure: box.measureNumber,
+                kind: pick.kind,
+              );
+              await _onFormMapChanged();
+            },
+            onAddRepeat: () async {
+              final id = _measureMapSelection.measureId;
+              final box = id == null ? null : _measureMap.byId(id);
+              final seed = box?.measureNumber;
+              FormRepeatRegion? existing;
+              if (seed != null) {
+                final near = _formMap.overlappingRepeats(
+                  start: seed,
+                  end: seed,
+                );
+                if (near.isNotEmpty) existing = near.first;
+              }
+              final repStart = existing?.startMeasure ?? seed;
+              final repEnd = existing?.endMeasure ?? seed;
+              final pass1 = existing == null
+                  ? null
+                  : _formMap.endingForPassNear(
+                      endingNumber: 1,
+                      repeatStart: existing.startMeasure,
+                      repeatEnd: existing.endMeasure,
+                    );
+              final pass2 = existing == null
+                  ? null
+                  : _formMap.endingForPassNear(
+                      endingNumber: 2,
+                      repeatStart: existing.startMeasure,
+                      repeatEnd: existing.endMeasure,
+                    );
+              final result = await promptFormRepeat(
+                context,
+                initialStart: repStart,
+                initialEnd: repEnd,
+                initialTimes: existing?.times ?? 2,
+                initialPass1: pass1 == null
+                    ? null
+                    : (start: pass1.startMeasure, end: pass1.endMeasure),
+                initialPass2: pass2 == null
+                    ? null
+                    : (start: pass2.startMeasure, end: pass2.endMeasure),
+              );
+              if (result == null || !mounted) return;
+              final region = FormRepeatRegion(
+                id: 'repeat-${result.start}-${result.end}',
+                startMeasure: result.start,
+                endMeasure: result.end,
+                times: result.times,
+              );
+              final conflicts = _formMap.overlappingRepeats(
+                start: result.start,
+                end: result.end,
+              );
+              final needsConfirm = conflicts.any((r) => r.id != region.id);
+              var replaceOverlapping = false;
+              if (needsConfirm) {
+                final replace = await confirmReplaceFormRepeat(context);
+                if (!replace || !mounted) return;
+                replaceOverlapping = true;
+              }
+              _formMap.applyRepeatWithVoltas(
+                region: region,
+                replaceOverlapping: replaceOverlapping,
+                pass1: result.pass1,
+                pass2: result.pass2,
+              );
+              await _onFormMapChanged();
+            },
+            onClearMeasure: () async {
+              final id = _measureMapSelection.measureId;
+              if (id == null) return;
+              final box = _measureMap.byId(id);
+              if (box == null) return;
+              _formMap.clearMeasure(box.measureNumber);
+              await _onFormMapChanged();
+            },
+            onClearAll: () async {
+              final ok = await confirmClearFormMap(context);
+              if (!ok || !mounted) return;
+              _formMap.clear();
+              await _onFormMapChanged();
+            },
+          ),
         Expanded(
           child: !_prefsReady
               ? const Center(child: CircularProgressIndicator())
@@ -2245,7 +2541,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                     ),
                   );
                 },
-                onPlay: () => unawaited(_playback.play()),
+                onPlay: _onPlayPressed,
                 onPause: _playback.pause,
                 onStop: _playback.stop,
               ),
@@ -2408,8 +2704,11 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
               panEnabled: _panEnabled,
               scaleEnabled: !_drawEnabled &&
                   !_measureMapEditing &&
+                  !_formMapEditing &&
                   !_pageScalePrefs.locked,
-              scrollPhysics: _drawEnabled || _measureMapEditing
+              scrollPhysics: _drawEnabled ||
+                      _measureMapEditing ||
+                      _formMapEditing
                   ? const NeverScrollableScrollPhysics()
                   : null,
               layoutPages: layoutPagesFor(layoutMode),

@@ -50,8 +50,20 @@ Chế độ xem Score dựng MusicXmlDocument (ví dụ qua Verovio), kèm các 
 _Avoid_: MusicXML mode, Verovio mode (engine name ≠ product mode)
 
 **MeasureMap**:
-Hình học ô nhịp trên trang của **một** Score — SystemBox → MeasureBox → BeatBox. Biết *chỗ nào trên giấy*, không phải *khi nào trong thời gian*. Một Score ↔ đúng một MeasureMap; bản đồ chưa đầy đủ vẫn hợp lệ. Neo theo số trang tuyệt đối của PdfDocument (cùng không gian với annotation).
-_Avoid_: MeasureAnchor (rút bởi ADR 0019), RowBox (dùng SystemBox), sync file, bar map
+Hình học ô nhịp trên trang của **một** Score — SystemBox → MeasureBox → BeatBox. Biết *chỗ nào trên giấy*, không phải *khi nào trong thời gian*. Một Score ↔ đúng một MeasureMap; bản đồ chưa đầy đủ vẫn hợp lệ. Neo theo số trang tuyệt đối của PdfDocument (cùng không gian với annotation). Chỉ **physical measure** — không mang lặp / volta / nhảy (thuộc FormMap).
+_Avoid_: MeasureAnchor (rút bởi ADR 0019), RowBox (dùng SystemBox), sync file, bar map, FormMap (tầng thứ ba)
+
+**FormMap**:
+Cấu trúc phát của **một** Score — vùng lặp (`times`), volta (kết *n*), marker (Segno / Coda / Fine / To Coda), nhảy (D.C. / D.S. / To Coda). Gắn lên ô physical đã có trên MeasureMap; không vẽ hình học mới. Rỗng = chơi mỗi ô physical một lần (0059). Bung với MeasureMap → SyncMap latent (Spec 0061). Khác PageOrder / JumpLink (không gian trang).
+_Avoid_: PageOrder-as-form, NavigationSequence, unroll từ MusicXML (H3 đóng)
+
+**Physical measure**:
+Số ô in trên giấy = `MeasureBox.measureNumber`. Playhead / badge đọc số này.
+_Avoid_: latent measure (đó là lần thăm trên timeline)
+
+**Latent measure**:
+Chỉ số lần thăm trên timeline phát sau khi bung FormMap (`SyncMapEntry.measure`, khớp web `TimemapEntry.measure`). Một physical có thể xuất hiện nhiều lần latent.
+_Avoid_: physical measure, measureNumber trên giấy
 
 **SystemBox**:
 Một *system* (dòng nhạc) trên trang trong MeasureMap. Không lưu riêng trên đĩa — dựng lại bằng cách gom MeasureBox theo `systemIndex`.
@@ -131,8 +143,8 @@ Một bản thu âm (bản mix đầy đủ hoặc một stem) mà người dùn
 _Avoid_: Soundtrack, accompaniment file, band track (UI copy ok), MP3 (format ≠ concept)
 
 **SyncMap**:
-Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và một dòng thời gian phát — có thể gắn một hay nhiều BackingTrack, hoặc chỉ metronome / thời gian nhạc thuần (không bắt buộc có audio). Trên PdfMode (Spec 0059) được **tính** từ MeasureMap (tempo + time signature → `timeMs` / `beatTimestamps`); không ghi đĩa riêng trong slice đó.
-_Avoid_: Offset alone, BPM (too narrow), sync file (may be a serialization of SyncMap)
+Sự khớp giữa thời gian âm nhạc (ô nhịp/phách, hoặc thời gian theo MusicXML) và một dòng thời gian phát — có thể gắn một hay nhiều BackingTrack, hoặc chỉ metronome / thời gian nhạc thuần (không bắt buộc có audio). Trên PdfMode được **tính** từ MeasureMap (+ FormMap khi có) → `timeMs` / `beatTimestamps`; không ghi đĩa riêng. `SyncMapEntry.measure` = **latent**; playhead/badge dùng `physicalMeasure` (Spec 0061). FormMap rỗng ⇒ hành vi tuyến tính 0059.
+_Avoid_: Offset alone, BPM (too narrow), sync file (may be a serialization of SyncMap), giả định 1:1 với ô in
 
 **AutoPlay**:
 Việc Transport phát các TransportLane đang được arm, đồng thời đẩy Playhead tiến lên.

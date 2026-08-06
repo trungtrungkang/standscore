@@ -640,7 +640,8 @@ String? _labelForRelativePath(String rel, Map<String, String> titles) {
             folder == 'page_orders' ||
             folder == 'bookmarks' ||
             folder == 'jumplinks' ||
-            folder == 'measure_maps') &&
+            folder == 'measure_maps' ||
+            folder == 'form_maps') &&
         titles.containsKey(id)) {
       return titles[id];
     }

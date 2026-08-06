@@ -97,12 +97,13 @@ class _PageMeasureMapOverlayState extends State<PageMeasureMapOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final paintBoxes = widget.config.editEnabled ||
-            widget.config.highlightedId != null
+    final interactive =
+        widget.config.editEnabled || widget.config.selectOnly;
+    final paintBoxes = interactive || widget.config.highlightedId != null
         ? _boxes
         : const <MeasureBox>[];
 
-    if (!widget.config.editEnabled && widget.config.highlightedId == null) {
+    if (!interactive && widget.config.highlightedId == null) {
       return const SizedBox.expand();
     }
 
@@ -118,10 +119,12 @@ class _PageMeasureMapOverlayState extends State<PageMeasureMapOverlay> {
         editingBeatsId: widget.config.editingBeatsId,
         inProgressRect: _inProgress,
         editEnabled: widget.config.editEnabled,
+        selectOnly: widget.config.selectOnly,
+        formBadgesForMeasure: widget.config.formBadgesForMeasure,
       ),
     );
 
-    if (!widget.config.editEnabled) {
+    if (!interactive) {
       return IgnorePointer(child: stack);
     }
 
@@ -170,6 +173,18 @@ class _PageMeasureMapOverlayState extends State<PageMeasureMapOverlay> {
     final h = widget.pageRect.height;
     final page = widget.page.pageNumber;
     final store = widget.config.store;
+
+    // FormMap edit: select existing MeasureBoxes only (Spec 0061).
+    if (widget.config.selectOnly) {
+      for (final box in boxes.reversed) {
+        if (box.containsPoint(pos.dx, pos.dy)) {
+          widget.config.onSelectionChanged(MeasureMapSelectionMeasure(box.id));
+          return;
+        }
+      }
+      widget.config.onSelectionChanged(MeasureMapSelection.none);
+      return;
+    }
 
     // 1. Beat split hit (only while Edit beats on that measure).
     final editBeats = widget.config.editingBeatsId;

@@ -1,7 +1,6 @@
 import 'package:stagescore/measure_map/measure_box.dart';
 import 'package:stagescore/measure_map/measure_map_store.dart';
 import 'package:stagescore/sync_map/sync_map_entry.dart';
-import 'package:stagescore/sync_map/sync_map_from_measure_map.dart';
 
 /// Playhead on the page — normalized 0–1 coords (Spec 0059).
 class PlayheadPosition {
@@ -70,7 +69,7 @@ PlayheadPosition? playheadAtTime({
   }
   final entry = syncMap.entries[entryIndex];
 
-  final box = store.byMeasureNumber(entry.measure);
+  final box = store.byMeasureNumber(entry.physicalMeasure);
   if (box == null) return null;
 
   final meta = store.resolveMeta(box);
@@ -86,7 +85,7 @@ PlayheadPosition? playheadAtTime({
       y: box.y + box.height / 2,
       top: box.y,
       height: box.height,
-      measure: entry.measure,
+      measure: entry.physicalMeasure,
       beatIndex: 0,
     );
   }
@@ -115,7 +114,8 @@ PlayheadPosition? playheadAtTime({
   final next = entryIndex + 1 < syncMap.entries.length
       ? syncMap.entries[entryIndex + 1]
       : null;
-  final nextBox = next == null ? null : store.byMeasureNumber(next.measure);
+  final nextBox =
+      next == null ? null : store.byMeasureNumber(next.physicalMeasure);
 
   if (isLastBeat &&
       next != null &&
@@ -150,7 +150,7 @@ PlayheadPosition? playheadAtTime({
     y: top + height / 2,
     top: top,
     height: height,
-    measure: entry.measure,
+    measure: entry.physicalMeasure,
     beatIndex: beatIndex,
   );
 }

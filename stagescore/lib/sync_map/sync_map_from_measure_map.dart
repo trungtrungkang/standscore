@@ -54,6 +54,7 @@ SyncMap syncMapFromMeasureMap(MeasureMapStore store) {
       SyncMapEntry(
         timeMs: cursorMs,
         measure: box.measureNumber,
+        physicalMeasure: box.measureNumber,
         beatTimestamps: beatTimestamps,
         timeSignature: meta.timeSignature,
         tempo: tempo,
@@ -94,16 +95,17 @@ SyncMapEntry? entryAtTime(SyncMap map, double timeMs) {
   return (measure: entry.measure, beatIndex: best);
 }
 
-/// Current score position as measure number + **1-based** beat in the bar.
+/// Current score position as **physical** measure + **1-based** beat in the bar.
 ///
 /// Uses the last beatTimestamp at or before [timeMs]. Accounts for
 /// [SyncMapEntry.startsAtBeat] so a pickup starting on beat 3 displays `n.3`.
+/// Badge shows printed measure numbers (Spec 0061 G3 #8).
 ({int measure, int beat})? measureBeatAtTime(SyncMap map, double timeMs) {
   final entry = entryAtTime(map, timeMs);
   if (entry == null) return null;
   final beats = entry.beatTimestamps;
   if (beats.isEmpty) {
-    return (measure: entry.measure, beat: entry.startsAtBeat + 1);
+    return (measure: entry.physicalMeasure, beat: entry.startsAtBeat + 1);
   }
   var idx = 0;
   for (var i = 0; i < beats.length; i++) {
@@ -113,5 +115,8 @@ SyncMapEntry? entryAtTime(SyncMap map, double timeMs) {
       break;
     }
   }
-  return (measure: entry.measure, beat: entry.startsAtBeat + idx + 1);
+  return (
+    measure: entry.physicalMeasure,
+    beat: entry.startsAtBeat + idx + 1,
+  );
 }

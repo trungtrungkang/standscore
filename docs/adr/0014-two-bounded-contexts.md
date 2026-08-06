@@ -60,6 +60,9 @@ Trigger *"Mở cổng H3 … khi StageScore bắt đầu Transport / BackingTrac
 | Một phách trong một ô nhịp | `BeatBox` / `beatSplits`: **N mốc nội tại** (Spec 0058 rev. 2) | `beatSplits`: **N−1 biên** giữa phách |
 | Một dòng nhạc trên trang | `SystemBox` | suy ra từ `systemIndex` trên `MeasureBox` |
 | Thời điểm của một ô nhịp / một phách | thời điểm trong `SyncMap` | `timeMs`, `beatTimestamps` trên `TimemapEntry` |
+| Chỉ số ô trên timeline phát | `SyncMapEntry.measure` = **latent** (sau bung FormMap); `physicalMeasure` runtime cho playhead | `TimemapEntry.measure` = latent |
+| Ánh xạ latent → physical (thưa) | derive lúc bung FormMap — không ghi SyncMap ra đĩa | `notationData.measureMap` (sparse latent→physical); **không** cùng nghĩa MeasureMap hình học StageScore |
+| Cấu trúc lặp / volta / nhảy | `FormMap` (overlay PDF; Spec 0061) | parse MusicXML → `unrollMeasures` (không soạn form trên MeasureBox PDF) |
 | Tempo tại một phách | tempo trên `MeasureBox` | `tempoAtBeat` |
 | Ô nhịp lấy đà | ô nhịp lấy đà | `startsAtBeat` |
 

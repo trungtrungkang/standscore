@@ -344,6 +344,173 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scoreMenuMeasureMap => 'Measure map…';
 
   @override
+  String get scoreMenuFormMap => 'Form map…';
+
+  @override
+  String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
+
+  @override
+  String get formMapEmptyHint =>
+      'No form = play straight through once. Add a repeat (with optional 1st/2nd ending) or tap a MeasureBox for markers/jumps. Jump Links are different — they jump pages by hand.';
+
+  @override
+  String get formMapDone => 'Done';
+
+  @override
+  String get formMapAddRepeat => 'Add repeat…';
+
+  @override
+  String get formMapReplaceRepeatTitle => 'Replace existing repeat?';
+
+  @override
+  String get formMapReplaceRepeatBody =>
+      'This Score already has a repeat that overlaps these measures. Replace it with the new one?';
+
+  @override
+  String get formMapReplaceConfirm => 'Replace';
+
+  @override
+  String get formMapVoltaSection => '1st / 2nd ending (optional)';
+
+  @override
+  String get formMapVoltaHint =>
+      'Leave blank for a plain repeat. Example: first time play 8 then go back; second time skip 8 → set pass 1 to 8 and pass 2 to 9.';
+
+  @override
+  String get formMapPass1Label => 'Pass 1 only (1st ending)';
+
+  @override
+  String get formMapPass2Label => 'Pass 2 only (2nd ending)';
+
+  @override
+  String get formMapAddEnding => '1st / 2nd ending…';
+
+  @override
+  String get formMapEndingHint =>
+      'Volta brackets on the page — measures played only on one pass through a repeat. Example: first time play measure 8 then go back; second time skip 8 and continue at 9 → mark 8 as pass 1.';
+
+  @override
+  String get formMapEndingNumberHint =>
+      '1 = first time through the repeat, 2 = second time, …';
+
+  @override
+  String get formMapSetMarker => 'Marker…';
+
+  @override
+  String get formMapSetJump => 'Jump…';
+
+  @override
+  String get formMapClearMeasure => 'Clear on measure';
+
+  @override
+  String get formMapClearAll => 'Clear FormMap…';
+
+  @override
+  String get formMapClearTitle => 'Clear FormMap?';
+
+  @override
+  String get formMapClearBody =>
+      'Removes all repeats, endings, markers, and jumps on this Score. Cannot be undone.';
+
+  @override
+  String get formMapClearConfirm => 'Clear';
+
+  @override
+  String get formMapMarkerNone => 'No marker';
+
+  @override
+  String get formMapMarkerNoneDesc => 'Clear any marker on this measure';
+
+  @override
+  String get formMapMarkerSegno => 'Segno';
+
+  @override
+  String get formMapMarkerSegnoDesc =>
+      'Landmark on the page. D.S. jumps back here';
+
+  @override
+  String get formMapMarkerCoda => 'Coda';
+
+  @override
+  String get formMapMarkerCodaDesc =>
+      'Start of the coda section. To Coda lands here';
+
+  @override
+  String get formMapMarkerToCoda => 'To Coda';
+
+  @override
+  String get formMapMarkerToCodaDesc =>
+      'After D.C./D.S. returns, skip ahead to the Coda';
+
+  @override
+  String get formMapMarkerFine => 'Fine';
+
+  @override
+  String get formMapMarkerFineDesc =>
+      'Stop here after D.C./D.S. returns (ignored on the first pass)';
+
+  @override
+  String get formMapJumpNone => 'No jump';
+
+  @override
+  String get formMapJumpNoneDesc => 'Clear any jump on this measure';
+
+  @override
+  String get formMapJumpDaCapo => 'D.C.';
+
+  @override
+  String get formMapJumpDaCapoDesc =>
+      'Da Capo — go back to the start, then follow To Coda / Fine';
+
+  @override
+  String get formMapJumpDalSegno => 'D.S.';
+
+  @override
+  String get formMapJumpDalSegnoDesc =>
+      'Dal Segno — go back to the Segno, then follow To Coda / Fine';
+
+  @override
+  String get formMapJumpToCoda => 'To Coda';
+
+  @override
+  String get formMapJumpToCodaDesc =>
+      'Jump to the Coda marker (only after a D.C. or D.S.)';
+
+  @override
+  String get formMapStartMeasure => 'Start measure';
+
+  @override
+  String get formMapEndMeasure => 'End measure';
+
+  @override
+  String get formMapRepeatTimes => 'Times';
+
+  @override
+  String get formMapEndingNumber => 'Which pass?';
+
+  @override
+  String get formMapInvalidSnackbar =>
+      'FormMap is invalid — fix repeats/jumps before Play';
+
+  @override
+  String get formMapInvalidMissingMeasure =>
+      'FormMap references a measure that is not mapped';
+
+  @override
+  String get formMapInvalidRepeat => 'FormMap has an invalid repeat region';
+
+  @override
+  String get formMapInvalidEnding => 'FormMap has an invalid ending';
+
+  @override
+  String get formMapInvalidLoop =>
+      'FormMap loops too long — check repeats and jumps';
+
+  @override
+  String get formMapInvalidEmptyTimeline =>
+      'FormMap produces an empty timeline';
+
+  @override
   String get scoreMenuMarks => 'Marcas';
 
   @override

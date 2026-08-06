@@ -1164,6 +1164,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
         return true;
       }
     }
+    final formMapFile = File(p.join(root.path, 'form_maps', '$scoreId.json'));
+    if (await formMapFile.exists()) {
+      try {
+        final json =
+            jsonDecode(await formMapFile.readAsString()) as Map<String, dynamic>;
+        final repeats = json['repeats'] as List<dynamic>? ?? const [];
+        final endings = json['endings'] as List<dynamic>? ?? const [];
+        final markers = json['markers'] as List<dynamic>? ?? const [];
+        final jumps = json['jumps'] as List<dynamic>? ?? const [];
+        if (repeats.isNotEmpty ||
+            endings.isNotEmpty ||
+            markers.isNotEmpty ||
+            jumps.isNotEmpty) {
+          return true;
+        }
+      } catch (_) {
+        return true;
+      }
+    }
     if ((await BookmarkStore(root: root, scoreId: scoreId).list())
         .isNotEmpty) {
       return true;

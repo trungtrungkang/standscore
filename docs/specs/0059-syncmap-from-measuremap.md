@@ -128,7 +128,8 @@ SyncMap tính (tempo 120 → 500 ms/phách đen):
 
 ## Ngoài phạm vi (Out of scope)
 
-- Lật trang rảnh tay tinh (rest ở cuối hệ, Turn amount, …) — **0060** (playhead + đưa trang vào tầm nhìn đã nằm ở 0059)
+- FormMap / lặp / volta / D.C. / coda (SyncMap bung latent) — **0061** (0059 = nối tuyến tính; FormMap rỗng giữ hành vi này)
+- Lật trang rảnh tay tinh (rest ở cuối hệ, Turn amount, …) — **0060** (`hold`; sau 0061)
 - Spike SoLoud 4.1 / `getEngineTime` — **0061**
 - BackingTrack + Transport (`ClickLane` nuốt metronome) — **0062**
 - SyncMap gõ tay — **0063**

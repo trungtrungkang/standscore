@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stagescore/form_map/form_overlay_badge.dart';
 import 'package:stagescore/library/page_extent.dart';
 import 'package:stagescore/measure_map/measure_map_selection.dart';
 import 'package:stagescore/measure_map/measure_map_store.dart';
@@ -16,11 +17,20 @@ class MeasureMapOverlayConfig {
     this.highlightedId,
     this.editingBeatsId,
     this.onMeasureLongPress,
+    this.selectOnly = false,
+    this.formBadgesForMeasure,
   });
 
   final MeasureMapStore store;
   final PageExtent? extent;
   final bool editEnabled;
+
+  /// Paint boxes and allow measure taps, but no geometry edits (FormMap, Spec 0061).
+  final bool selectOnly;
+
+  /// Typed FormMap chips (repeat / volta / marker / jump) on each MeasureBox.
+  final List<FormOverlayBadge> Function(int measureNumber)?
+      formBadgesForMeasure;
   final MeasureMapSelection selection;
   final String? highlightedId;
   final String? editingBeatsId;

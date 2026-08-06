@@ -29,5 +29,6 @@ List<String> scoreOverlayPaths({
     p.join(root.path, 'jumplinks', '$scoreId.json'),
     p.join(root.path, 'page_orders', '$scoreId.json'),
     p.join(root.path, 'measure_maps', '$scoreId.json'),
+    p.join(root.path, 'form_maps', '$scoreId.json'),
   ];
 }
