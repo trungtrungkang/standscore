@@ -1274,7 +1274,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final when = score.lastOpenedAt == null
         ? 'Added ${relativeDay(score.createdAt)}'
         : 'Opened ${relativeDay(score.lastOpenedAt!)}';
-    final pages = score.pageCount;
+    final pages = _library?.pageCountOf(score);
     if (pages == null) return when;
     return '$when · $pages ${pages == 1 ? 'page' : 'pages'}';
   }

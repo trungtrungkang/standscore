@@ -3,15 +3,24 @@ import 'dart:io';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:stagescore/library/score.dart';
 import 'package:stagescore/library/score_library.dart';
+import 'package:stagescore/library/score_origin.dart';
 import 'package:stagescore/pageorder/page_order_store.dart';
 import 'package:stagescore/setlist/setlist.dart';
 
 /// One resolved Score slot in an open Setlist session.
 class SetlistPiece {
-  const SetlistPiece({required this.score, required this.filePath});
+  const SetlistPiece({
+    required this.score,
+    required this.filePath,
+    this.originLine,
+  });
 
   final Score score;
   final String filePath;
+
+  /// "Pages 12–19 of Chopin Etudes.pdf", resolved here because this is where
+  /// the library is still in reach (Spec 0052).
+  final String? originLine;
 }
 
 /// PdfMode session spanning multiple Scores (Spec 0012).
@@ -46,7 +55,18 @@ class SetlistSession {
         skipped++;
         continue;
       }
-      pieces.add(SetlistPiece(score: score, filePath: file.path));
+      final document = library.documentFor(score);
+      pieces.add(
+        SetlistPiece(
+          score: score,
+          filePath: file.path,
+          originLine: scoreOriginLine(
+            extent: score.pageExtent,
+            documentName: document?.displayName,
+            documentPageCount: document?.pageCount,
+          ),
+        ),
+      );
     }
     if (pieces.isEmpty) {
       return (session: null, skipped: skipped);
@@ -70,10 +90,16 @@ class SetlistSession {
         sourceCount = doc.pages.length;
         await doc.dispose();
       } catch (_) {}
+      // Boundary PageTurn counts the pages of the *piece*, not of the file it
+      // shares with the rest of the book (Spec 0052).
+      final extent = piece.score.extentIn(sourceCount);
       final order = await PageOrderStore(
         root: root,
         scoreId: piece.score.id,
-      ).loadOrIdentity(sourceCount);
+      ).loadOrIdentity(
+        extent?.length ?? 0,
+        sourceFirstPage: extent?.firstPage ?? 1,
+      );
       counts.add(order.length);
     }
     return counts;

@@ -22,17 +22,29 @@ Future<int?> countPdfPages(String path) async {
   }
 }
 
-/// PNG of the PDF's first page, [width] pixels wide, or null if it cannot be
+/// PNG of one page of the PDF, [width] pixels wide, or null if it cannot be
 /// rendered.
+///
+/// [pageNumber] is a 1-based absolute page of the file. It exists because a
+/// Score is now a run of pages within a document (Spec 0052): always rendering
+/// page 1 would give all twelve pieces of one book the same picture.
 ///
 /// The whole page is rendered and the caller crops: cropping here would bake a
 /// framing decision into the cache, and the file is small either way.
-Future<Uint8List?> renderPdfFirstPagePng(String path, {int width = 240}) async {
+Future<Uint8List?> renderPdfFirstPagePng(
+  String path, {
+  int width = 240,
+  int pageNumber = 1,
+}) async {
   PdfDocument? doc;
   try {
     doc = await PdfDocument.openFile(path);
     if (doc.pages.isEmpty) return null;
-    final page = doc.pages.first;
+    // A page number left over from a since-replaced, shorter file must not
+    // throw; showing the first page is wrong but harmless, and the extent is
+    // reported as truncated elsewhere.
+    final index = (pageNumber - 1).clamp(0, doc.pages.length - 1);
+    final page = doc.pages[index];
     if (page.width <= 0 || page.height <= 0) return null;
     final scale = width / page.width;
     final height = (page.height * scale).round();

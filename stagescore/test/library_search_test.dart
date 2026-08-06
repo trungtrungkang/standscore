@@ -9,7 +9,7 @@ import 'package:stagescore/library/score.dart';
 Score _score(String id, String title) => Score(
   id: id,
   title: title,
-  relativePath: 'scores/$id.pdf',
+  pdfDocumentId: id,
   createdAt: DateTime.utc(2026),
 );
 

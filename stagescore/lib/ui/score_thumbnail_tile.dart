@@ -18,6 +18,7 @@ class ScoreThumbnailTile extends StatefulWidget {
     required this.thumbnails,
     required this.scoreId,
     required this.pdf,
+    this.pageNumber = 1,
     this.width = 44,
     this.height = 56,
   });
@@ -25,6 +26,9 @@ class ScoreThumbnailTile extends StatefulWidget {
   final ScoreThumbnails? thumbnails;
   final String scoreId;
   final File pdf;
+
+  /// The piece's first page, as an absolute page of [pdf] (Spec 0052).
+  final int pageNumber;
   final double width;
   final double height;
 
@@ -48,6 +52,7 @@ class _ScoreThumbnailTileState extends State<ScoreThumbnailTile> {
     // different Score mid-scroll.
     if (oldWidget.scoreId != widget.scoreId ||
         oldWidget.pdf.path != widget.pdf.path ||
+        oldWidget.pageNumber != widget.pageNumber ||
         oldWidget.thumbnails != widget.thumbnails) {
       setState(() => _bytes = null);
       _resolve();
@@ -58,7 +63,11 @@ class _ScoreThumbnailTileState extends State<ScoreThumbnailTile> {
     final thumbnails = widget.thumbnails;
     if (thumbnails == null) return;
     final scoreId = widget.scoreId;
-    final bytes = await thumbnails.thumbnail(scoreId: scoreId, pdf: widget.pdf);
+    final bytes = await thumbnails.thumbnail(
+      scoreId: scoreId,
+      pdf: widget.pdf,
+      pageNumber: widget.pageNumber,
+    );
     if (!mounted || bytes == null || scoreId != widget.scoreId) return;
     setState(() => _bytes = bytes);
   }

@@ -29,7 +29,7 @@ void main() {
   ScoreThumbnails thumbnails({bool renderable = true}) {
     return ScoreThumbnails(
       cacheDir: cacheDir,
-      render: (path, {int width = 240}) async {
+      render: (path, {int width = 240, int pageNumber = 1}) async {
         renders++;
         return renderable ? Uint8List.fromList([1, 2, 3]) : null;
       },

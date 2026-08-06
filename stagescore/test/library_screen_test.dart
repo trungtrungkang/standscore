@@ -63,7 +63,7 @@ void main() {
   ScoreThumbnails fakeThumbnails() {
     return ScoreThumbnails(
       cacheDir: Directory(p.join(temp.path, 'cache')),
-      render: (path, {int width = 240}) async {
+      render: (path, {int width = 240, int pageNumber = 1}) async {
         renders++;
         return _onePixelPng;
       },

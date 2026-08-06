@@ -9,21 +9,27 @@ import 'package:stagescore/ui/score_menu.dart';
 /// A route on purpose: PerformanceMode keeps the chrome up while the screen's
 /// route is not the current one, so the auto-hide countdown cannot fire behind
 /// this sheet (Spec 0034).
+/// [subtitle] carries provenance — "Pages 12–19 of Chopin Etudes.pdf" — for a
+/// Score that is one piece of a book (Spec 0052). One line, not a destination:
+/// the file a piece came out of is something to look up, never something to
+/// manage.
 Future<ScoreMenuAction?> showScoreMenu({
   required BuildContext context,
   required List<ScoreMenuGroup> groups,
+  String? subtitle,
 }) {
   return showModalBottomSheet<ScoreMenuAction>(
     context: context,
     isScrollControlled: true,
-    builder: (context) => _ScoreMenuSheet(groups: groups),
+    builder: (context) => _ScoreMenuSheet(groups: groups, subtitle: subtitle),
   );
 }
 
 class _ScoreMenuSheet extends StatelessWidget {
-  const _ScoreMenuSheet({required this.groups});
+  const _ScoreMenuSheet({required this.groups, this.subtitle});
 
   final List<ScoreMenuGroup> groups;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +56,22 @@ class _ScoreMenuSheet extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(left: AppSpacing.sm),
-                      child: Text('Menu', style: theme.textTheme.titleLarge),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Menu', style: theme.textTheme.titleLarge),
+                          if (subtitle != null)
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   TextButton(

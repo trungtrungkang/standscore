@@ -31,7 +31,9 @@ class PageScalePrefs {
   /// scoreId → scale
   final Map<String, double> scoreScales;
 
-  /// "$scoreId:$sourcePage" → scale
+  /// `"$scoreId:$sourcePage"` → scale, where `sourcePage` is the **absolute**
+  /// 1-based page of the Score's PdfDocument — the same space annotations and
+  /// `PageOrderEntry.sourcePage` live in, never a page within a PageExtent.
   final Map<String, double> pageScales;
 
   static double clampScale(double value) =>
@@ -85,6 +87,37 @@ class PageScalePrefs {
           pageScales: {...pageScales, pageKey(scoreId, sourcePage): clamped},
         );
     }
+  }
+
+  /// Hand each per-page override to whichever Score now owns that page
+  /// (Spec 0052).
+  ///
+  /// Splitting a book leaves every page override keyed to the book's Score id,
+  /// which after a split is only the *first* piece — so an override on page 90
+  /// would be orphaned the moment the split happened. [ownerOf] answers with
+  /// the Score id owning an absolute page, or null when no piece covers it;
+  /// overrides with no owner are dropped, because the page belongs to nothing.
+  PageScalePrefs reassignPageScales({
+    required String scoreId,
+    required String? Function(int sourcePage) ownerOf,
+  }) {
+    final prefix = '$scoreId:';
+    final reassigned = <String, double>{};
+    for (final entry in pageScales.entries) {
+      if (!entry.key.startsWith(prefix)) {
+        reassigned[entry.key] = entry.value;
+        continue;
+      }
+      final page = int.tryParse(entry.key.substring(prefix.length));
+      if (page == null) {
+        reassigned[entry.key] = entry.value;
+        continue;
+      }
+      final owner = ownerOf(page);
+      if (owner == null) continue;
+      reassigned[pageKey(owner, page)] = entry.value;
+    }
+    return copyWith(pageScales: reassigned);
   }
 
   PageScalePrefs copyWith({

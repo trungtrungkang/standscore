@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 
-/// Renders the first page of the PDF at [path] as PNG bytes (Spec 0040).
+/// Renders one page of the PDF at [path] as PNG bytes (Spec 0040, 0052).
 typedef ScoreThumbnailRenderer =
-    Future<Uint8List?> Function(String path, {int width});
+    Future<Uint8List?> Function(String path, {int width, int pageNumber});
 
 /// First-page thumbnails for the Library list, cached so a scroll never
 /// renders (Spec 0040).
@@ -15,10 +15,13 @@ typedef ScoreThumbnailRenderer =
 /// - **Derived data, not library data.** The cache lives outside the library
 ///   root, so it is never swept into a backup ZIP (0027) and the OS may purge
 ///   it. Anything here can be rebuilt from the PDFs.
-/// - **The file's own mtime is the cache key.** Replace PDF (0024) and Restore
-///   (0027) both swap bytes under an unchanged Score id, so keying by id alone
-///   would show yesterday's page. Keying by id *and* mtime makes staleness
-///   impossible rather than something callers must remember to invalidate.
+/// - **The file's mtime *and* the page are the cache key.** Replace PDF (0024)
+///   and Restore (0027) both swap bytes under an unchanged Score id, so keying
+///   by id alone would show yesterday's page. Since Spec 0052 the page matters
+///   too: editing a Score's PageExtent changes which page is its cover while
+///   leaving the file's mtime untouched, so a key without the page would never
+///   refresh. Keying by all three makes staleness impossible rather than
+///   something callers must remember to invalidate.
 ///
 /// A failed render is remembered as a miss for the session, so a corrupt file
 /// costs one attempt instead of one per scroll.
@@ -38,16 +41,19 @@ class ScoreThumbnails {
 
   /// The thumbnail for [scoreId], or null if [pdf] cannot be rendered.
   ///
+  /// [pageNumber] is the piece's first page as an absolute page of [pdf].
+  ///
   /// Safe to call from a widget build: repeated calls for the same key share
   /// one render and answer from memory afterwards.
   Future<Uint8List?> thumbnail({
     required String scoreId,
     required File pdf,
+    int pageNumber = 1,
   }) async {
-    final key = await _key(scoreId, pdf);
+    final key = await _key(scoreId, pdf, pageNumber);
     if (key == null) return null;
     if (_memory.containsKey(key)) return _memory[key];
-    return _inFlight[key] ??= _load(scoreId, pdf, key);
+    return _inFlight[key] ??= _load(scoreId, pdf, key, pageNumber);
   }
 
   /// Drop everything cached for [scoreId] — call on Delete (0028).
@@ -57,13 +63,18 @@ class ScoreThumbnails {
     await _deleteFiles(scoreId, keep: null);
   }
 
-  Future<Uint8List?> _load(String scoreId, File pdf, String key) async {
+  Future<Uint8List?> _load(
+    String scoreId,
+    File pdf,
+    String key,
+    int pageNumber,
+  ) async {
     try {
       final file = File(p.join(_cacheDir.path, '$key.png'));
       if (await file.exists()) {
         return _remember(key, await file.readAsBytes());
       }
-      final bytes = await _render(pdf.path, width: width);
+      final bytes = await _render(pdf.path, width: width, pageNumber: pageNumber);
       if (bytes == null) return _remember(key, null);
       await _cacheDir.create(recursive: true);
       await file.writeAsBytes(bytes, flush: true);
@@ -82,11 +93,11 @@ class ScoreThumbnails {
     return bytes;
   }
 
-  Future<String?> _key(String scoreId, File pdf) async {
+  Future<String?> _key(String scoreId, File pdf, int pageNumber) async {
     try {
       final stat = await pdf.stat();
       if (stat.type == FileSystemEntityType.notFound) return null;
-      return '$scoreId-${stat.modified.millisecondsSinceEpoch}';
+      return '$scoreId-${stat.modified.millisecondsSinceEpoch}-p$pageNumber';
     } catch (_) {
       return null;
     }

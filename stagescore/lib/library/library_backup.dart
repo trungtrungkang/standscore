@@ -5,6 +5,7 @@ import 'dart:isolate';
 
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as p;
+import 'package:stagescore/library/library_migration.dart';
 
 /// Progress update for backup / restore (Spec 0050).
 class BackupProgress {
@@ -65,7 +66,13 @@ class LibraryBackup {
   // These two keep the pre-rename `standscore` spelling on purpose: renaming
   // them would make every backup ZIP taken before the rename unrestorable.
   static const markerFileName = 'standscore-backup.json';
-  static const formatVersion = 1;
+
+  /// Bumped to `2` by Spec 0052, when `library.json` grew a `pdfDocuments`
+  /// list. Only an older app reading a newer backup is refused: the check is
+  /// *newer than mine*, not *different from mine*, so a `version: 1` backup
+  /// still restores here and is migrated straight afterwards. Refusing it
+  /// would lose data for exactly the people who keep backups.
+  static const formatVersion = 2;
   static const formatId = 'standscore-backup';
 
   /// Writes a ZIP of [libraryRoot] (plus marker) to [zipFile].
@@ -372,6 +379,11 @@ Future<Map<String, Object?>> _restoreBackupWorker(Map<String, Object?> args) asy
         await libraryRoot.rename(asidePath);
       }
       await staging.rename(libraryRootPath);
+      // A `version: 1` backup passes the marker check and carries a pre-0052
+      // manifest, so it is migrated here rather than at the next app start:
+      // one restore mid-session would otherwise hand a manifest with no
+      // `pdfDocuments` to code that expects one.
+      _migrateRestoredManifest(libraryRootPath);
 
       if (await aside.exists()) {
         await aside.delete(recursive: true);
@@ -508,6 +520,27 @@ Map<String, String> _loadScoreTitles(String libraryRootPath) {
     return _titlesFromScoresJson(json['scores']);
   } catch (_) {
     return {};
+  }
+}
+
+/// Bring a just-restored `library.json` up to the current layout (0052 + 0055).
+///
+/// Best-effort by design: a manifest this fails to rewrite is still the one
+/// the user had a moment ago, and the same migration runs again at library
+/// open. Throwing here would turn a restored library into a failed restore.
+void _migrateRestoredManifest(String libraryRootPath) {
+  try {
+    final file = File(p.join(libraryRootPath, 'library.json'));
+    if (!file.existsSync()) return;
+    final decoded =
+        jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+    final migrated = migrateLibraryManifest(decoded);
+    if (identical(migrated, decoded)) return;
+    file.writeAsStringSync(
+      const JsonEncoder.withIndent('  ').convert(migrated),
+    );
+  } catch (_) {
+    // Left for migrateIfNeeded() at the next library open.
   }
 }
 

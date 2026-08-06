@@ -9,7 +9,7 @@ Score _score(String id, String title, {DateTime? created, DateTime? opened}) {
   return Score(
     id: id,
     title: title,
-    relativePath: 'scores/$id.pdf',
+    pdfDocumentId: id,
     createdAt: created ?? DateTime.utc(2026, 1, 1),
     lastOpenedAt: opened,
   );

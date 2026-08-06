@@ -99,8 +99,8 @@ void main() {
       overlays: ReplacePdfOverlayChoice.keep,
     );
 
-    expect(updated.id, score.id);
-    expect(updated.title, 'Piece');
+    expect(updated.scores.single.id, score.id);
+    expect(updated.scores.single.title, 'Piece');
     expect(await annotation.exists(), isTrue);
     expect(await library.absoluteFile(score).readAsBytes(), [
       0x25,
@@ -183,13 +183,16 @@ void main() {
         ),
       );
 
+      // Resolve the file before deleting: once the last Score on a document
+      // is gone the document is gone too, so there is nothing left to ask.
+      final droppedFile = library.absoluteFile(drop);
       await library.deleteScore(drop.id);
       await labels.setScoreLabels(drop.id, {});
       await setlists.removeScoreFromAll(drop.id);
 
       final listed = await library.listScores();
       expect(listed.map((s) => s.id), [keep.id]);
-      expect(await library.absoluteFile(drop).exists(), isFalse);
+      expect(await droppedFile.exists(), isFalse);
       for (final path in scoreOverlayPaths(root: temp, scoreId: drop.id)) {
         expect(await File(path).exists(), isFalse, reason: path);
       }
@@ -261,8 +264,8 @@ void main() {
         originalFileName: 'Chart.pdf',
       );
 
-      expect(score.pageCount, 4);
-      expect((await counted.listScores()).single.pageCount, 4);
+      expect(counted.pageCountOf(score), 4);
+      expect(counted.pageCountOf((await counted.listScores()).single), 4);
     });
 
     test('stays null when the PDF cannot be read', () async {
@@ -271,7 +274,7 @@ void main() {
         sourcePath: source.path,
         originalFileName: 'Chart.pdf',
       );
-      expect(score.pageCount, isNull);
+      expect(library.pageCountOf(score), isNull);
     });
 
     test('backfills Scores imported before the count existed', () async {
@@ -284,8 +287,8 @@ void main() {
       final counted = ScoreLibrary(root: temp, countPages: (path) async => 7);
       final filled = await counted.backfillPageCounts();
 
-      expect(filled!.single.pageCount, 7);
-      expect((await counted.listScores()).single.pageCount, 7);
+      expect(counted.pageCountOf(filled!.single), 7);
+      expect(counted.pageCountOf((await counted.listScores()).single), 7);
       expect(
         await counted.backfillPageCounts(),
         isNull,
@@ -304,7 +307,7 @@ void main() {
         sourcePath: source.path,
         originalFileName: 'Chart.pdf',
       );
-      expect(score.pageCount, 3);
+      expect(counted.pageCountOf(score), 3);
 
       pages = 9;
       final replaced = await counted.replacePdf(
@@ -313,8 +316,8 @@ void main() {
         overlays: ReplacePdfOverlayChoice.keep,
       );
 
-      expect(replaced.pageCount, 9);
-      expect((await counted.listScores()).single.pageCount, 9);
+      expect(counted.pageCountOf(replaced.scores.single), 9);
+      expect(counted.pageCountOf((await counted.listScores()).single), 9);
     });
   });
 }
