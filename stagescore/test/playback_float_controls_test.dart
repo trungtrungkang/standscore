@@ -23,7 +23,7 @@ void main() {
             enabled: true,
             normX: 1,
             normY: 1,
-            onNormChanged: (_, __) {},
+            onNormChanged: (_, _) {},
             onPlay: () {},
             onPause: () {},
             onStop: () {},

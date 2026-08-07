@@ -1,0 +1,50 @@
+#!/bin/sh
+# Pre-push gate for StageScore.
+#
+# ADR 0016 argues a cheap model is safe because an automatic gate catches its
+# failures. This repo has no CI, so `flutter analyze` and `flutter test` either
+# run here or run nowhere.
+#
+# Install on a fresh clone (the hook is versioned, .git/hooks is not):
+#   ln -sf ../../.githooks/pre-push .git/hooks/pre-push
+#
+# Bypass with `git push --no-verify` only when the Orchestrator accepts the risk.
+
+repo_root=$(git rev-parse --show-toplevel) || exit 1
+app_dir="$repo_root/stagescore"
+
+# A branch-delete push carries no code, so there is nothing to verify.
+# git feeds "<local ref> <local sha> <remote ref> <remote sha>" on stdin, and an
+# all-zero local sha means the ref is being deleted.
+has_code=no
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+	[ -n "$local_sha" ] || continue
+	case "$local_sha" in
+	*[!0]*) has_code=yes ;;
+	esac
+done
+[ "$has_code" = yes ] || exit 0
+
+if ! command -v flutter >/dev/null 2>&1; then
+	echo "pre-push: flutter is not on PATH, so the push cannot be verified." >&2
+	echo "          Fix the PATH, or push with --no-verify and run the checks by hand." >&2
+	exit 1
+fi
+
+cd "$app_dir" || exit 1
+
+echo "pre-push: flutter analyze"
+if ! flutter analyze; then
+	echo "pre-push: blocked, flutter analyze failed. Push again once it is clean." >&2
+	exit 1
+fi
+
+# -r failures-only: the default reporter prints a line per test, and a green
+# suite is 650+ lines of noise for the Orchestrator to scroll past.
+echo "pre-push: flutter test -r failures-only"
+if ! flutter test -r failures-only; then
+	echo "pre-push: blocked, flutter test failed. Push again once it is green." >&2
+	exit 1
+fi
+
+echo "pre-push: analyze clean, tests green."

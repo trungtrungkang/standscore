@@ -1,0 +1,166 @@
+---
+description: AI workflow — tier triage (S/M/L), model routing, context budget, verify commands, reporting
+alwaysApply: true
+---
+
+# AI workflow — StageScore
+
+This file executes two accepted ADRs: **0013** (tier triage on top of SDO) and
+**0016** (model routing by phase, with a floor that is never lowered). It adds
+no policy of its own. If it conflicts with an ADR or an accepted Spec, the
+ADR/Spec wins and this file is the defect.
+
+`session-hygiene.mdc` owns *when to cut the chat*; do not restate it here.
+Written in English because only agents act on it (ADR 0015).
+
+## Announce before working — one line, in the Orchestrator's language
+
+> "Tier M (`stagescore/lib/pdf`, ~4 file, không vùng nhạy cảm) → Sonnet, build
+> theo Spec 0060."
+
+| Tier | When | Gates |
+|---|---|---|
+| **S** | Fix inside already-accepted behavior, small radius | none — still bound by "never invent product behavior" |
+| **M** | One feature, or a complex bug | Spec accepted at **G3**, verify at **G4** |
+| **L** | Sensitive area, a change to an accepted ADR, or a change that spans this repo and the web repo | **G2** ADR + **G3** Spec + **G4**, plus Security Review |
+
+- An S task growing past ~5 files, or reaching outside accepted behavior →
+  **STOP**, announce the new tier, follow its gates.
+- Ambiguity discovered mid-build is a signal to **go back to G3**, not a signal
+  to raise the model.
+- Unsure between two tiers → ask one question instead of guessing.
+
+## Never-downgrade areas — top-tier model, no justification needed
+
+The StageScore floor, as amended into ADR 0016 § Sàn không được hạ (2026-08-08).
+The web repo's list — auth, billing, LiveKit, R2 — describes files that do not
+exist here, so these are the paths that carry the same asymmetry:
+
+- **Audio ownership / timing:** `lib/metronome/**`, `lib/sync_map/sync_map_playback.dart`
+- **Destructive data paths:** `lib/library/library_backup.dart`, delete paths in
+  `lib/library/score_library.dart`, any `**/*_persistence.dart`
+- **Anything leaving the device:** `lib/brand/brand.dart` URLs, share extension,
+  `PrivacyInfo.xcprivacy`, `docs/product/STORE-LISTING.md`
+- **New platform channel, native audio, or OMR vendor** — also a hard stop for the human
+- **Editing an accepted ADR**
+
+The first two are the ones `git revert` cannot undo: a wrong `formatVersion` or a
+wrong delete branch is a musician's data on their own device, not a line of code.
+
+## Model by phase (ADR 0016) — the default, before any override
+
+| Phase | Judgement | Tokens | Model |
+|---|---|---|---|
+| Explore, inventory, search, read-to-understand | low | very high | cheapest, **always via subagent** |
+| Decide — ADR, Spec, grilling, interface design | very high | low | top-tier |
+| Build against a locked Spec | medium | medium | mid-tier (session default) |
+| Review | high, and needs another angle | medium | different family than the author |
+| Mechanical — rename, format, translate, boilerplate | low | medium | cheapest |
+
+Escalate only on a real signal: a second failed attempt on the same problem,
+tests still red after one deliberate fix, or the agent's own stated uncertainty.
+Log the escalation in one line, so a Spec that keeps needing it becomes visible.
+
+## Model by logic type — overrides the phase default per subtask
+
+- **Pattern-following** → cheap model: a menu row from an existing sheet, l10n
+  strings, a persistence file mirroring another one, tests copied from a sibling.
+- **Design-heavy** → a strong model writes the state machine, the invariants and
+  the test list **into the Spec first**; a cheap model only fills in the approved
+  design. No approved design → do not delegate. In this repo design-heavy means:
+  gesture arena, zoom/pan lifecycle, scroll anchoring, PageTurn timing,
+  MeasureMap/SyncMap/metronome clocks, PageOrder.
+  *Evidence:* Spec 0033 reopened twice and both root causes were framework
+  timing — `kDoubleTapTimeout` disambiguation, then `InteractiveViewer` inertia
+  writing to the controller after `onInteractionEnd`. Neither was missing code,
+  so neither was findable by a model implementing line by line.
+- Always pass `model` explicitly to a subagent. It defaults to `inherit`, so an
+  expensive lead silently spawns expensive workers.
+- Review a diff with a **different model family** than the one that wrote it.
+- Give a worker its slice — Spec section, file list, acceptance check — never the
+  run history. A worker expanding scope beyond the Spec is a defect, not a bonus.
+
+## Context budget — where the bill actually is
+
+ADR 0016 measured it: **89% of the cost was the build phase running in one long
+chat**, and the deliberately expensive decide phase was 2.4%. So the levers are
+about *volume*, not about model names.
+
+- **G3 accept is a chat boundary** (ADR 0016 § Một chat, một pha): the chat that
+  locks a Spec does not build it, and one chat carries at most one Spec. A
+  "continue" on an already-long chat is a signal to cut the chat, not an
+  instruction to keep going — measured once at 42% of a whole chat's cost.
+- Exploration, inventory and "read to understand" always go to a **cheap
+  subagent** — its tokens then never enter this chat.
+- **Never full-read a file over ~800 lines.** Grep first, then Read with
+  `offset`/`limit`. The two most-edited files are also the two most expensive to
+  hold: `lib/ui/pdf_mode_screen.dart` (~2.8k lines), `lib/ui/library_screen.dart`
+  (~2.3k).
+- **Never read or edit `lib/l10n/gen/**`** — 22k generated lines. Edit
+  `lib/l10n/app_*.arb` and regenerate.
+- **Never full-read** `docs/product/DECISIONS-LOG.md` (~250 KB ≈ 60k tokens) or
+  `docs/adr/0019-*.md` (~81 KB). Read the tail, or grep the one heading needed.
+- The metric to watch is **agent turns in one chat**, not the model name. Past
+  roughly 100 turns, a single chat is the largest line item of the day.
+
+## Verify commands
+
+**An agent may run** (seconds), from `stagescore/`:
+
+```bash
+flutter analyze
+flutter test -r failures-only test/<one>_test.dart   # while iterating
+flutter test -r failures-only                        # once before handover
+```
+
+Always pass `-r failures-only`. The default reporter prints one line per test,
+so a green full suite (653 tests, ~40s wall) otherwise dumps 653 lines into the
+chat and every later turn pays for them again.
+
+Flutter needs to write its own cache, so these commands **fail inside the
+sandbox** ("Operation not permitted" on `bin/cache/engine.stamp.tmp`). Request
+full permissions on the first try rather than burning a round trip on the error.
+
+**Only the Orchestrator runs:** `flutter build apk|appbundle|ipa`, Gradle,
+Xcode, and every on-device demo. An agent polling a multi-minute build costs
+more than the single error line it returns — ask for the failing tail instead.
+
+This repo has **no CI**, so the only automatic gate is the versioned pre-push
+hook `.githooks/pre-push`, which runs `flutter analyze` then
+`flutter test -r failures-only` and refuses the push if either fails. It is what
+ADR 0016 § *Gate tự động* assumes exists when it calls a cheap model safe. A
+fresh clone does not have it — `.git/hooks` is not versioned — so install it
+once with:
+
+```bash
+ln -sf ../../.githooks/pre-push .git/hooks/pre-push
+```
+
+The hook is a backstop, not a substitute: it still runs only at push time, and
+nothing at all catches a skipped G3 except the Orchestrator.
+
+## Reporting, and the remediation circuit breaker
+
+Separate **Evidence** (a command that was run, plus its output) from **Not
+verified** (and why). The shape to copy is Spec 0033's own note: *"301 tests
+xanh, analyze sạch. Chưa demo lại trên thiết bị thật."* A successful compile is
+never runtime evidence, and gesture, timing and layout behavior stays unverified
+until the Orchestrator demos it on a device.
+
+After **two** remediation rounds on the same finding, **STOP**. Do not start a
+third with the same model: report what keeps breaking and ask whether to
+escalate the model, write a design note, or cut scope.
+
+## Spec and log hygiene — a cost rule, not a tidiness rule
+
+- **One Spec, one open question.** A `done` Spec that reopens gets a *new* Spec.
+  Appending "Cập nhật sau G4" essays means every later session re-reads the whole
+  history at full price — 0033 and 0052 (63 KB) are the warnings.
+- A Spec heading past ~200 lines, or covering three unrelated behaviors at G3,
+  should be **split**. 0054 bundled three and cost a 193-turn build; cutting the
+  Spec at G3 was the cheapest lever available.
+- `DECISIONS-LOG.md` rows are one or two sentences. Anything longer belongs in
+  the Spec or in an ADR — the log is read far more often than it is written.
+- A bug fix carries a regression test. Commit messages explain the root cause
+  (why), not the diff (what).
+- Only commit when the Orchestrator asks.

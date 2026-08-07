@@ -5,7 +5,8 @@ Main session mặc định chạy **Sonnet 5**. **Opus 5** dành cho pha quyết
 **Status:** accepted
 **Decided by:** Human Orchestrator (2026-07-28)
 **Amended:** 2026-08-05 — thêm số đo thực tế và luật cắt chat tại G3 (xem *Đo lường*)
-**Relates to:** ADR 0013 (tier triage — cơ chế định tuyến mà ADR này dùng lại), `.cursor/rules/ai-workflow.mdc`, `.cursor/rules/session-hygiene.mdc`
+**Amended:** 2026-08-08 — sàn không được hạ nay có danh sách riêng cho StageScore (xem *Sàn không được hạ*)
+**Relates to:** ADR 0013 (tier triage — cơ chế định tuyến mà ADR này dùng lại), `.cursor/rules/session-hygiene.mdc`, và `.cursor/rules/ai-workflow.mdc` — **hai file khác nhau cùng tên**, một ở repo này và một ở repo web
 
 ## Bối cảnh (Context)
 
@@ -62,9 +63,22 @@ Từ đó có một chẩn đoán đáng giá: **nếu phải leo lên Opus đ�
 
 ### Sàn không được hạ
 
-Dùng lại **nguyên danh sách never-downgrade của tier L** trong `ai-workflow.mdc` làm sàn model: auth và session, billing cùng webhook, LiveKit token, `packages/core-audio/` ở mọi đường dẫn, env và secret, presigned R2 URL, và mọi migration phá huỷ dữ liệu. Ở những chỗ đó **luôn là Opus 5, không bao giờ hạ, không cần lý do gì thêm.**
+Ở những vùng dưới đây **luôn là Opus 5, không bao giờ hạ, không cần lý do gì thêm.**
 
-Lý do là sự bất đối xứng: chi phí một model là hữu hạn và biết trước; chi phí một sự cố auth hoặc billing thì không.
+Lý do là sự bất đối xứng: chi phí một model là hữu hạn và biết trước; chi phí một sự cố auth, một lần xoá mất thư viện của musician, hay một dòng khai báo privacy sai thì không.
+
+**Repo web** — dùng lại nguyên danh sách never-downgrade của tier L trong `ai-workflow.mdc` bên đó: auth và session, billing cùng webhook, LiveKit token, `packages/core-audio/` ở mọi đường dẫn, env và secret, presigned R2 URL, và mọi migration phá huỷ dữ liệu.
+
+**StageScore (bổ sung 2026-08-08).** Bản gốc của ADR này chỉ có danh sách bên web, và **không một mục nào trong đó tồn tại ở đây** — app offline, không auth, không billing, không token bên thứ ba. Nghĩa là trên thực tế repo này chạy không có sàn nào cả, dù ADR 0013 § Hệ quả đã nêu sẵn các trigger tier L của nó. Dịch bốn trigger đó thành đường dẫn:
+
+| Vùng | Đường dẫn |
+|------|-----------|
+| Quyền sở hữu audio và mọi thứ đo thời gian | `lib/metronome/**`, `lib/sync_map/sync_map_playback.dart` |
+| Đường dẫn phá huỷ dữ liệu | `lib/library/library_backup.dart`, nhánh xoá trong `lib/library/score_library.dart`, mọi `**/*_persistence.dart` |
+| Dữ liệu rời khỏi thiết bị | URL trong `lib/brand/brand.dart`, share extension, `PrivacyInfo.xcprivacy`, `docs/product/STORE-LISTING.md` |
+| Platform channel mới, native audio, hoặc OMR vendor | chưa có file nào — đồng thời là hard stop phải hỏi người |
+
+Hai vùng đầu là chỗ mà một sự cố *không* hoàn tác được bằng `git revert`: một lần ghi sai `formatVersion` hay xoá sai overlay là dữ liệu của musician trên thiết bị của họ, không phải một dòng code. Đó là lý do chúng ở đây dù app không có auth lẫn billing.
 
 ### Một chat, một pha (bổ sung 2026-08-05)
 
@@ -111,6 +125,9 @@ Còn một tín hiệu nữa cần đọc đúng: ngay cả khi tách chat, riê
 ## Hệ quả (Consequences)
 
 - `ai-workflow.mdc` nhận bảng cụ thể ở trên. Chính sách subagent cũ được giữ và mạnh thêm: khám phá **luôn** dùng model rẻ, không phải "cùng tier hoặc rẻ hơn".
+- **Đã thi hành ở repo này 2026-08-08.** Hệ quả trên chỉ xảy ra bên web; repo này không có `ai-workflow.mdc` nào cho tới hôm nay, nên trong hơn mười ngày toàn bộ chính sách này chỉ tồn tại dưới dạng văn xuôi trong một ADR mà không gì buộc phải đọc. File `.cursor/rules/ai-workflow.mdc` giờ giữ các bảng ở dạng luật always-applied, cộng ba thứ lấy từ workflow bên web mà ADR này chưa nói: định tuyến theo **loại logic** (thiết kế-nặng thì model mạnh viết state machine vào Spec *trước*, model rẻ chỉ điền), **quyền sở hữu build** (agent không chạy `flutter build`/Gradle), và **ngắt mạch sau hai vòng sửa**. Đoạn trùng trong `AGENTS.md` thu về một con trỏ, vì cả hai file đều always-applied nên giữ hai bản là trả tiền hai lần mỗi lượt.
+- Ngân sách context cần đường dẫn cụ thể mới có tác dụng, và số đo ngày 2026-08-08 chỉ ra bốn chỗ: `docs/product/DECISIONS-LOG.md` **250 KB trong 236 dòng** (~60k token, dòng dài nhất 8.866 ký tự), `lib/l10n/gen/` 21.971 dòng sinh tự động, `lib/ui/pdf_mode_screen.dart` 2.803 dòng và cũng là file bị sửa nhiều nhất (16 commit từ 01/06), và reporter mặc định của `flutter test` in 653 dòng cho một suite xanh. Luật đọc file nằm trong rule; việc cắt bản thân log là một quyết định riêng.
+- Luận điểm "gate tự động làm model rẻ trở nên an toàn" **không đứng ở repo này**: `.git/hooks` chỉ có file `.sample`, không có `.github/workflows`, không CI nào. Bộ phát hiện duy nhất là `flutter analyze` cộng `flutter test` chạy có ý thức trước khi commit. Nếu muốn hạ pha build xuống model rẻ hơn nữa thì một pre-push hook là điều kiện trước, không phải việc làm thêm.
 - Dòng công bố tier của ADR 0013 nay mang thêm model: *"Task M (apps/web, ~6 file, không vùng nhạy cảm) → Sonnet 5, viết spec trước."* Model được nói to cũng là một quyết định người khác thấy được.
 - ~~**Chính sách này là một giả thuyết, chưa phải kết luận.**~~ Đã đo ngày 2026-08-05, xem *Đo lường*. Giả thuyết "tiền tập trung ở khám phá" **sai**; tiền tập trung ở context tích luỹ của pha hiện thực trong chat dài. Bảng định tuyến theo pha vẫn đúng, nhưng nó chỉ phát huy tác dụng khi đi kèm luật *Một chat, một pha* — thiếu luật đó thì việc chọn model gần như vô nghĩa.
 - Thước đo cần nhìn từ nay là **số lượt agent trong một chat**, không phải tên model. Một chat vượt khoảng 100 lượt đã tự nó thành khoản chi lớn nhất trong ngày, bất kể chạy model nào.
