@@ -27,7 +27,7 @@ Repo web đã có đúng mô hình này (`MeasureBox` + `beatSplits` trong `pack
 
 ## Kết quả (Outcome)
 
-Nhạc công mở một bài (Score con, hoặc Score một-bài), vào chế độ soạn MeasureMap, vẽ vài **SystemBox** (dòng nhạc), chia thành **MeasureBox**, kéo vạch chia **BeatBox** khi in không đều. Chép layout từ trang trước khi trang kế cùng bố cục. Map vài trang rồi thoát — app vẫn chịu được lỗ hổng (G2 câu 8).
+Nhạc công mở một bài (Score con, hoặc Score một-bài), vào chế độ soạn MeasureMap, vẽ vài **SystemBox** (một *system* = mọi khuông chơi cùng lúc), chia thành **MeasureBox**, kéo vạch chia **BeatBox** khi in không đều. Chép layout từ trang trước khi trang kế cùng bố cục. Map vài trang rồi thoát — app vẫn chịu được lỗ hổng (G2 câu 8).
 
 Từ đó: gõ số ô nhịp → nhảy tới đúng chỗ trên trang. Người chưa map gì **không thấy khác biệt** ngoài một mục menu mới.
 
@@ -42,7 +42,7 @@ Từ đó: gõ số ô nhịp → nhảy tới đúng chỗ trên trang. Ngườ
 
 | Tầng | Là gì | Soạn |
 |---|---|---|
-| **SystemBox** | Một dòng nhạc (*system*) trên trang | Vẽ hộp → dialog hỏi số MeasureBox; hoặc chép từ trang trước; **chọn khung** → resize/move / *Set measure count* / *Delete system* (rev. 1) |
+| **SystemBox** | Một *system* trên trang — **mọi khuông nhạc (staff) vang lên cùng lúc**: piano hai tay là một hộp gồm 2 khuông | Vẽ hộp → dialog hỏi số MeasureBox; hoặc chép từ trang trước; **chọn khung** → resize/move / *Set measure count* / *Delete system* (rev. 1) |
 | **MeasureBox** | Một ô nhịp trong SystemBox | Sinh từ dialog lúc tạo SystemBox; chia đều trong hộp; kéo vạch; chọn ô → xoá / tempo·time sig / *Edit beats* |
 | **BeatBox** | Một phách trong MeasureBox | N mốc nội tại theo time signature (ẩn); *Edit beats* hiện **N** vạch để kéo khớp nốt (không tính hai vạch nhịp mép) |
 
@@ -105,7 +105,7 @@ Thêm: **MeasureMap**, **SystemBox**, **MeasureBox**, **BeatBox**. Siết **Sync
 | Term | Ghi chú |
 |---|---|
 | **MeasureMap** | Hình học ô nhịp trên trang của **một** Score; không phải thời gian |
-| **SystemBox** | Một *system* (dòng nhạc) trên trang — **không** gọi `RowBox` |
+| **SystemBox** | Một *system* trên trang = mọi khuông nhạc (staff) vang lên cùng lúc — **không** gọi `RowBox`, **không** dịch là "dòng nhạc" (2026-08-08) |
 | **MeasureBox** | Ô nhịp; trùng tên/nghĩa với web |
 | **BeatBox** | Phách trong ô; trên đĩa là `beatSplits` **N mốc nội tại** (rev. 2); UI mặc định ẩn (câu 15) |
 | **PageExtent** / **Score** / **PdfDocument** | Đã có — MeasureMap neo theo trang tuyệt đối trong PageExtent của Score đang mở |
@@ -203,7 +203,7 @@ Orchestrator: câu **1–10** theo khuyến nghị; câu **11–15** chốt tron
 - **Select SystemBox** (rev. 1): mọi system vẽ khung mỏng trong edit mode; khung đậm khi đang chọn. Tap khung = chọn dòng (menu system + resize/move). Tap ô = chọn ô (menu measure). Long-press ô = chọn system chứa nó.
 - **Resize / move** (rev. 1): chỉ khi system đang chọn — kéo mép hoặc thân. Chưa chọn mà chạm mép → chỉ select.
 - **BeatBox** (G3 câu 15 / rev. 2): mặc định ẩn. *Edit beats* trên ô đang chọn → hiện **N** mốc nội tại (4/4 → 4 vạch, không tính hai vạch nhịp mép) để kéo khớp nốt từng phách; thoát thì ẩn.
-- Empty state chế độ soạn: một câu (*vẽ dòng nhạc — app sẽ hỏi bao nhiêu ô*) + nút chép trang trước nếu trang trước đã có map.
+- Empty state chế độ soạn: một câu (*vẽ một system — bao trọn mọi khuông nhạc chơi cùng lúc; app sẽ hỏi bao nhiêu ô*) + nút chép trang trước nếu trang trước đã có map.
 - Confirm trước khi xoá cả map hoặc xoá system đang chứa nhiều ô (lối *Delete system*, khác với xoá từng ô).
 - Nhảy tới ô: highlight tắt sau ~1s hoặc tap — không để khung vĩnh viễn đè nốt.
 

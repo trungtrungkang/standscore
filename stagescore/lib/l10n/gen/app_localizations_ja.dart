@@ -344,6 +344,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
 
   @override
+  String get scoreMenuReflowSpike => 'Reflow (spike)';
+
+  @override
   String get formMapEmptyHint =>
       'No form = play straight through once. Add a repeat (with optional 1st/2nd ending) or tap a MeasureBox for markers/jumps. Jump Links are different — they jump pages by hand.';
 
@@ -2008,7 +2011,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get measureMapCopyPrevious => '前のページをコピー';
 
   @override
-  String get measureMapEmptyHint => 'System を描くと、小節数を尋ねます';
+  String get measureMapEmptyHint => 'System を描きます — 同時に演奏する譜表すべてを囲みます。小節数を尋ねます';
 
   @override
   String get measureMapDone => '完了';

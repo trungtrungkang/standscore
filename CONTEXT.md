@@ -66,8 +66,8 @@ Chỉ số lần thăm trên timeline phát sau khi bung FormMap (`SyncMapEntry.
 _Avoid_: physical measure, measureNumber trên giấy
 
 **SystemBox**:
-Một *system* (dòng nhạc) trên trang trong MeasureMap. Không lưu riêng trên đĩa — dựng lại bằng cách gom MeasureBox theo `systemIndex`.
-_Avoid_: RowBox, staff system box, line box
+Một *system* trên trang trong MeasureMap — **toàn bộ các khuông nhạc (staff) vang lên cùng lúc**, đóng ngoặc ở đầu dòng và đọc một lượt từ trái sang phải: piano hai tay là **một** system gồm 2 khuông, piano + vocal là **một** system gồm 3 khuông, tổng phổ orchestra là **một** system gồm nhiều khuông. Không lưu riêng trên đĩa — dựng lại bằng cách gom MeasureBox theo `systemIndex`.
+_Avoid_: RowBox, staff system box, line box, **"dòng nhạc"** (mơ hồ trong tiếng Việt — đọc thành *staff* cũng được; một hộp mỗi khuông làm `measureNumber` đếm gấp đôi và ReadBox cắt đôi grand staff)
 
 **MeasureBox**:
 Một ô nhịp trên trang: hình chữ nhật chuẩn hoá 0–1, `measureNumber` liên tục trong Score, tuỳ chọn time signature / tempo (kế thừa), và `beatSplits`. Trùng **tên** với repo web; hình học phách trên đĩa **khác hình dạng wire** — xem BeatBox.

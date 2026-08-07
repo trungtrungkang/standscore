@@ -723,6 +723,12 @@ abstract class AppLocalizations {
   /// **'Map measures first'**
   String get scoreMenuFormMapNeedsMeasureMap;
 
+  /// No description provided for @scoreMenuReflowSpike.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflow (spike)'**
+  String get scoreMenuReflowSpike;
+
   /// No description provided for @formMapEmptyHint.
   ///
   /// In en, this message translates to:
@@ -3371,7 +3377,7 @@ abstract class AppLocalizations {
   /// No description provided for @measureMapEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'Draw a system — the app will ask how many measures'**
+  /// **'Draw a system — all staves played at once. The app will ask how many measures'**
   String get measureMapEmptyHint;
 
   /// No description provided for @measureMapDone.

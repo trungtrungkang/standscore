@@ -341,6 +341,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
 
   @override
+  String get scoreMenuReflowSpike => 'Reflow (spike)';
+
+  @override
   String get formMapEmptyHint =>
       'No form = play straight through once. Add a repeat (with optional 1st/2nd ending) or tap a MeasureBox for markers/jumps. Jump Links are different — they jump pages by hand.';
 
@@ -1997,7 +2000,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get measureMapCopyPrevious => '复制上一页';
 
   @override
-  String get measureMapEmptyHint => '绘制一行 System — 应用会询问有多少小节';
+  String get measureMapEmptyHint => '绘制一个 System — 框住同时演奏的所有谱表。应用会询问有多少小节';
 
   @override
   String get measureMapDone => '完成';
@@ -2363,6 +2366,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
+
+  @override
+  String get scoreMenuReflowSpike => 'Reflow (spike)';
 
   @override
   String get formMapEmptyHint =>
@@ -4021,7 +4027,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get measureMapCopyPrevious => '複製上一頁';
 
   @override
-  String get measureMapEmptyHint => '繪製一行 System — 應用程式會詢問有多少小節';
+  String get measureMapEmptyHint => '繪製一個 System — 框住同時演奏的所有譜表。應用程式會詢問有多少小節';
 
   @override
   String get measureMapDone => '完成';

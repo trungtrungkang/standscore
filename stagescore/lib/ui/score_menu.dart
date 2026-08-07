@@ -18,6 +18,7 @@ enum ScoreMenuAction {
   exportAnnotated,
   measureMap,
   formMap,
+  reflowSpike,
   layout,
   display,
   colorFilter,
@@ -40,6 +41,7 @@ const kPageOrderIcon = Icons.reorder_outlined;
 const kGoToMeasureIcon = Icons.music_note_outlined;
 const kMeasureMapIcon = Icons.grid_on_outlined;
 const kFormMapIcon = Icons.repeat_outlined;
+const kReflowSpikeIcon = Icons.view_stream_outlined;
 const kAnnotationsVisibleIcon = Icons.visibility_outlined;
 const kAnnotationsHiddenIcon = Icons.visibility_off_outlined;
 const kExportAnnotatedIcon = Icons.ios_share_outlined;
@@ -172,6 +174,15 @@ List<ScoreMenuGroup> buildScoreMenu({
           action: ScoreMenuAction.formMap,
           label: l10n.scoreMenuFormMap,
           icon: kFormMapIcon,
+          enabled: measureMapReady,
+          value: measureMapReady ? null : l10n.scoreMenuFormMapNeedsMeasureMap,
+        ),
+        // Spec 0069 spike — removed with the spike, or renamed when ReflowMode
+        // graduates to its own Spec.
+        ScoreMenuEntry(
+          action: ScoreMenuAction.reflowSpike,
+          label: l10n.scoreMenuReflowSpike,
+          icon: kReflowSpikeIcon,
           enabled: measureMapReady,
           value: measureMapReady ? null : l10n.scoreMenuFormMapNeedsMeasureMap,
         ),

@@ -347,6 +347,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
 
   @override
+  String get scoreMenuReflowSpike => 'Reflow (spike)';
+
+  @override
   String get formMapEmptyHint =>
       'Không gắn form = chơi thẳng một lần. Thêm repeat (kèm kết 1/kết 2 nếu cần) hoặc chạm MeasureBox để gắn marker/nhảy. Jump Links khác — nhảy trang bằng tay.';
 
@@ -2027,7 +2030,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get measureMapCopyPrevious => 'Chép trang trước';
 
   @override
-  String get measureMapEmptyHint => 'Vẽ một dòng nhạc — app sẽ hỏi bao nhiêu ô';
+  String get measureMapEmptyHint =>
+      'Vẽ một system — bao trọn mọi khuông nhạc chơi cùng lúc. App sẽ hỏi bao nhiêu ô';
 
   @override
   String get measureMapDone => 'Xong';

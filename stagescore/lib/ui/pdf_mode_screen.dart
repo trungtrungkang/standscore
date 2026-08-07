@@ -95,6 +95,7 @@ import 'package:stagescore/ui/performance_chrome.dart';
 import 'package:stagescore/ui/playback_controls_bar.dart';
 import 'package:stagescore/ui/playback_float_controls.dart';
 import 'package:stagescore/ui/playback_settings_sheet.dart';
+import 'package:stagescore/ui/reflow_spike_screen.dart';
 import 'package:stagescore/ui/quick_bar_fit.dart';
 import 'package:stagescore/ui/score_menu.dart';
 import 'package:stagescore/ui/score_menu_quick_bar.dart';
@@ -1363,6 +1364,8 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
         _setMeasureMapEditing(true);
       case ScoreMenuAction.formMap:
         _setFormMapEditing(true);
+      case ScoreMenuAction.reflowSpike:
+        _openReflowSpike();
       case ScoreMenuAction.toggleAnnotations:
         setState(() => _annotationsVisible = !_annotationsVisible);
       case ScoreMenuAction.exportAnnotated:
@@ -1382,6 +1385,20 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       case ScoreMenuAction.stagePreset:
         _applyStagePreset();
     }
+  }
+
+  /// Spec 0069 spike: crop each ReadBox of a page and show it magnified.
+  void _openReflowSpike() {
+    if (_measureMap.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ReflowSpikeScreen(
+          filePath: _filePath,
+          measureMap: _measureMap,
+          title: _score.title,
+        ),
+      ),
+    );
   }
 
   void _openPageTurnSettings() {

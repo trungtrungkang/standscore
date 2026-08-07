@@ -350,6 +350,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scoreMenuFormMapNeedsMeasureMap => 'Map measures first';
 
   @override
+  String get scoreMenuReflowSpike => 'Reflow (spike)';
+
+  @override
   String get formMapEmptyHint =>
       'No form = play straight through once. Add a repeat (with optional 1st/2nd ending) or tap a MeasureBox for markers/jumps. Jump Links are different — they jump pages by hand.';
 
@@ -2050,7 +2053,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get measureMapEmptyHint =>
-      'Dibuja un system — la app preguntará cuántos compases';
+      'Dibuja un system — todos los pentagramas que suenan a la vez. La app preguntará cuántos compases';
 
   @override
   String get measureMapDone => 'Listo';
