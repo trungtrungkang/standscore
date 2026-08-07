@@ -19,7 +19,7 @@ Status legend: `todo` | `specced` | `done` | `reopen` | `wont` (explicit cut)
 | P0.4 | PageTurn via swipe (per-direction toggle) | done (0003) |
 | P0.5 | Basic layouts: single page, two-page spread | done (0004) — 0041 added **Auto** and completed 0004's own "facing pages when width allows": a spread the viewport cannot fit falls back to one page and says so, without touching the stored choice. |
 | P0.6 | Fit width / fit height (scroll) | done (0004) — fit width kept as **Scroll**; **fit height `wont`** (0041): its result was whatever the screen's aspect produced, including a page wider than a portrait phone. Stored value still loads, and resolves to Scroll. |
-| P0.7 | Zoom pinch; optional pan when zoomed | done (0033) — double-tap zoom cut 2026-07-29: it forced `GestureDetector` to hold every PageTurn tap for `kDoubleTapTimeout` (~300ms) to disambiguate. Pinch is now the only zoom gesture, and the whole view — scale *and* pan — carries across pages instead of resetting per page (e.g. a pan set to compensate for a scan's uneven margins follows to the next page). |
+| P0.7 | Zoom pinch; optional pan when zoomed | done (0033) — double-tap zoom cut 2026-07-29: it forced `GestureDetector` to hold every PageTurn tap for `kDoubleTapTimeout` (~300ms) to disambiguate. Pinch is now the only zoom gesture, and the whole view — scale *and* pan — carries across pages instead of resetting per page (e.g. a pan set to compensate for a scan's uneven margins follows to the next page). 2026-08-07: Scroll identity — swipe overlay no longer steals pan when pinched; scrubber/prev/next keep pinch via `pageTopFocus`. |
 | P0.8 | Library list: titles, open recent | done (0002) |
 | P0.9 | Delete Score from Library (confirm; remove file + overlays) | done (0028) |
 

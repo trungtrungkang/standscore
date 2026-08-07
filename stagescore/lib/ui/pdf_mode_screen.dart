@@ -58,6 +58,7 @@ import 'package:stagescore/pageturn/page_turn_prefs.dart';
 import 'package:stagescore/pageturn/page_turn_prefs_store.dart';
 import 'package:stagescore/pageturn/pedal_key_map.dart';
 import 'package:stagescore/pdf/continuous_page_order_view.dart';
+import 'package:stagescore/pdf/continuous_zoom_nav.dart';
 import 'package:stagescore/pdf/page_annotation_overlay.dart';
 import 'package:stagescore/pdf/page_measure_map_overlay.dart';
 import 'package:stagescore/pdf/page_playhead_overlay.dart';
@@ -1719,7 +1720,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       return;
     }
     if (!_controller.isReady) return;
-    await _controller.goToPage(pageNumber: target);
+    await _goToIdentityPage(target, duration: Duration.zero);
   }
 
   Future<void> _goToPageInCurrentScore(
@@ -1736,8 +1737,42 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       return;
     }
     if (_controller.isReady) {
-      await _controller.goToPage(pageNumber: target);
+      await _goToIdentityPage(target, duration: duration);
     }
+  }
+
+  /// Identity continuous `PdfViewer` jump that keeps a pinch-in (Spec 0033).
+  ///
+  /// At fit zoom, `goToPage` is fine — its top-anchor path already opens at
+  /// fit. Once pinched in, that same path treats the current zoom as a ceiling
+  /// only and recomputes a fit, so scrubber / prev / next would throw the
+  /// magnification away. Land on the page top at the current zoom instead.
+  Future<void> _goToIdentityPage(
+    int pageNumber, {
+    required Duration duration,
+  }) async {
+    final controller = _controller;
+    if (!controller.isReady) return;
+    if (_atFitZoom) {
+      await controller.goToPage(pageNumber: pageNumber, duration: duration);
+      return;
+    }
+    final layouts = controller.layout.pageLayouts;
+    if (pageNumber < 1 || pageNumber > layouts.length) return;
+    final zoom = controller.currentZoom;
+    if (zoom <= 0) {
+      await controller.goToPage(pageNumber: pageNumber, duration: duration);
+      return;
+    }
+    final focus = pageTopFocus(
+      pageRect: layouts[pageNumber - 1],
+      viewSize: controller.viewSize,
+      zoom: zoom,
+    );
+    await controller.goTo(
+      controller.calcMatrixFor(focus, zoom: zoom),
+      duration: duration,
+    );
   }
 
   Future<void> _applyAction(
@@ -1909,6 +1944,9 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
       onGestureAction: _onGestureMapAction,
       onScoreTap: _chrome.hide,
       pageTurnEnabled: true,
+      // When pinched in on identity continuous Scroll, drop the swipe
+      // detectors so pan reaches pdfrx (0033 Scroll follow-up).
+      swipeGesturesEnabled: _atFitZoom,
     );
   }
 
@@ -2431,7 +2469,7 @@ class _PdfModeScreenState extends State<PdfModeScreen> {
                     ? null
                     : (start: pass2.startMeasure, end: pass2.endMeasure),
               );
-              if (result == null || !mounted) return;
+              if (result == null || !context.mounted) return;
               final region = FormRepeatRegion(
                 id: 'repeat-${result.start}-${result.end}',
                 startMeasure: result.start,

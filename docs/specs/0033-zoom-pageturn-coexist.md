@@ -86,3 +86,14 @@ Testable checklist (G4):
 **Sửa tiếp cùng ngày — vị trí chia sẻ "không chuẩn" (musician báo cáo):** bản đầu đọc `t.value` ngay tại `InteractiveViewer.onInteractionEnd`, callback này bắn ra **ngay khi buông tay**, nhưng chính doc-comment của Flutter cảnh báo "a pan may cause an inertia animation after this is called as well" — `_handleInertiaAnimation` (trong `interactive_viewer.dart` của framework) còn tiếp tục ghi vào cùng `TransformationController` thêm vài frame nữa cho animation quán tính (fling). Vậy transform được chia sẻ là vị trí **giữa lúc đang trôi theo quán tính**, không phải vị trí musician thật sự dừng lại — trang kế tiếp mở ra lệch. Sửa bằng debounce trên listener của `TransformationController` thay vì tin vào thời điểm `onInteractionEnd`: mỗi lần giá trị đổi thì huỷ timer cũ, đặt timer mới (`kZoomSettleDelay`, 150ms — vượt xa khoảng cách một frame ở 60–120fps); chỉ khi timer chạy hết mà không có thay đổi nào thêm mới coi là "đã dừng" và chia sẻ. `onInteractionEnd` bị bỏ hẳn khỏi `PerformancePageSlot` — không còn cần.
 
 **Test:** `test/shared_zoom_test.dart` (mới, test thuần cho ba hàm trong `shared_zoom.dart`, gồm cả trường hợp cùng scale khác pan vẫn phải tính là thay đổi, cộng một test khoá `kZoomSettleDelay` đủ lớn hơn một frame gap — không dựng `PdfDocument` thật vì pdfrx cần native viewer, `flutter test` không chạy được). `test/zoom_toggle_test.dart` viết lại chỉ còn test `isInteractivelyZoomed`. 301 tests xanh, analyze sạch. Chưa demo lại trên thiết bị thật (G4 gốc của 0033 vẫn đứng cho phần pinch/PageTurn coexist chưa đổi; phần double-tap, cross-page zoom và cross-page pan là hành vi mới, chưa qua G4 riêng).
+
+## Cập nhật sau G4 (Scroll identity, 2026-08-07)
+
+**Hai lỗ trên layout Scroll** (`PdfLayoutMode.fitWidth` / Half Page continuous — đường `PdfViewer` identity, không phải `SinglePageSlider`):
+
+1. **Pinch rồi vuốt không cuộn.** Khi đã zoom, `_onInteractionAction` cố ý bỏ swipe PageTurn để dành một ngón cho pan — nhưng `PageTurnInteractionLayer` vẫn gắn `onVerticalDragEnd` / `onHorizontalDragEnd` phủ cả viewer, thắng gesture arena, nên pan của pdfrx cũng không nhận được. Sửa: thêm `swipeGesturesEnabled` (tắt khi `!_atFitZoom`); tap PageTurn vẫn sống.
+2. **Prev / next / scrubber làm mất zoom.** `goToPage` với `pageAnchor: top` tính lại zoom fit và chỉ dùng zoom hiện tại làm `zoomMax` (trần), không giữ mức pinch. PageTurn tap trên Scroll vốn dùng `_scrollByViewportFraction` (giữ zoom); nút PageNavBar và scrubber đi `_jumpToPage` → `goToPage` nên bị reset. Sửa: `_goToIdentityPage` — lúc fit thì `goToPage` như cũ; lúc đang pinch thì `calcMatrixFor(pageTopFocus(...), zoom: currentZoom)`.
+
+**Test:** `test/continuous_zoom_nav_test.dart` (hàm thuần `pageTopFocus`). Demo tay: Scroll → pinch → vuốt cuộn được; pinch → next trên thanh trang → zoom còn.
+
+**G4 (2026-08-08):** Orchestrator chấp nhận follow-up Scroll identity. Slice 0033 đóng lại.

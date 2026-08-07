@@ -20,6 +20,7 @@ class PageTurnInteractionLayer extends StatefulWidget {
     this.onGestureAction,
     this.onScoreTap,
     this.pageTurnEnabled = true,
+    this.swipeGesturesEnabled = true,
     this.resolveJumpLink,
     this.onJumpLinkTap,
     this.onJumpLinkLongPress,
@@ -38,6 +39,14 @@ class PageTurnInteractionLayer extends StatefulWidget {
 
   /// When false, PageTurn tap/swipe are ignored; Show menu gestures still work.
   final bool pageTurnEnabled;
+
+  /// When false, drag detectors are not mounted so the viewer under this
+  /// overlay can pan/scroll (Spec 0033 — pinch-zoom on continuous Scroll).
+  ///
+  /// Tap PageTurn stays available. Callers turn this off once the musician is
+  /// interactively zoomed in: a translucent `onVerticalDragEnd` otherwise wins
+  /// the gesture arena and swallows the pan the viewer just enabled.
+  final bool swipeGesturesEnabled;
 
   /// JumpLink hit-test before PageTurn (Spec 0016). Return null = miss.
   final JumpLink? Function(Offset local, Size viewSize)? resolveJumpLink;
@@ -151,6 +160,7 @@ class _PageTurnInteractionLayerState extends State<PageTurnInteractionLayer> {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         final swipeOn =
             widget.pageTurnEnabled &&
+            widget.swipeGesturesEnabled &&
             widget.prefs.anySwipeEnabled &&
             !_multiTouch;
         // When ≥2 pointers, ignore PageTurn chrome so pinch reaches the viewer.
